@@ -377,51 +377,49 @@ export default function DashboardPage() {
               <Calendar className="h-4 w-4" />
             </Button>
           </div>
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* Add Task Form */}
-          {isAddingTask && (
-            <div className="mb-6">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full">
-                    <span className="flex items-center gap-2">
-                      <Plus className="h-4 w-4" />
-                      <span>Add New Task</span>
-                    </span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="w-full max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Add New Task</DialogTitle>
-                  </DialogHeader>
-                  <DialogContent>
+         </header>
+         <main className="flex-1 overflow-y-auto p-6">
+           {/* Add Task Form */}
+           {isAddingTask && (
+             <div className="mb-6">
+               <Dialog>
+                 <DialogTrigger asChild>
+                   <Button variant="outline" className="w-full">
+                     <span className="flex items-center gap-2">
+                       <Plus className="h-4 w-4" />
+                       <span>Add New Task</span>
+                     </span>
+                   </Button>
+                 </DialogTrigger>
+                  <DialogContent className="w-full max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Add New Task</DialogTitle>
+                    </DialogHeader>
                     <form className="space-y-4" onSubmit={(e) => {
-                      e.preventDefault();
-                      handleAddTask();
-                    }}>
-                      <div>
-                        <Label htmlFor="task-name">Task Name</Label>
-                        <Input
-                          id="task-name"
-                          value={newTask.name}
-                          onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
-                          placeholder="Enter task name"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="task-description">Description</Label>
-                        <Textarea
-                          id="task-description"
-                          value={newTask.description}
-                          onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                          placeholder="Enter task description (optional)"
-                          rows={3}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
+                        e.preventDefault();
+                        handleAddTask();
+                      }}>
+                     <div>
+                       <Label htmlFor="task-name">Task Name</Label>
+                       <Input
+                         id="task-name"
+                         value={newTask.name}
+                         onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
+                         placeholder="Enter task name"
+                         required
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="task-description">Description</Label>
+                       <Textarea
+                         id="task-description"
+                         value={newTask.description}
+                         onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                         placeholder="Enter task description (optional)"
+                         rows={3}
+                       />
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="task-list">List</Label>
                           <select
@@ -440,139 +438,137 @@ export default function DashboardPage() {
                                   </span>
                                   <span>{list.name}</span>
                                 </span>
-                              </option)
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <Label htmlFor="task-priority">Priority</Label>
-                          <select
-                            id="task-priority"
-                            value={newTask.priority}
-                            onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as const })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          >
-                            <option value="none">None</option>
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="task-date">Date</Label>
-                          <input
-                            id="task-date"
-                            type="date"
-                            value={newTask.date ? newTask.date.toISOString().split('T')[0] : ''}
-                            onChange={(e) => {
-                              const date = e.target.value ? new Date(e.target.value) : null;
-                              setNewTask({ ...newTask, date });
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="task-deadline">Deadline</Label>
-                          <input
-                            id="task-deadline"
-                            type="datetime-local"
-                            value={newTask.deadline ? newTask.deadline.toISOString().slice(0, 16) : ''}
-                            onChange={(e) => {
-                              const date = e.target.value ? new Date(e.target.value) : null;
-                              setNewTask({ ...newTask, deadline: date });
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="task-recurrence">Recurrence</Label>
-                          <select
-                            id="task-recurrence"
-                            value={newTask.recurrence}
-                            onChange={(e) => setNewTask({ ...newTask, recurrence: e.target.value as const })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          >
-                            {RECURRENCE_OPTIONS.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
                               </option>
                             ))}
                           </select>
                         </div>
-                        <div>
-                          <Label htmlFor="task-label">Label</Label>
-                          <select
-                            id="task-label"
-                            multiple
-                            onChange={(e) => {
-                              // Handle multiple select - for now we'll just store the first selected value
-                              // In a full implementation, we'd need to handle the task_labels relationship
-                              const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
-                              // For simplicity, we're not storing labels in the task directly
-                              // but rather in the task_labels table - this would require a more complex implementation
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          >
-                            <option value="">Select labels</option>
-                            {labelsList.map((label) => (
-                              <option key={label.id} value={label.id}>
-                                <span className="flex items-center gap-2">
-                                  <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
-                                    {label.emoji}
-                                  </span>
-                                  <span>{label.name}</span>
-                                </span>
-                              </option)
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          variant="ghost"
-                          onClick={() => setIsAddingTask(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleAddTask}
-                          isLoading={isAddingTask}
-                        >
-                          Add Task
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </Dialog>
-            </div>
-          )}
+                       <div>
+                         <Label htmlFor="task-priority">Priority</Label>
+                         <select
+                           id="task-priority"
+                           value={newTask.priority}
+                           onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as const })}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                         >
+                           <option value="none">None</option>
+                           <option value="low">Low</option>
+                           <option value="medium">Medium</option>
+                           <option value="high">High</option>
+                         </select>
+                       </div>
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
+                       <div>
+                         <Label htmlFor="task-date">Date</Label>
+                         <input
+                           id="task-date"
+                           type="date"
+                           value={newTask.date ? newTask.date.toISOString().split('T')[0] : ''}
+                           onChange={(e) => {
+                             const date = e.target.value ? new Date(e.target.value) : null;
+                             setNewTask({ ...newTask, date });
+                           }}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                         />
+                       </div>
+                       <div>
+                         <Label htmlFor="task-deadline">Deadline</Label>
+                         <input
+                           id="task-deadline"
+                           type="datetime-local"
+                           value={newTask.deadline ? newTask.deadline.toISOString().slice(0, 16) : ''}
+                           onChange={(e) => {
+                             const date = e.target.value ? new Date(e.target.value) : null;
+                             setNewTask({ ...newTask, deadline: date });
+                           }}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                         />
+                       </div>
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
+                       <div>
+                         <Label htmlFor="task-recurrence">Recurrence</Label>
+                         <select
+                           id="task-recurrence"
+                           value={newTask.recurrence}
+                           onChange={(e) => setNewTask({ ...newTask, recurrence: e.target.value as const })}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                         >
+                           {RECURRENCE_OPTIONS.map((option) => (
+                             <option key={option.value} value={option.value}>
+                               {option.label}
+                             </option>
+                           ))}
+                         </select>
+                       </div>
+                       <div>
+                         <Label htmlFor="task-label">Label</Label>
+                         <select
+                           id="task-label"
+                           multiple
+                           onChange={(e) => {
+                             // Handle multiple select - for now we'll just store the first selected value
+                             // In a full implementation, we'd need to handle the task_labels relationship
+                             const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
+                             // For simplicity, we're not storing labels in the task directly
+                             // but rather in the task_labels table - this would require a more complex implementation
+                           }}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                         >
+                           <option value="">Select labels</option>
+                           {labelsList.map((label) => (
+                             <option key={label.id} value={label.id}>
+                               <span className="flex items-center gap-2">
+                                 <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
+                                   {label.emoji}
+                                 </span>
+                                 <span>{label.name}</span>
+                               </span>
+                             </option>
+                           ))}
+                         </select>
+                       </div>
+                     </div>
+                     <DialogFooter>
+                       <Button
+                         variant="ghost"
+                         onClick={() => setIsAddingTask(false)}
+                       >
+                         Cancel
+                       </Button>
+                       <Button
+                         onClick={handleAddTask}
+                         isLoading={isAddingTask}
+                       >
+                         Add Task
+                       </Button>
+                     </DialogFooter>
+                   </form>
+                 </DialogContent>
+               </Dialog>
+             </div>
+           )}
 
           {/* Edit Task Form */}
           {editTaskId && (
-            <div className="mb-6">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full">
-                    <span className="flex items-center gap-2">
-                      <Edit className="h-4 w-4" />
-                      <span>Edit Task</span>
-                    </span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="w-full max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Edit Task</DialogTitle>
-                  </DialogHeader>
-                  <DialogContent>
-                    <form className="space-y-4" onSubmit={(e) => {
-                      e.preventDefault();
-                      handleSaveEdit();
-                    }}>
+             <div className="mb-6">
+               <Dialog>
+                 <DialogTrigger asChild>
+                   <Button variant="outline" className="w-full">
+                     <span className="flex items-center gap-2">
+                       <Edit className="h-4 w-4" />
+                       <span>Edit Task</span>
+                     </span>
+                   </Button>
+                 </DialogTrigger>
+                 <DialogContent className="w-full max-w-md">
+                   <DialogHeader>
+                     <DialogTitle>Edit Task</DialogTitle>
+                   </DialogHeader>
+                   <form className="space-y-4" onSubmit={(e) => {
+                       e.preventDefault();
+                       handleSaveEdit();
+                     }}>
                       <div>
                         <Label htmlFor="edit-task-name">Task Name</Label>
                         <Input
@@ -610,9 +606,9 @@ export default function DashboardPage() {
                                   <span className={`${list.color} h-4 w-4 flex items-center justify-center rounded`}>
                                     {list.emoji}
                                   </span>
-                                  <span>{list.name}</span>
-                                </span>
-                              </option)
+                                 <span>{list.name}</span>
+                               </span>
+                             </option>
                             ))}
                           </select>
                         </div>
@@ -668,11 +664,11 @@ export default function DashboardPage() {
                             onChange={(e) => setEditTaskData({ ...editTaskData, recurrence: e.target.value as const })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           >
-                            {RECURRENCE_OPTIONS.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option)
-                            ))}
+                             {RECURRENCE_OPTIONS.map((option) => (
+                               <option key={option.value} value={option.value}>
+                                 {option.label}
+                               </option>
+                             ))}
                           </select>
                         </div>
                         <div>
@@ -691,14 +687,14 @@ export default function DashboardPage() {
                           >
                             <option value="">Select labels</option>
                             {labelsList.map((label) => (
-                              <option key={label.id} value={label.id}>
-                                <span className="flex items-center gap-2">
-                                  <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
-                                    {label.emoji}
-                                  </span>
-                                  <span>{label.name}</span>
-                                </span>
-                              </option)
+                               <option key={label.id} value={label.id}>
+                                 <span className="flex items-center gap-2">
+                                   <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
+                                     {label.emoji}
+                                   </span>
+                                   <span>{label.name}</span>
+                                 </span>
+                               </option>
                             ))}
                           </select>
                         </div>
@@ -715,12 +711,11 @@ export default function DashboardPage() {
                         >
                           Save Changes
                         </Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </Dialog>
-            </div>
+                       </DialogFooter>
+                     </form>
+                   </DialogContent>
+                 </Dialog>
+               </div>
           )}
 
           {/* Task Details Dialog */}
@@ -780,40 +775,40 @@ export default function DashboardPage() {
             </Button>
           </MotionWrapper>
 
-          {/* Search and Filters */}
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex-1 sm:w-auto">
-              <Label htmlFor="search-input">Search tasks</Label>
-              <Input
-                id="search-input"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search tasks..."
-              />
-            </div>
-            <div className="flex-1 sm:w-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <Label htmlFor="show-completed">Show completed</Label>
-                <Checkbox
-                  id="show-completed"
-                  checked={showCompleted}
-                  onCheckedChange={setShowCompleted}
-                />
-              </div>
-              <div className="relative">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    // TODO: Implement filter modal
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <Filter className="h-4 w-4" />
-                  <span>Filters</span>
-                </Button>
-              </div>
-            }
-          </div>
+           {/* Search and Filters */}
+           <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+             <div className="flex-1 sm:w-auto">
+               <Label htmlFor="search-input">Search tasks</Label>
+               <Input
+                 id="search-input"
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 placeholder="Search tasks..."
+               />
+             </div>
+             <div className="flex-1 sm:w-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+               <div>
+                 <Label htmlFor="show-completed">Show completed</Label>
+                 <Checkbox
+                   id="show-completed"
+                   checked={showCompleted}
+                   onCheckedChange={setShowCompleted}
+                 />
+               </div>
+               <div className="relative">
+                 <Button
+                   variant="outline"
+                   onClick={() => {
+                     // TODO: Implement filter modal
+                   }}
+                   className="flex items-center gap-2"
+                 >
+                   <Filter className="h-4 w-4" />
+                   <span>Filters</span>
+                 </Button>
+               </div>
+             </div>
+           </div>
 
           {/* Tasks List */}
           <MotionWrapper 
@@ -908,19 +903,19 @@ export default function DashboardPage() {
                             </div>
                             {task.labels.length > 0 && (
                               <div className="flex flex-wrap gap-1">
-                                {task.labels.map((label) => (
-                                  <span
-                                    key={label.id}
-                                    className={`px-2 py-0.5 rounded text-xs font-medium ${label.color} text-${label.color === 'bg-blue-500' ? 'white' : label.color === 'bg-green-500' ? 'white' : label.color === 'bg-purple-500' ? 'white' : 'black'}`}
-                                  >
-                                    {label.emoji} {label.name}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                                 {task.labels.map((label) => (
+                                   <span
+                                     key={label.id}
+                                     className={`px-2 py-0.5 rounded text-xs font-medium ${label.color} text-${label.color === 'bg-blue-500' ? 'white' : label.color === 'bg-green-500' ? 'white' : label.color === 'bg-purple-500' ? 'white' : 'black'}`}
+                                   >
+                                     {label.emoji} {label.name}
+                                   </span>
+                                 ))}
+                               </div>
+                             )
+                           }
+           </div>
+         </div>
                       <CardFooter className="flex justify-end pt-4">
                         <Button
                           variant="ghost"
