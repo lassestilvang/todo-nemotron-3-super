@@ -73,7 +73,22 @@ const DialogFooter = React.forwardRef<
 ));
 DialogFooter.displayName = "DialogFooter";
 
+const Dialog = forwardRef<
+  HTMLElement,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root>
+>(({ className, children, ...props }, ref) => (
+  <DialogPrimitive.Root
+    ref={ref}
+    className={cn(className)}
+    {...props}
+  >
+    {children}
+  </DialogPrimitive.Root>
+));
+Dialog.displayName = DialogPrimitive.Root.displayName;
+
 export {
+  Dialog,
   DialogTrigger,
   DialogContent,
   DialogHeader,

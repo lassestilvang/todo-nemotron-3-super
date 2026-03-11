@@ -469,25 +469,26 @@ export default function TaskDetails({
     loadTask();
   }, [taskId]);
 
-  if (loading || !task) {
-    return (
-      <Dialog>
-        <DialogTrigger asChild>
-          <div></div> // Placeholder, will be replaced by caller
-        </DialogTrigger>
-      <DialogContent className="w-full max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Loading task details...</DialogTitle>
-        </DialogHeader>
-        <DialogContent className="flex items-center justify-center py-12">
-          <div className="flex items-center gap-4">
-            <div className="h-8 w-8 border-2 border-primary rounded-full animate-spin"></div>
-            <span>Loading...</span>
-          </div>
-        </DialogContent>
-      </DialogContent>
-       );
-  }
+   if (loading || !task) {
+     return (
+       <Dialog>
+         <DialogTrigger asChild>
+           <div></div> // Placeholder, will be replaced by caller
+         </DialogTrigger>
+         <DialogContent className="w-full max-w-2xl">
+           <DialogHeader>
+             <DialogTitle>Loading task details...</DialogTitle>
+           </DialogHeader>
+           <DialogContent className="flex items-center justify-center py-12">
+             <div className="flex items-center gap-4">
+               <div className="h-8 w-8 border-2 border-primary rounded-full animate-spin"></div>
+               <span>Loading...</span>
+             </div>
+           </DialogContent>
+         </DialogContent>
+       </Dialog>
+     );
+   }
 
   return (
     <Dialog>
@@ -1002,7 +1003,7 @@ export default function TaskDetails({
             </Button>
           </DialogFooter>
         )}
-      </Dialog>
-    </Dialog>
+       </DialogContent>
+     </Dialog>
   );
 }
