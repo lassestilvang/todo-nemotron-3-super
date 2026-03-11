@@ -1,6 +1,8 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/db/index';
-import { tasks, lists, labels, taskLabels } from '@/lib/db/schema';
+import { db } from '@/app/lib/db/index';
+import { tasks, lists, labels, taskLabels } from '@/app/lib/db/schema';
 import { eq, and, isNotNull, isNull, desc, sql } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Sonner, toast } from 'sonner';
 import { Calendar, Plus, Trash2, Edit, Repeat, Clock, Reminder, Flag, Folder, Paperclip } from 'lucide-react';
 import TaskDetails from '@/components/task-details/TaskDetails';
-import { useDebounce } from '@/hooks/use-debounce';
+import useDebounce from '@/hooks/use-debounce';
 import { MotionWrapper, fadeIn, staggerContainer } from '@/components/animations/motion-wrapper';
 
 const RECURRENCE_OPTIONS = [
@@ -834,75 +836,72 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-4">
                 {tasksList.map((task, index) => (
-                  <MotionWrapper 
-                    key={task.id}
-                    variants={fadeIn('up', index * 0.05)}
-                    initial={false} 
-                    animate={true}
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
-                    onClick={() => setSelectedTaskId(task.id)}
-                  >
-                    <Card className="p-4">
-                      <div className="flex items-start gap-4">
-                        <Checkbox
-                          checked={task.completed}
-                          onCheckedChange={(checked) => handleToggleComplete(task.id, checked)}
-                          className="flex-shrink-0"
-                        />
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <h3 className={`flex-1 font-semibold ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
-                              {task.name}
-                            </h3>
-                            <div className="flex items-center gap-2 text-xs">
-                              {/* Priority badge */}
-                              {task.priority !== 'none' && (
-                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                  task.priority === 'high'
-                                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                    : task.priority === 'medium'
-                                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                    : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                }`}>
-                                  {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                                </span>
-                              )}
-                              {/* Overdue badge */}
-                              {task.deadline && new Date(task.deadline) < Date.now() && !task.completed && (
-                                <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                  Overdue
-                                </span>
-                              )}
-                              {/* Recurrence badge */}
-                              {task.recurrence && task.recurrence !== 'none' && (
-                                <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                  {task.recurrence.charAt(0).toUpperCase() + task.recurrence.slice(1)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {task.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                              {task.description}
-                            </p>
-                          )}
-                          
-                          <div className="flex items-center gap-4 text-xs">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4" />
-                              <span>{task.date ? new Date(task.date).toLocaleDateString() : 'No date'}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4" />
-                              <span>{task.deadline ? new Date(task.deadline).toLocaleString() : 'No deadline'}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Folder className="h-4 w-4" />
-                              <span>{task.list.name}</span>
-                            </div>
-                            {task.labels.length > 0 && (
-                              <div className="flex flex-wrap gap-1">
+                   <div 
+                     key={task.id}
+                     className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
+                     onClick={() => setSelectedTaskId(task.id)}
+                   >
+                     <Card className="p-4">
+                       <div className="flex items-start gap-4">
+                         <Checkbox
+                           checked={task.completed}
+                           onCheckedChange={(checked) => handleToggleComplete(task.id, checked)}
+                           className="flex-shrink-0"
+                         />
+                         <div className="flex-1 space-y-2">
+                           <div className="flex items-center gap-2">
+                             <h3 className={`flex-1 font-semibold ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+                               {task.name}
+                             </h3>
+                             <div className="flex items-center gap-2 text-xs">
+                               {/* Priority badge */}
+                               {task.priority !== 'none' && (
+                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                   task.priority === 'high'
+                                     ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                   : task.priority === 'medium'
+                                     ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                     : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                 }`}>
+                                   {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                 </span>
+                               )}
+                               {/* Overdue badge */}
+                               {task.deadline && new Date(task.deadline) < Date.now() && !task.completed && (
+                                 <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                   Overdue
+                                 </span>
+                               )}
+                               {/* Recurrence badge */}
+                               {task.recurrence && task.recurrence !== 'none' && (
+                                 <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                   {task.recurrence.charAt(0).toUpperCase() + task.recurrence.slice(1)}
+                                 </span>
+                               )}
+                             </div>
+                           </div>
+                           
+                           {task.description && (
+                             <p className="text-sm text-muted-foreground line-clamp-2">
+                               {task.description}
+                             </p>
+                           )}
+                           
+                           <div className="flex items-center gap-4 text-xs">
+                             <div className="flex items-center gap-2">
+                               <Calendar className="h-4 w-4" />
+                               <span>{task.date ? new Date(task.date).toLocaleDateString() : 'No date'}</span>
+                             </div>
+                             <div className="flex items-center gap-2">
+                               <Clock className="h-4 w-4" />
+                               <span>{task.deadline ? new Date(task.deadline).toLocaleString() : 'No deadline'}</span>
+                             </div>
+                             <div className="flex items-center gap-2">
+                               <Folder className="h-4 w-4" />
+                               <span>{task.list.name}</span>
+                             </div>
+                             {task.labels.length > 0 && (
+                               <div className="flex flex-wrap gap-1">
                                  {task.labels.map((label) => (
                                    <span
                                      key={label.id}
@@ -912,36 +911,12 @@ export default function DashboardPage() {
                                    </span>
                                  ))}
                                </div>
-                             )
-                           }
-           </div>
-         </div>
-                      <CardFooter className="flex justify-end pt-4">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStartEdit(task);
-                          }}
-                          aria-label="Edit task"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteTask(task.id);
-                          }}
-                          aria-label="Delete task"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  </MotionWrapper>
+                             )}
+                           </div>
+                         </div>
+                       </div>
+                     </Card>
+                   </div>
                 ))}
               </div>
             )}
