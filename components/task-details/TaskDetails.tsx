@@ -5,14 +5,14 @@ import { eq, and, desc } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogPrimitive as DialogRoot } from '@/components/ui/dialog';
+import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuPrimitive as DropdownMenuRoot } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Sonner, toast } from 'sonner';
+import { useSonner } from 'sonner';
 import { 
   Calendar, 
   Clock, 
@@ -475,19 +475,18 @@ export default function TaskDetails({
         <DialogTrigger asChild>
           <div></div> // Placeholder, will be replaced by caller
         </DialogTrigger>
-        <DialogContent className="w-full max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Loading task details...</DialogTitle>
-          </DialogHeader>
-          <DialogContent className="flex items-center justify-center py-12">
-            <div className="flex items-center gap-4">
-              <div className="h-8 w-8 border-2 border-primary rounded-full animate-spin"></div>
-              <span>Loading...</span>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </Dialog>
-    );
+      <DialogContent className="w-full max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Loading task details...</DialogTitle>
+        </DialogHeader>
+        <DialogContent className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-4">
+            <div className="h-8 w-8 border-2 border-primary rounded-full animate-spin"></div>
+            <span>Loading...</span>
+          </div>
+        </DialogContent>
+      </DialogContent>
+       );
   }
 
   return (
