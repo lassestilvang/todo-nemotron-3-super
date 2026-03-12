@@ -12,9 +12,9 @@ export const MotionWrapper = ({
 }: {
   children?: ReactNode;
   variants?: Variants;
-  initial?: boolean | string;
-  animate?: boolean | string;
-  exit?: boolean | string;
+  initial?: boolean | string | Variants;
+  animate?: boolean | string | Variants;
+  exit?: boolean | string | Variants;
   className?: string;
 }) => {
     return (
