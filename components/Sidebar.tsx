@@ -118,100 +118,49 @@ export default function Sidebar() {
              <CardHeader className="pb-2">
                <div className="flex items-center justify-between">
                  <CardTitle className="text-lg font-semibold">Lists</CardTitle>
-                 <DropdownMenuRoot>
-                   <DropdownMenuTrigger className="p-1 hover:bg-muted">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" aria-label="Add list">
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">
-                        Add list
-                      </TooltipContent>
-                    </Tooltip>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={4}>
-                    <DropdownMenuItem onClick={() => setNewListName('')}>
-                      New list
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {/* Inbox (always first) */}
-              <Button
-                variant={lists.find((l) => l.id === 'inbox') ? 'outline' : 'default'}
-                className="w-full text-left justify-start px-3 py-2"
-                onClick={() => {}}
-              >
-                <span className="flex items-center gap-3">
-                  <Inbox className="h-5 w-5" />
-                  <span>Inbox</span>
-                </span>
-              </Button>
-              {/* Custom lists */}
-              {lists
-                .filter((list) => list.id !== 'inbox')
-                .map((list) => (
-                  <Button
-                    key={list.id}
-                    variant="default"
-                    className="w-full text-left justify-start px-3 py-2"
-                    onClick={() => {}}
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className={`${list.color} h-5 w-5 flex items-center justify-center rounded`}>
-                        {list.emoji}
-                      </span>
-                      <span>{list.name}</span>
-                    </span>
-                  </Button>
-                ))}
-              {/* Add list input */}
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="List name"
-                  value={newListName}
-                  onChange={(e) => setNewListName(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') addList();
-                  }}
-                />
-                <Button onClick={addList} size="icon" aria-label="Add list">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+               </div>
+              </CardHeader>
+             <CardContent className="space-y-2">
+               {/* Inbox (always first) */}
+               <Button
+                 variant={lists.find((l) => l.id === 'inbox') ? 'outline' : 'default'}
+                 className="w-full text-left justify-start px-3 py-2"
+                 onClick={() => {}}
+               >
+                 <span className="flex items-center gap-3">
+                   <Inbox className="h-4 w-4" />
+                   <span className="font-medium">Inbox</span>
+                 </span>
+               </Button>
+               {/* Add other lists here */}
+               {lists.map((list) => (
+                 <Button
+                   key={list.id}
+                   variant="default"
+                   className="w-full text-left justify-start px-3 py-2"
+                   onClick={() => {}}
+                 >
+                   <List className="h-4 w-4" />
+                   <span className="flex-1">{list.name}</span>
+                 </Button>
+               ))}
+             </CardContent>
+           </Card>
 
-          {/* Labels */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold">Labels</CardTitle>
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="p-1 hover:bg-muted">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" aria-label="Add label">
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">
-                        Add label
-                      </TooltipContent>
-                    </Tooltip>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={4}>
-                    <DropdownMenuItem onClick={() => setNewLabelName('')}>
-                      New label
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
+           {/* Labels */}
+           <Card>
+             <CardHeader className="pb-2">
+               <div className="flex items-center justify-between">
+                 <CardTitle className="text-lg font-semibold">Labels</CardTitle>
+                  <DropdownMenu>
+                    <DropdownMenuContent align="end" sideOffset={4}>
+                      <DropdownMenuItem onClick={() => setNewLabelName('')}>
+                        New label
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+               </div>
+             </CardHeader>
             <CardContent className="space-y-2">
               {labels.map((label) => (
                 <Button
