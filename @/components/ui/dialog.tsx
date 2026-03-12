@@ -16,7 +16,7 @@ const DialogTrigger = forwardRef<
 DialogTrigger.displayName = DialogPrimitive.Trigger.displayName;
 
 const DialogContent = forwardRef<
-  HTMLElement,
+  HTMLDivElement,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
   <DialogPrimitive.Content
