@@ -79,15 +79,15 @@ export default function DashboardPage() {
   const [filterListId, setFilterListId] = useState<string | null>(null);
   const [filterLabelId, setFilterLabelId] = useState<string | null>(null);
   const [isAddingTask, setIsAddingTask] = useState(false);
-  const [newTask, setNewTask] = useState({
-    name: '',
-    description: '',
-    listId: '',
-    date: null as Date | null,
-    deadline: null as Date | null,
-    priority: 'none' as const,
-    recurrence: 'none' as const,
-  });
+   const [newTask, setNewTask] = useState({
+     name: '',
+     description: '',
+     listId: '',
+     date: null as Date | null,
+     deadline: null as Date | null,
+     priority: 'none',
+     recurrence: 'none',
+   });
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
 const [editTaskData, setEditTaskData] = useState<{
   name: string;
@@ -499,12 +499,12 @@ const [editTaskData, setEditTaskData] = useState<{
                         </div>
                        <div>
                          <Label htmlFor="task-priority">Priority</Label>
-                         <select
-                           id="task-priority"
-                           value={newTask.priority}
-                           onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as const })}
-                           className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                         >
+                          <select
+                            id="task-priority"
+                            value={newTask.priority}
+                            onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          >
                            <option value="none">None</option>
                            <option value="low">Low</option>
                            <option value="medium">Medium</option>
@@ -543,12 +543,12 @@ const [editTaskData, setEditTaskData] = useState<{
                      <div className="grid grid-cols-2 gap-4">
                        <div>
                          <Label htmlFor="task-recurrence">Recurrence</Label>
-                         <select
-                           id="task-recurrence"
-                           value={newTask.recurrence}
-                           onChange={(e) => setNewTask({ ...newTask, recurrence: e.target.value as const })}
-                           className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                         >
+                          <select
+                            id="task-recurrence"
+                            value={newTask.recurrence}
+                            onChange={(e) => setNewTask({ ...newTask, recurrence: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          >
                            {RECURRENCE_OPTIONS.map((option) => (
                              <option key={option.value} value={option.value}>
                                {option.label}
@@ -671,8 +671,11 @@ const [editTaskData, setEditTaskData] = useState<{
                           <Label htmlFor="edit-task-priority">Priority</Label>
                           <select
                             id="edit-task-priority"
-                            value={editTaskData.priority}
-                            onChange={(e) => setEditTaskData({ ...editTaskData, priority: e.target.value as const })}
+                            value={editTaskData.priority ?? undefined}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setEditTaskData({ ...editTaskData, priority: value as typeof editTaskData.priority });
+                            }}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           >
                             <option value="none">None</option>
@@ -713,12 +716,12 @@ const [editTaskData, setEditTaskData] = useState<{
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="edit-task-recurrence">Recurrence</Label>
-                          <select
-                            id="edit-task-recurrence"
-                            value={editTaskData.recurrence}
-                            onChange={(e) => setEditTaskData({ ...editTaskData, recurrence: e.target.value as const })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          >
+                           <select
+                             id="edit-task-recurrence"
+                             value={editTaskData.recurrence ?? undefined}
+                             onChange={(e) => setEditTaskData({ ...editTaskData, recurrence: e.target.value })}
+                             className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           >
                              {RECURRENCE_OPTIONS.map((option) => (
                                <option key={option.value} value={option.value}>
                                  {option.label}
@@ -844,11 +847,11 @@ const [editTaskData, setEditTaskData] = useState<{
              <div className="flex-1 sm:w-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                <div>
                  <Label htmlFor="show-completed">Show completed</Label>
-                 <Checkbox
-                   id="show-completed"
-                   checked={showCompleted}
-                   onCheckedChange={setShowCompleted}
-                 />
+                  <Checkbox
+                    id="show-completed"
+                    checked={showCompleted}
+                    onCheckedChange={(checkedState) => setShowCompleted(checkedState === true)}
+                  />
                </div>
                <div className="relative">
                  <Button
@@ -896,11 +899,11 @@ const [editTaskData, setEditTaskData] = useState<{
                    >
                      <Card className="p-4">
                        <div className="flex items-start gap-4">
-                         <Checkbox
-                           checked={task.completed}
-                           onCheckedChange={(checked) => handleToggleComplete(task.id, checked)}
-                           className="flex-shrink-0"
-                         />
+                          <Checkbox
+                            checked={task.completed}
+                            onCheckedChange={(checkedState) => handleToggleComplete(task.id, checkedState === true)}
+                            className="flex-shrink-0"
+                          />
                          <div className="flex-1 space-y-2">
                            <div className="flex items-center gap-2">
                              <h3 className={`flex-1 font-semibold ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
