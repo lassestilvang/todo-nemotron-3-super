@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { forwardRef } from 'react';
 
 const DialogTrigger = forwardRef<
-  HTMLElement,
+  HTMLButtonElement,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Trigger>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Trigger
