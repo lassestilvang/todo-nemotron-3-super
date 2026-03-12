@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { forwardRef } from 'react';
 
 const Checkbox = forwardRef<
-  HTMLElement,
+  HTMLButtonElement,
   React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
 >(({ className, onCheckedChange, ...props }, ref) => (
   <CheckboxPrimitive.Root
