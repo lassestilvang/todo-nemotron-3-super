@@ -1,4 +1,35 @@
-import { motion, type Variants, type TargetAndTransition } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
+import type { ReactNode } from 'react';
+
+export const MotionWrapper = ({ 
+  children, 
+  variants, 
+  initial = false, 
+  animate = true, 
+  exit, 
+  className,
+  ...props 
+}: {
+  children?: ReactNode;
+  variants?: Variants;
+  initial?: boolean | string;
+  animate?: boolean | string;
+  exit?: boolean | string;
+  className?: string;
+}) => {
+    return (
+      <motion.div
+        className={className}
+        variants={variants}
+        initial={initial}
+        animate={animate}
+        exit={exit}
+        {...props}
+      >
+        {children}
+      </motion.div>
+    );
+};
 
 export const fadeIn = (direction: 'up' | 'down' | 'left' | 'right' = 'up', delay: number = 0): Variants => {
   return {
@@ -124,21 +155,4 @@ export const modalVariants = {
       damping: 20,
     },
   },
-};
-
-export const MotionWrapper = ({ children, variants, initial, animate, exit, ...props }: 
-   & React.ComponentPropsWithoutRef<'div'> 
-   & { variants?: Variants; initial?: boolean | string; animate?: boolean | string; exit?: boolean | string }
-) => {
-   return (
-     <motion.div
-       variants={variants}
-       initial={initial ?? undefined}
-       animate={animate ?? undefined}
-       exit={exit ?? undefined}
-       {...props}
-     >
-       {children}
-     </motion.div>
-   );
 };
