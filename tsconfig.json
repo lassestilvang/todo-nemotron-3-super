@@ -31,9 +31,13 @@
       }
     ],
     "baseUrl": ".",
-      "paths": {
-          "@/*": ["@/*"]
-      }
+    "paths": {
+        "@/components/ui/*": ["@/components/ui/*"],
+        "@/components/*": ["components/*"],
+        "@/lib/*": ["lib/*"],
+        "@/hooks/*": ["hooks/*"],
+        "@/*": ["*"]
+    }
   },
   "include": [
     "next-env.d.ts",

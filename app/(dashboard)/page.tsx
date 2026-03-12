@@ -3,20 +3,53 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/app/lib/db/index';
 import { tasks, lists, labels, taskLabels } from '@/app/lib/db/schema';
+import { eq, desc, and, isNotNull, sql } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogPrimitive as DialogRoot } from '@/components/ui/dialog';
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuPrimitive as DropdownMenuRoot } from '@/components/ui/dropdown-menu';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger, 
+  DialogRoot 
+} from '@/components/ui/dialog';
+import { 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger as DropdownMenu, 
+  DropdownMenuRoot 
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { useSonner, toast } from 'sonner';
-import { Calendar, Plus, Trash2, Edit, Repeat, Clock, Reminder, Flag, Folder, Paperclip } from 'lucide-react';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
 import { MotionWrapper, fadeIn, staggerContainer } from '@/components/animations/motion-wrapper';
+import { toast, Toaster } from 'sonner';
+import { 
+  Plus, 
+  Calendar, 
+  Edit, 
+  Filter, 
+  Clock, 
+  Folder, 
+  Trash2, 
+  ChevronDown,
+  CheckCircle,
+  X,
+  Upload,
+  List,
+  PenTool,
+  Minus,
+  History,
+  Repeat,
+  Flag,
+  Timer
+} from 'lucide-react';
 
 const RECURRENCE_OPTIONS = [
   { value: 'none', label: 'None' },
@@ -29,8 +62,8 @@ const RECURRENCE_OPTIONS = [
 ];
 
 type Task = typeof tasks.$inferSelect & {
-  list: typeof lists.$inferSelect;
-  labels: (typeof labels.$inferSelect)[];
+  list: Pick<typeof lists.$inferSelect, 'id' | 'name' | 'color' | 'emoji'>;
+  labels: (Pick<typeof labels.$inferSelect, 'id' | 'name' | 'color' | 'emoji'>)[];
 };
 
 type ViewType = 'today' | 'next7' | 'upcoming' | 'all';
@@ -56,15 +89,23 @@ export default function DashboardPage() {
     recurrence: 'none' as const,
   });
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
-  const [editTaskData, setEditTaskData] = useState({
-    name: '',
-    description: '',
-    listId: '',
-    date: null as Date | null,
-    deadline: null as Date | null,
-    priority: 'none' as const,
-    recurrence: 'none' as const,
-  });
+const [editTaskData, setEditTaskData] = useState<{
+  name: string;
+  description: string;
+  listId: string;
+  date: Date | null;
+  deadline: Date | null;
+  priority: typeof tasks.$inferSelect['priority'];
+  recurrence: typeof tasks.$inferSelect['recurrence'];
+}>({
+  name: '',
+  description: '',
+  listId: '',
+  date: null,
+  deadline: null,
+  priority: 'none',
+  recurrence: 'none',
+});
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -89,132 +130,132 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchTasks = async () => {
-    try {
-      let query = db
-        .select({
-          id: tasks.id,
-          name: tasks.name,
-          description: tasks.description,
-          date: tasks.date,
-          deadline: tasks.deadline,
-          priority: tasks.priority,
-          completed: tasks.completed,
-          recurrence: tasks.recurrence,
-          listId: tasks.listId,
-          createdAt: tasks.createdAt,
-          updatedAt: tasks.updatedAt,
-          list: {
-            id: lists.id,
-            name: lists.name,
-            color: lists.color,
-            emoji: lists.emoji,
-          },
-        })
-        .from(tasks)
-        .leftJoin(lists, eq(tasks.listId, lists.id))
-        .orderBy(desc(tasks.createdAt));
-
-      // Apply filters based on active tab
-      const now = Date.now();
-      const todayStart = new Date(now);
-      todayStart.setHours(0, 0, 0, 0);
-      const todayEnd = new Date(now);
-      todayEnd.setHours(23, 59, 59, 999);
-      
-      const next7DaysEnd = new Date(now);
-      next7DaysEnd.setDate(next7DaysEnd.getDate() + 7);
-      next7DaysEnd.setHours(23, 59, 59, 999);
-
-      switch (activeTab) {
-        case 'today':
-          query = query.where(
-            and(
-              isNotNull(tasks.date),
-              sql`${tasks.date} >= ${todayStart} AND ${tasks.date} <= ${todayEnd}`
-            )
-          );
-          break;
-        case 'next7':
-          query = query.where(
-            and(
-              isNotNull(tasks.date),
-              sql`${tasks.date} >= ${todayStart} AND ${tasks.date} <= ${next7DaysEnd}`
-            )
-          );
-          break;
-        case 'upcoming':
-          query = query.where(
-            and(
-              isNotNull(tasks.date),
-              sql`${tasks.date} >= ${todayStart}`
-            )
-          );
-          break;
-        case 'all':
-          // No date filter for 'all' view
-          break;
-      }
-
-      // Apply completed tasks filter
-      if (!showCompleted) {
-        query = query.where(eq(tasks.completed, false));
-      }
-
-      // Apply search filter
-      if (debouncedSearchQuery.trim()) {
-        query = query.where(
-          sql`${tasks.name} ILIKE '%' || ${debouncedSearchQuery} || '%' OR ${tasks.description} ILIKE '%' || ${debouncedSearchQuery} || '%'`
-        );
-      }
-
-      // Apply list filter
-      if (filterListId) {
-        query = query.where(eq(tasks.listId, filterListId));
-      }
-
-      // Apply label filter
-      if (filterLabelId) {
-        query = query
-          .innerJoin(taskLabels, eq(tasks.id, taskLabels.taskId))
-          .where(eq(taskLabels.labelId, filterLabelId));
-      }
-
-      const results = await query;
-
-      // Fetch labels for each task
-      const tasksWithLabels = await Promise.all(
-        results.map(async (task) => {
-          const taskLabelsResult = await db
-            .select({
-              id: labels.id,
-              name: labels.name,
-              color: labels.color,
-              emoji: labels.emoji,
-            })
-            .from(taskLabels)
-            .innerJoin(labels, eq(taskLabels.labelId, labels.id))
-            .where(eq(taskLabels.taskId, task.id));
-
-          return {
-            ...task,
-            list: task.list || {
-              id: '',
-              name: 'No List',
-              color: 'bg-gray-500',
-              emoji: '🔲',
+    const fetchTasks = async () => {
+      try {
+        let query: any = db
+          .select({
+            id: tasks.id,
+            name: tasks.name,
+            description: tasks.description,
+            date: tasks.date,
+            deadline: tasks.deadline,
+            priority: tasks.priority,
+            completed: tasks.completed,
+            recurrence: tasks.recurrence,
+            listId: tasks.listId,
+            createdAt: tasks.createdAt,
+            updatedAt: tasks.updatedAt,
+            list: {
+              id: lists.id,
+              name: lists.name,
+              color: lists.color,
+              emoji: lists.emoji,
             },
-            labels: taskLabelsResult,
-          };
-        })
-      );
+          })
+          .from(tasks)
+          .leftJoin(lists, eq(tasks.listId, lists.id))
+          .orderBy(desc(tasks.createdAt));
 
-      setTasksList(tasksWithLabels);
-    } catch (error) {
-      console.error('Failed to fetch tasks:', error);
-      toast.error('Failed to load tasks');
-    }
-  };
+        // Apply filters based on active tab
+        const now = Date.now();
+        const todayStart = new Date(now);
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(now);
+        todayEnd.setHours(23, 59, 59, 999);
+        
+        const next7DaysEnd = new Date(now);
+        next7DaysEnd.setDate(next7DaysEnd.getDate() + 7);
+        next7DaysEnd.setHours(23, 59, 59, 999);
+
+        switch (activeTab) {
+          case 'today':
+            query = query.where(
+              and(
+                isNotNull(tasks.date),
+                sql`${tasks.date} >= ${todayStart} AND ${tasks.date} <= ${todayEnd}`
+              )
+            );
+            break;
+          case 'next7':
+            query = query.where(
+              and(
+                isNotNull(tasks.date),
+                sql`${tasks.date} >= ${todayStart} AND ${tasks.date} <= ${next7DaysEnd}`
+              )
+            );
+            break;
+          case 'upcoming':
+            query = query.where(
+              and(
+                isNotNull(tasks.date),
+                sql`${tasks.date} >= ${todayStart}`
+              )
+            );
+            break;
+          case 'all':
+            // No date filter for 'all' view
+            break;
+        }
+
+        // Apply completed tasks filter
+        if (!showCompleted) {
+          query = query.where(eq(tasks.completed, false));
+        }
+
+        // Apply search filter
+        if (debouncedSearchQuery.trim()) {
+          query = query.where(
+            sql`${tasks.name} ILIKE '%' || ${debouncedSearchQuery} || '%' OR ${tasks.description} ILIKE '%' || ${debouncedSearchQuery} || '%'`
+          );
+        }
+
+        // Apply list filter
+        if (filterListId) {
+          query = query.where(eq(tasks.listId, filterListId));
+        }
+
+        // Apply label filter
+        if (filterLabelId) {
+          query = query
+            .innerJoin(taskLabels, eq(tasks.id, taskLabels.taskId))
+            .where(eq(taskLabels.labelId, filterLabelId));
+        }
+
+        const results = await query;
+
+        // Fetch labels for each task
+        const tasksWithLabels = await Promise.all(
+          results.map(async (task: any) => {
+            const taskLabelsResult = await db
+              .select({
+                id: labels.id,
+                name: labels.name,
+                color: labels.color,
+                emoji: labels.emoji,
+              })
+              .from(taskLabels)
+              .innerJoin(labels, eq(taskLabels.labelId, labels.id))
+              .where(eq(taskLabels.taskId, task.id));
+
+            return {
+              ...task,
+              list: task.list || {
+                id: '',
+                name: 'No List',
+                color: 'bg-gray-500',
+                emoji: '🔲',
+              },
+              labels: taskLabelsResult,
+            };
+          })
+        );
+
+       setTasksList(tasksWithLabels);
+     } catch (error) {
+       console.error('Failed to fetch tasks:', error);
+       toast.error('Failed to load tasks');
+     }
+   };
 
   const handleAddTask = async () => {
     if (!newTask.name.trim() || !newTask.listId) {
@@ -222,53 +263,66 @@ export default function DashboardPage() {
       return;
     }
 
-    setIsAddingTask(true);
-    try {
-      const [result] = await db
-        .insert(tasks)
-        .values({
-          name: newTask.name,
+     setIsAddingTask(true);
+      try {
+        const [result] = await db
+          .insert(tasks)
+          .values({
+            name: newTask.name,
           description: newTask.description,
           listId: newTask.listId,
           date: newTask.date ? newTask.date.getTime() : null,
           deadline: newTask.deadline ? newTask.deadline.getTime() : null,
           priority: newTask.priority,
           recurrence: newTask.recurrence,
-        })
-        .returning();
+          } as any)
+          .returning();
 
-      setTasksList(prev => [
-        {
-          ...result,
-          list: listsList.find((l) => l.id === newTask.listId) || {
-            id: '',
-            name: 'No List',
-            color: 'bg-gray-500',
-            emoji: '🔲',
+        setTasksList(prev => [
+          {
+            id: result!.id,
+            name: result!.name,
+            description: result!.description,
+            date: result!.date == null ? null : result!.date instanceof Date ? result!.date : new Date(result!.date),
+            deadline: result!.deadline == null ? null : result!.deadline instanceof Date ? result!.deadline : new Date(result!.deadline),
+            priority: result!.priority,
+            completed: !!result!.completed,
+            recurrence: result!.recurrence,
+            estimate: result!.estimate,
+            actualTime: result!.actualTime,
+            reminders: result!.reminders,
+            createdAt: result!.createdAt instanceof Date ? result!.createdAt : new Date(result!.createdAt),
+            updatedAt: result!.updatedAt instanceof Date ? result!.updatedAt : new Date(result!.updatedAt),
+            listId: result!.listId,
+            list: listsList.find((l) => l.id === newTask.listId) || {
+              id: '',
+              name: 'No List',
+              color: 'bg-gray-500',
+              emoji: '🔲',
+            },
+            labels: [],
           },
-          labels: [],
-        },
-        ...prev,
-      ]);
+          ...prev,
+        ]);
 
-      setNewTask({
-        name: '',
-        description: '',
-        listId: '',
-        date: null,
-        deadline: null,
-        priority: 'none',
-        recurrence: 'none',
-      });
-      setIsAddingTask(false);
+       setNewTask({
+         name: '',
+         description: '',
+         listId: '',
+         date: null as Date | null,
+         deadline: null as Date | null,
+         priority: 'none' as const,
+         recurrence: 'none' as const,
+       });
+       setIsAddingTask(false);
 
-      toast.success('Task added successfully');
-    } catch (error) {
-      console.error('Failed to add task:', error);
-      toast.error('Failed to add task');
-      setIsAddingTask(false);
-    }
-  };
+       toast.success('Task added successfully');
+     } catch (error) {
+       console.error('Failed to add task:', error);
+       toast.error('Failed to add task');
+       setIsAddingTask(false);
+     }
+   };
 
   const handleUpdateTask = async (taskId: string, updates: Partial<typeof tasks.$inferSelect>) => {
     try {
@@ -323,20 +377,20 @@ export default function DashboardPage() {
       return;
     }
 
-    try {
-      await db
-        .update(tasks)
-        .set({
-          name: editTaskData.name,
-          description: editTaskData.description,
-          listId: editTaskData.listId,
-          date: editTaskData.date ? editTaskData.date.getTime() : null,
-          deadline: editTaskData.deadline ? editTaskData.deadline.getTime() : null,
-          priority: editTaskData.priority,
-          recurrence: editTaskData.recurrence,
-          updatedAt: Date.now(),
-        })
-        .where(eq(tasks.id, editTaskId));
+      try {
+        await db
+          .update(tasks)
+          .set({
+            name: editTaskData.name,
+            description: editTaskData.description,
+            listId: editTaskData.listId,
+            date: editTaskData.date ? editTaskData.date.getTime() : null,
+            deadline: editTaskData.deadline ? editTaskData.deadline.getTime() : null,
+            priority: editTaskData.priority,
+            recurrence: editTaskData.recurrence,
+            updatedAt: Date.now(),
+          } as any)
+          .where(eq(tasks.id, editTaskId));
 
       await fetchTasks();
       setEditTaskId(null);
@@ -354,7 +408,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Sonner />
+       <Toaster />
       <div className="flex-1 overflow-hidden flex flex-col">
         <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <h1 className="text-2xl font-bold">Daily Planner</h1>
@@ -402,13 +456,13 @@ export default function DashboardPage() {
                       }}>
                      <div>
                        <Label htmlFor="task-name">Task Name</Label>
-                       <Input
-                         id="task-name"
-                         value={newTask.name}
-                         onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
-                         placeholder="Enter task name"
-                         required
-                       />
+                          <Input
+                            id="task-name"
+                            value={newTask.name}
+                            onChange={(e) => setNewTask({ ...newTask, name: (e.target as HTMLInputElement).value })}
+                            placeholder="Enter task name"
+                            required
+                          />
                      </div>
                      <div>
                        <Label htmlFor="task-description">Description</Label>
@@ -531,18 +585,18 @@ export default function DashboardPage() {
                        </div>
                      </div>
                      <DialogFooter>
-                       <Button
-                         variant="ghost"
-                         onClick={() => setIsAddingTask(false)}
-                       >
-                         Cancel
-                       </Button>
-                       <Button
-                         onClick={handleAddTask}
-                         isLoading={isAddingTask}
-                       >
-                         Add Task
-                       </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => setIsAddingTask(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleAddTask}
+                          disabled={isAddingTask}
+                        >
+                          {isAddingTask ? 'Adding...' : 'Add Task'}
+                        </Button>
                      </DialogFooter>
                    </form>
                  </DialogContent>
@@ -926,5 +980,4 @@ export default function DashboardPage() {
   );
 }
 
-// TODO: Replace with actual icon from lucide-react
-const Filter = () => <span>🔍</span>;
+// Filter icon is imported from lucide-react above

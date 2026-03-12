@@ -16,7 +16,6 @@ import { useSonner } from 'sonner';
 import { 
   Calendar, 
   Clock, 
-  Reminder, 
   Timer, 
   Tag, 
   Flag, 
