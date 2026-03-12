@@ -6,15 +6,15 @@ export const MotionWrapper = ({
   variants, 
   initial = false, 
   animate = true, 
-  exit, 
+  exit,
   className,
   ...props 
 }: {
   children?: ReactNode;
   variants?: Variants;
-  initial?: boolean | string | Variants;
-  animate?: boolean | string | Variants;
-  exit?: boolean | string | Variants;
+  initial?: any;
+  animate?: any;
+  exit?: any;
   className?: string;
 }) => {
     return (
