@@ -113,13 +113,13 @@ export default function Sidebar() {
             </CardContent>
           </Card>
 
-          {/* Lists */}
-          <Card className="mb-4">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold">Lists</CardTitle>
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="p-1 hover:bg-muted">
+           {/* Lists */}
+           <Card className="mb-4">
+             <CardHeader className="pb-2">
+               <div className="flex items-center justify-between">
+                 <CardTitle className="text-lg font-semibold">Lists</CardTitle>
+                 <DropdownMenuRoot>
+                   <DropdownMenuTrigger className="p-1 hover:bg-muted">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button variant="ghost" size="icon" aria-label="Add list">
