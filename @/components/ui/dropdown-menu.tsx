@@ -41,9 +41,9 @@ const DropdownMenuContent = React.forwardRef<
       className={cn(classNameValue)}
       {...props}
     >
-      <DropdownMenuPrimitive.Viewport className={cn('p-1')}>
-        <DropdownMenuPrimitive.ItemGroup />
-      </DropdownMenuPrimitive.Viewport>
+      <div className={cn('p-1 space-y-1')}>
+        <slot />
+      </div>
     </DropdownMenuPrimitive.Content>
   );
 });
@@ -62,9 +62,9 @@ const DropdownMenuItem = React.forwardRef<
     disabled={disabled}
     {...props}
   >
-    <DropdownMenuPrimitive.ItemText className={cn('block truncate') }>
+    <span className={cn('block truncate')}>
       <slot />
-    </DropdownMenuPrimitive.ItemText>
+    </span>
   </DropdownMenuPrimitive.Item>
 ));
 DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
@@ -82,9 +82,9 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     disabled={props.disabled}
     {...props}
   >
-    <DropdownMenuPrimitive.ItemText className={cn('block truncate') }>
+    <span className={cn('block truncate')}>
       <slot />
-    </DropdownMenuPrimitive.ItemText>
+    </span>
     <Checkbox className={cn('ml-4 h-4 w-4 shrink-0') } 
       checked={checked}
       onCheckedChange={(checked) => {
@@ -98,7 +98,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
 DropdownMenuCheckboxItem.displayName = 'DropdownMenuCheckboxItem';
 
 export {
-  DropdownMenuTrigger,
+  DropdownMenuTrigger as DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuCheckboxItem,

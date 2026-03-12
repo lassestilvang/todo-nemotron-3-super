@@ -10,7 +10,7 @@
     "jsx": "react-jsx",
     "allowJs": true,
     // Bundler mode
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
@@ -31,9 +31,9 @@
       }
     ],
     "baseUrl": ".",
-"paths": {
-    "@/*": ["./*"]
-  }
+    "paths": {
+        "@/*": ["app/*"]
+    }
   },
   "include": [
     "next-env.d.ts",

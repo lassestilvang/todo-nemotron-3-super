@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, boolean, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 import { createId } from '@paralleldrive/cuid2';
 
 export const lists = sqliteTable('lists', {
@@ -20,46 +20,42 @@ export const labels = sqliteTable('labels', {
 });
 
 export const tasks = sqliteTable('tasks', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  listId: text('list_id').notNull().references(() => lists.id),
-  name: text('name').notNull(),
-  description: text('description'),
-  date: integer('date', { mode: 'timestamp' }), // Scheduled date
-  deadline: integer('deadline', { mode: 'timestamp' }), // Deadline date/time
-  reminders: text('reminders'), // JSON array of reminder timestamps
-  estimate: integer('estimate'), // Estimated time in minutes
-  actualTime: integer('actual_time'), // Actual time spent in minutes
-  priority: text('priority', { enum: ['high', 'medium', 'low', 'none'] }).default('none'),
-  completed: boolean('completed').default(false),
-  recurrence: text('recurrence'), // e.g., 'daily', 'weekly', 'monthly', 'yearly', 'custom'
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => Date.now()),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => Date.now()),
-});
+   id: text('id').primaryKey().$defaultFn(() => createId()),
+   listId: text('list_id').notNull().references(() => lists.id),
+   name: text('name').notNull(),
+   description: text('description'),
+   date: integer('date', { mode: 'timestamp' }), // Scheduled date
+   deadline: integer('deadline', { mode: 'timestamp' }), // Deadline date/time
+   reminders: text('reminders'), // JSON array of reminder timestamps
+   estimate: integer('estimate'), // Estimated time in minutes
+   actualTime: integer('actual_time'), // Actual time spent in minutes
+   priority: text('priority', { enum: ['high', 'medium', 'low', 'none'] }).default('none'),
+   completed: integer('completed', { mode: 'boolean' }).default(false),
+   recurrence: text('recurrence'), // e.g., 'daily', 'weekly', 'monthly', 'yearly', 'custom'
+   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => Date.now()),
+   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => Date.now()),
+ });
 
 export const taskLabels = sqliteTable('task_labels', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  taskId: text('task_id')
-    .notNull()
-    .references(() => tasks.id),
-  labelId: text('label_id')
-    .notNull()
-    .references(() => labels.id),
-}, (table) => {
-  return {
-    taskLabelUid: uniqueIndex('task_label_uid').on(table.taskId, table.labelId),
-  };
-});
+   id: text('id').primaryKey().$defaultFn(() => createId()),
+   taskId: text('task_id')
+     .notNull()
+     .references(() => tasks.id),
+   labelId: text('label_id')
+     .notNull()
+     .references(() => labels.id),
+ });
 
 export const subtasks = sqliteTable('subtasks', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  taskId: text('task_id')
-    .notNull()
-    .references(() => tasks.id),
-  name: text('name').notNull(),
-  completed: boolean('completed').default(false),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => Date.now()),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => Date.now()),
-});
+   id: text('id').primaryKey().$defaultFn(() => createId()),
+   taskId: text('task_id')
+     .notNull()
+     .references(() => tasks.id),
+   name: text('name').notNull(),
+   completed: integer('completed', { mode: 'boolean' }).default(false),
+   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => Date.now()),
+   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => Date.now()),
+ });
 
 export const attachments = sqliteTable('attachments', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
@@ -96,5 +92,5 @@ export const tasksDeadlineIndex = sqliteTable('tasks_deadline_index', {
 }).createIndex('tasks_deadline_idx', (t) => [t.deadline]);
 
 export const tasksCompletedIndex = sqliteTable('tasks_completed_index', {
-  completed: boolean('completed'),
+   completed: integer('completed', { mode: 'boolean' }),
 }).createIndex('tasks_completed_idx', (t) => [t.completed]);

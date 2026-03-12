@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { db } from '@/app/lib/db/index';
-import { tasks, lists, labels, taskLabels } from '@/app/lib/db/schema';
+import { db } from '@/lib/db/index';
+import { tasks, lists, labels, taskLabels } from '@/lib/db/schema';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { useSonner } from 'sonner';
+import { useSonner, toast } from 'sonner';
 import { Calendar, Plus, Trash2, Edit, Repeat, Clock, Reminder, Flag, Folder, Paperclip } from 'lucide-react';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
