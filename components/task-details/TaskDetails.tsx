@@ -5,7 +5,14 @@ import { eq, and, desc } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogRoot } from '@/components/ui/dialog';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger
+} from '@/components/ui/dialog';
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuRoot } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -73,33 +80,34 @@ const TaskDetails = ({
     const loadTask = async () => {
       setIsLoading(true);
       try {
-       // Fetch task with list (without timestamps in list and labels to match Task type)
-       const taskResult = await db
-         .select({
-           id: tasks.id,
-           name: tasks.name,
-           description: tasks.description,
-           date: tasks.date,
-           deadline: tasks.deadline,
-           estimate: tasks.estimate,
-           actualTime: tasks.actualTime,
-           priority: tasks.priority,
-           completed: tasks.completed,
-           recurrence: tasks.recurrence,
-           listId: tasks.listId,
-           createdAt: tasks.createdAt,
-           updatedAt: tasks.updatedAt,
-           list: {
-             id: lists.id,
-             name: lists.name,
-             color: lists.color,
-             emoji: lists.emoji,
-           },
-         })
-         .from(tasks)
-         .leftJoin(lists, eq(tasks.listId, lists.id))
-         .where(eq(tasks.id, taskId))
-         .limit(1);
+        // Fetch task with list (without timestamps in list and labels to match Task type)
+        const taskResult = await db
+          .select({
+            id: tasks.id,
+            name: tasks.name,
+            description: tasks.description,
+            date: tasks.date,
+            deadline: tasks.deadline,
+            reminders: tasks.reminders,
+            estimate: tasks.estimate,
+            actualTime: tasks.actualTime,
+            priority: tasks.priority,
+            completed: tasks.completed,
+            recurrence: tasks.recurrence,
+            listId: tasks.listId,
+            createdAt: tasks.createdAt,
+            updatedAt: tasks.updatedAt,
+            list: {
+              id: lists.id,
+              name: lists.name,
+              color: lists.color,
+              emoji: lists.emoji,
+            },
+          })
+          .from(tasks)
+          .leftJoin(lists, eq(tasks.listId, lists.id))
+          .where(eq(tasks.id, taskId))
+          .limit(1);
 
        const taskData = taskResult[0];
        if (!taskData) {
@@ -142,31 +150,32 @@ const TaskDetails = ({
           .orderBy(desc(taskChanges.changedAt))
           .limit(50);
 
-       setTask({
-         id: taskData.id,
-         name: taskData.name,
-         description: taskData.description,
-         date: taskData.date ? new Date(taskData.date) : null,
-         deadline: taskData.deadline ? new Date(taskData.deadline) : null,
-         estimate: taskData.estimate,
-         actualTime: taskData.actualTime,
-         priority: taskData.priority,
-         completed: !!taskData.completed,
-         recurrence: taskData.recurrence,
-         listId: taskData.listId,
-         createdAt: taskData.createdAt ? new Date(taskData.createdAt) : null,
-         updatedAt: taskData.updatedAt ? new Date(taskData.updatedAt) : null,
-         list: taskData.list || {
-           id: '',
-           name: 'No List',
-           color: 'bg-gray-500',
-           emoji: '🔲',
-         },
-         labels: labelsResult,
-         subtasks: subtasksResult,
-         attachments: attachmentsResult,
-         changes: changesResult,
-       });
+setTask({
+          id: taskData.id,
+          name: taskData.name,
+          description: taskData.description,
+          date: taskData.date ? new Date(taskData.date) : null,
+          deadline: taskData.deadline ? new Date(taskData.deadline) : null,
+          reminders: taskData.reminders,
+          estimate: taskData.estimate,
+          actualTime: taskData.actualTime,
+          priority: taskData.priority,
+          completed: !!taskData.completed,
+          recurrence: taskData.recurrence,
+          listId: taskData.listId,
+          createdAt: new Date(taskData.createdAt),
+          updatedAt: new Date(taskData.updatedAt),
+          list: taskData.list || {
+            id: '',
+            name: 'No List',
+            color: 'bg-gray-500',
+            emoji: '🔲',
+          },
+          labels: labelsResult,
+          subtasks: subtasksResult,
+          attachments: attachmentsResult,
+          changes: changesResult,
+        });
 
         // Set edit data
         setEditData({
@@ -223,9 +232,16 @@ const TaskDetails = ({
         data.deadline = null;
       }
 
-      // Convert estimate and actualTime from "HH:MM" to minutes
-      const estimateMinutes = parseInt(editData.estimate.split(':')[0]) * 60 + parseInt(editData.estimate.split(':')[1]);
-      const actualTimeMinutes = parseInt(editData.actualTime.split(':')[0]) * 60 + parseInt(editData.actualTime.split(':')[1]);
+       // Convert estimate and actualTime from "HH:MM" to minutes
+       const estimateParts = editData.estimate.split(':');
+       const estimateHours = parseInt(estimateParts[0] || '0') || 0;
+       const estimateMinutes = parseInt(estimateParts[1] || '0') || 0;
+       const estimateTotalMinutes = estimateHours * 60 + estimateMinutes;
+       
+       const actualTimeParts = editData.actualTime.split(':');
+       const actualTimeHours = parseInt(actualTimeParts[0] || '0') || 0;
+       const actualTimeMinutes = parseInt(actualTimeParts[1] || '0') || 0;
+       const actualTimeTotalMinutes = actualTimeHours * 60 + actualTimeMinutes;
 
       data.estimate = estimateMinutes;
       data.actualTime = actualTimeMinutes;
@@ -280,51 +296,49 @@ const TaskDetails = ({
     }
   };
 
-  if (isLoading) {
-    return (
-      <DialogRoot>
-        <DialogContent className="w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Loading...</DialogTitle>
-          </DialogHeader>
-          <DialogContent>
+    if (isLoading) {
+      return (
+        <Dialog>
+          <DialogContent className="w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Loading...</DialogTitle>
+            </DialogHeader>
             <div className="flex flex-col items-center justify-center py-8">
               <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
               <p className="mt-4 text-sm">Loading task details...</p>
             </div>
           </DialogContent>
-        </DialogContent>
-      </DialogRoot>
-    );
-  }
+        </Dialog>
+      );
+    }
 
-  if (!task) {
+   if (!task) {
+     return (
+       <Dialog>
+         <DialogContent className="w-[500px]">
+           <DialogHeader>
+             <DialogTitle>Error</DialogTitle>
+           </DialogHeader>
+           <div className="flex flex-col items-center justify-center py-8">
+             <p className="text-center py-8">Task not found</p>
+             <DialogFooter>
+               <Button variant="outline" onClick={onClose}>
+                 Close
+               </Button>
+             </DialogFooter>
+           </div>
+         </DialogContent>
+       </Dialog>
+     );
+   }
+
     return (
-      <DialogRoot>
-        <DialogContent className="w-[500px]">
+      <Dialog>
+        <DialogContent className="w-[600px] p-6 space-y-6">
           <DialogHeader>
-            <DialogTitle>Error</DialogTitle>
+            <DialogTitle>{task.name}</DialogTitle>
+            <p className="text-muted-foreground">{task.description}</p>
           </DialogHeader>
-          <DialogContent>
-            <p className="text-center py-8">Task not found</p>
-            <DialogFooter>
-              <Button variant="outline" onClick={onClose}>
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </DialogContent>
-      </DialogRoot>
-    );
-  }
-
-  return (
-    <DialogRoot className="w-[600px]">
-      <DialogContent className="p-6 space-y-6">
-        <DialogHeader>
-          <DialogTitle>{task.name}</DialogTitle>
-          <DialogDescription>{task.description}</DialogDescription>
-        </DialogHeader>
 
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="grid w-full grid-cols-3 border-b">
@@ -448,18 +462,18 @@ const TaskDetails = ({
               </div>
             </div>
           </TabsContent>
-          <TabsContent value="subtasks" className="mt-2">
-            {task.subtasks.length > 0 ? (
-              <div className="space-y-2">
-                {task.subtasks.map((subtask) => (
-                  <div key={subtask.id} className="flex items-start gap-3">
-                    <Checkbox
-                      checked={subtask.completed}
-                      onCheckedChange={(checked) => {
-                        // TODO: Implement subtask toggle
-                      }}
-                      className="flex-shrink-0"
-                    />
+           <TabsContent value="subtasks" className="mt-2">
+             {task.subtasks.length > 0 ? (
+               <div className="space-y-2">
+                 {task.subtasks.map((subtask) => (
+                   <div key={subtask.id} className="flex items-start gap-3">
+                     <Checkbox
+                       checked={Boolean(subtask.completed)}
+                       onCheckedChange={(checked) => {
+                         // TODO: Implement subtask toggle
+                       }}
+                       className="flex-shrink-0"
+                     />
                     <div className="flex-1 space-y-1">
                       <div className="flex items-baseline gap-2">
                         <span className={`line-through text-muted-foreground`}>
@@ -503,23 +517,23 @@ const TaskDetails = ({
         <Button variant="outline" onClick={onClose}>
           Close
         </Button>
-        <Button
-          variant="destructive"
-          onClick={handleDelete}
-          isLoading={isSaving}
-        >
-          {isSaving ? 'Deleting...' : 'Delete'}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleSave}
-          isLoading={isSaving}
-        >
-          {isSaving ? 'Saving...' : 'Save Changes'}
-        </Button>
-      </DialogFooter>
-    </DialogRoot>
-  );
+         <Button
+           variant="destructive"
+           onClick={handleDelete}
+           disabled={isSaving}
+         >
+           {isSaving ? 'Deleting...' : 'Delete'}
+         </Button>
+         <Button
+           variant="outline"
+           onClick={handleSave}
+           disabled={isSaving}
+         >
+           {isSaving ? 'Saving...' : 'Save Changes'}
+         </Button>
+       </DialogFooter>
+     </Dialog>
+   );
 };
 
 export default TaskDetails;
