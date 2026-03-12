@@ -899,42 +899,36 @@ const [editTaskData, setEditTaskData] = useState<{
                    >
                      <Card className="p-4">
                        <div className="flex items-start gap-4">
-                          <Checkbox
-                            checked={task.completed}
-                            onCheckedChange={(checkedState) => handleToggleComplete(task.id, checkedState === true)}
-                            className="flex-shrink-0"
-                          />
+                           <Checkbox
+                             checked={Boolean(task.completed)}
+                             onCheckedChange={(checkedState) => handleToggleComplete(task.id, checkedState === true)}
+                             className="flex-shrink-0"
+                           />
                          <div className="flex-1 space-y-2">
                            <div className="flex items-center gap-2">
                              <h3 className={`flex-1 font-semibold ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
                                {task.name}
                              </h3>
-                             <div className="flex items-center gap-2 text-xs">
-                               {/* Priority badge */}
-                               {task.priority !== 'none' && (
-                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                   task.priority === 'high'
-                                     ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                   : task.priority === 'medium'
-                                     ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                     : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                 }`}>
-                                   {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                                 </span>
-                               )}
-                               {/* Overdue badge */}
-                               {task.deadline && new Date(task.deadline) < Date.now() && !task.completed && (
-                                 <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                   Overdue
-                                 </span>
-                               )}
-                               {/* Recurrence badge */}
-                               {task.recurrence && task.recurrence !== 'none' && (
-                                 <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                   {task.recurrence.charAt(0).toUpperCase() + task.recurrence.slice(1)}
-                                 </span>
-                               )}
-                             </div>
+                              <div className="flex items-center gap-2 text-xs">
+                                {/* Priority badge */}
+                                {task.priority && task.priority !== 'none' && (
+                                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                    task.priority === 'high'
+                                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                    : task.priority === 'medium'
+                                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  }`}>
+                                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                  </span>
+                                )}
+                                {/* Overdue badge */}
+                                {task.deadline && new Date(task.deadline) < new Date(Date.now()) && !task.completed && (
+                                  <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                    Overdue
+                                  </span>
+                                )}
+                              </div>
                            </div>
                            
                            {task.description && (
