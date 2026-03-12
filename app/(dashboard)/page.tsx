@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/db/index';
-import { tasks, lists, labels, taskLabels } from '@/lib/db/schema';
+import { db } from '@/app/lib/db/index';
+import { tasks, lists, labels, taskLabels } from '@/app/lib/db/schema';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';

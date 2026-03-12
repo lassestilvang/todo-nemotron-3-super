@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu as DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuPrimitive as DropdownMenuRoot } from '@/components/ui/dropdown-menu';
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
@@ -51,7 +51,7 @@ export default function ThemeToggle() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="p-1 hover:bg-muted rounded">
+      <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label="Theme settings">
           {theme === 'system' ? (
             <Moon className="h-4 w-4" />

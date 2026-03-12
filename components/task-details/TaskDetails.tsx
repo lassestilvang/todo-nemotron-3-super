@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { db } from '@/lib/db/index';
-import { tasks, lists, labels, taskLabels, subtasks, attachments, taskChanges } from '@/lib/db/schema';
+import { db } from '@/app/lib/db/index';
+import { tasks, lists, labels, taskLabels, subtasks, attachments, taskChanges } from '@/app/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';

@@ -1,6 +1,6 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { cn } from '@/lib/utils';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Checkbox } from './checkbox';
 import * as React from 'react';
 
 const DropdownMenuTrigger = React.forwardRef<
