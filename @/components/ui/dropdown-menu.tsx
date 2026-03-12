@@ -4,7 +4,7 @@ import { Checkbox } from './checkbox';
 import * as React from 'react';
 
 const DropdownMenuTrigger = React.forwardRef<
-  HTMLElement,
+  HTMLButtonElement,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => (
   <DropdownMenuPrimitive.Trigger
@@ -21,7 +21,7 @@ const DropdownMenuTrigger = React.forwardRef<
 DropdownMenuTrigger.displayName = DropdownMenuPrimitive.Trigger.displayName;
 
 const DropdownMenuContent = React.forwardRef<
-  HTMLElement,
+  HTMLDivElement,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
 >(({ className, sideOffset = 4, align = 'start', ...props }, ref) => {
   // We're going to override the default className to use Tailwind CSS
@@ -50,7 +50,7 @@ const DropdownMenuContent = React.forwardRef<
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
 const DropdownMenuItem = React.forwardRef<
-  HTMLElement,
+  HTMLDivElement,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>
 >(({ className, disabled, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
@@ -70,7 +70,7 @@ const DropdownMenuItem = React.forwardRef<
 DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
 
 const DropdownMenuCheckboxItem = React.forwardRef<
-  HTMLElement,
+  HTMLDivElement,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & { checked?: boolean; onCheckedChange?: (checked: boolean) => void }
 >(({ className, checked = false, onCheckedChange, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
