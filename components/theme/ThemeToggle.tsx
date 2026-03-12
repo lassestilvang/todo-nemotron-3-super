@@ -3,7 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu as DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuPrimitive as DropdownMenuRoot } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem
+} from '@/components/ui/dropdown-menu';
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
@@ -49,30 +54,30 @@ export default function ThemeToggle() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Theme settings">
-          {theme === 'system' ? (
-            <Moon className="h-4 w-4" />
-          ) : theme === 'dark' ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={4}>
-        <DropdownMenuItem onClick={() => setTheme('system')}>
-          System
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('light')}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>
-          Dark
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+   return (
+     <DropdownMenu>
+       <DropdownMenu asChild>
+         <Button variant="ghost" size="icon" aria-label="Theme settings">
+           {theme === 'system' ? (
+             <Moon className="h-4 w-4" />
+           ) : theme === 'dark' ? (
+             <Sun className="h-4 w-4" />
+           ) : (
+             <Moon className="h-4 w-4" />
+           )}
+         </Button>
+       </DropdownMenu>
+       <DropdownMenuContent align="end" sideOffset={4}>
+         <DropdownMenuItem onClick={() => setTheme('system')}>
+           System
+         </DropdownMenuItem>
+         <DropdownMenuItem onClick={() => setTheme('light')}>
+           Light
+         </DropdownMenuItem>
+         <DropdownMenuItem onClick={() => setTheme('dark')}>
+           Dark
+         </DropdownMenuItem>
+       </DropdownMenuContent>
+     </DropdownMenu>
+   );
 }
