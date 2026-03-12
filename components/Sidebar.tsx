@@ -16,7 +16,13 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu as DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuRoot } from '@/components/ui/dropdown-menu';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger,
+  DropdownMenuRoot 
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -75,13 +81,13 @@ export default function Sidebar() {
     }
   };
 
-  return (
-    <MotionWrapper 
-      variants={slideInLeft} 
-      initial={false} 
-      animate={true}
-      className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-screen"
-    >
+   return (
+     <MotionWrapper 
+       variants={slideInLeft()} 
+       initial={false} 
+       animate={true}
+       className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-screen"
+     >
       <TooltipProvider>
         <div className="flex-1 overflow-y-auto p-4">
           {/* Views */}
