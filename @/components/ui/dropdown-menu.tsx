@@ -18,6 +18,12 @@ const DropdownMenuTrigger = React.forwardRef<
     {children}
   </DropdownMenuPrimitive.Trigger>
 ));
+
+const DropdownMenu = ({ children, ...props }: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Root>) => (
+  <DropdownMenuPrimitive.Root {...props}>
+    {children}
+  </DropdownMenuPrimitive.Root>
+);
 DropdownMenuTrigger.displayName = DropdownMenuPrimitive.Trigger.displayName;
 
 const DropdownMenuContent = React.forwardRef<
@@ -97,11 +103,13 @@ const DropdownMenuCheckboxItem = React.forwardRef<
 ));
 DropdownMenuCheckboxItem.displayName = 'DropdownMenuCheckboxItem';
 
+const DropdownMenuRoot = DropdownMenuPrimitive.Root;
+
 export {
   DropdownMenuTrigger,
-  DropdownMenuTrigger as DropdownMenu,
+  DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuCheckboxItem,
-  DropdownMenuPrimitive as DropdownMenuRoot,
+  DropdownMenuRoot,
 };
