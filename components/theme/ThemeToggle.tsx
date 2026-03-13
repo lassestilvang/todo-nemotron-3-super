@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenuRoot,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem
+  DropdownMenuItem,
+  DropdownMenuRoot
 } from '@/components/ui/dropdown-menu';
 
 export default function ThemeToggle() {
@@ -55,8 +55,8 @@ export default function ThemeToggle() {
   }, [theme]);
 
    return (
-     <DropdownMenu>
-       <DropdownMenu asChild>
+     <DropdownMenuRoot>
+       <DropdownMenuTrigger asChild>
          <Button variant="ghost" size="icon" aria-label="Theme settings">
            {theme === 'system' ? (
              <Moon className="h-4 w-4" />
@@ -66,7 +66,7 @@ export default function ThemeToggle() {
              <Moon className="h-4 w-4" />
            )}
          </Button>
-       </DropdownMenu>
+       </DropdownMenuTrigger>
        <DropdownMenuContent align="end" sideOffset={4}>
          <DropdownMenuItem onClick={() => setTheme('system')}>
            System
@@ -78,6 +78,6 @@ export default function ThemeToggle() {
            Dark
          </DropdownMenuItem>
        </DropdownMenuContent>
-     </DropdownMenu>
+     </DropdownMenuRoot>
    );
 }
