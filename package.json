@@ -12,19 +12,19 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.1",
     "@types/bun": "^1.3.10",
-    "@types/node": "^25.4.0",
+    "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.27",
-    "better-sqlite3": "^12.6.2",
-    "bun-types": "^1.3.10",
-    "drizzle-kit": "^0.31.9",
+    "better-sqlite3": "^12.8.0",
+    "bun-types": "^1.3.11",
+    "drizzle-kit": "^0.31.10",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
     "tailwindcss-animate": "^1.0.7"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -43,7 +43,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.1",
-    "framer-motion": "^12.35.2",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^0.577.0",
     "next": "16.0.0",
     "react": "18.2.0",
