@@ -8,19 +8,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger, 
-  DialogRoot 
+   Dialog, 
+   DialogContent, 
+   DialogFooter, 
+   DialogHeader, 
+   DialogTitle, 
+   DialogTrigger, 
+   DialogRoot 
 } from '@/components/ui/dialog';
 import { 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger as DropdownMenu, 
-  DropdownMenuRoot 
+   DropdownMenuContent, 
+   DropdownMenuItem, 
+   DropdownMenuTrigger as DropdownMenu, 
+   DropdownMenuRoot 
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,25 +31,26 @@ import useDebounce from '@/hooks/use-debounce';
 import { MotionWrapper, fadeIn, staggerContainer } from '@/components/animations/motion-wrapper';
 import { toast, Toaster } from 'sonner';
 import { 
-  Plus, 
-  Calendar, 
-  Edit, 
-  Filter, 
-  Clock, 
-  Folder, 
-  Trash2, 
-  ChevronDown,
-  CheckCircle,
-  X,
-  Upload,
-  List,
-  PenTool,
-  Minus,
-  History,
-  Repeat,
-  Flag,
-  Timer
+   Plus, 
+   Calendar, 
+   Edit, 
+   Filter, 
+   Clock, 
+   Folder, 
+   Trash2, 
+   ChevronDown,
+   CheckCircle,
+   X,
+   Upload,
+   List,
+   PenTool,
+   Minus,
+   History,
+   Repeat,
+   Flag,
+   Timer
 } from 'lucide-react';
+import { createId } from '@paralleldrive/cuid2';
 
 const RECURRENCE_OPTIONS = [
   { value: 'none', label: 'None' },
@@ -79,33 +80,36 @@ export default function DashboardPage() {
   const [filterListId, setFilterListId] = useState<string | null>(null);
   const [filterLabelId, setFilterLabelId] = useState<string | null>(null);
   const [isAddingTask, setIsAddingTask] = useState(false);
-   const [newTask, setNewTask] = useState({
-     name: '',
-     description: '',
-     listId: '',
-     date: null as Date | null,
-     deadline: null as Date | null,
-     priority: 'none',
-     recurrence: 'none',
-   });
+const [newTask, setNewTask] = useState({
+      name: '',
+      description: '',
+      listId: '',
+      date: null as Date | null,
+      deadline: null as Date | null,
+      priority: 'none',
+      recurrence: 'none',
+      labelIds: [] as string[],
+    });
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
 const [editTaskData, setEditTaskData] = useState<{
-  name: string;
-  description: string;
-  listId: string;
-  date: Date | null;
-  deadline: Date | null;
-  priority: typeof tasks.$inferSelect['priority'];
-  recurrence: typeof tasks.$inferSelect['recurrence'];
-}>({
-  name: '',
-  description: '',
-  listId: '',
-  date: null,
-  deadline: null,
-  priority: 'none',
-  recurrence: 'none',
-});
+   name: string;
+   description: string;
+   listId: string;
+   date: Date | null;
+   deadline: Date | null;
+   priority: typeof tasks.$inferSelect['priority'];
+   recurrence: typeof tasks.$inferSelect['recurrence'];
+   labelIds: string[];
+ }>({
+   name: '',
+   description: '',
+   listId: '',
+   date: null,
+   deadline: null,
+   priority: 'none',
+   recurrence: 'none',
+   labelIds: [],
+ });
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -159,65 +163,85 @@ const [editTaskData, setEditTaskData] = useState<{
       return;
     }
 
-     setIsAddingTask(true);
-      try {
-        const [result] = await db
-          .insert(tasks)
-          .values({
-            name: newTask.name,
-          description: newTask.description,
-          listId: newTask.listId,
-          date: newTask.date ? newTask.date.getTime() : null,
-          deadline: newTask.deadline ? newTask.deadline.getTime() : null,
-          priority: newTask.priority,
-          recurrence: newTask.recurrence,
-          } as any)
-          .returning();
+        setIsAddingTask(true);
+       try {
+         const [taskResult] = await db
+           .insert(tasks)
+           .values({
+             name: newTask.name,
+             description: newTask.description,
+             listId: newTask.listId,
+             date: newTask.date ? newTask.date.getTime() : null,
+             deadline: newTask.deadline ? newTask.deadline.getTime() : null,
+             priority: newTask.priority,
+             recurrence: newTask.recurrence,
+             } as any)
+           .returning();
 
-        setTasksList(prev => [
-          {
-            id: result!.id,
-            name: result!.name,
-            description: result!.description,
-            date: result!.date == null ? null : result!.date instanceof Date ? result!.date : new Date(result!.date),
-            deadline: result!.deadline == null ? null : result!.deadline instanceof Date ? result!.deadline : new Date(result!.deadline),
-            priority: result!.priority,
-            completed: !!result!.completed,
-            recurrence: result!.recurrence,
-            estimate: result!.estimate,
-            actualTime: result!.actualTime,
-            reminders: result!.reminders,
-            createdAt: result!.createdAt instanceof Date ? result!.createdAt : new Date(result!.createdAt),
-            updatedAt: result!.updatedAt instanceof Date ? result!.updatedAt : new Date(result!.updatedAt),
-            listId: result!.listId,
-            list: listsList.find((l) => l.id === newTask.listId) || {
-              id: '',
-              name: 'No List',
-              color: 'bg-gray-500',
-              emoji: '🔲',
-            },
-            labels: [],
-          },
-          ...prev,
-        ]);
+         // Save labels if any were selected
+         if (newTask.labelIds && newTask.labelIds.length > 0) {
+           await db.insert(taskLabels).values(
+             newTask.labelIds.map(labelId => ({
+               id: createId(),
+               taskId: taskResult.id,
+               labelId: labelId,
+             }))
+           );
+         }
 
-       setNewTask({
-         name: '',
-         description: '',
-         listId: '',
-         date: null as Date | null,
-         deadline: null as Date | null,
-         priority: 'none' as const,
-         recurrence: 'none' as const,
-       });
-       setIsAddingTask(false);
+         setTasksList(prev => [
+           {
+             id: taskResult.id,
+             name: taskResult.name,
+             description: taskResult.description,
+             date: taskResult.date == null ? null : taskResult.date instanceof Date ? taskResult.date : new Date(taskResult.date),
+             deadline: taskResult.deadline == null ? null : taskResult.deadline instanceof Date ? taskResult.deadline : new Date(taskResult.deadline),
+             priority: taskResult.priority,
+             completed: !!taskResult.completed,
+             recurrence: taskResult.recurrence,
+             estimate: taskResult.estimate,
+             actualTime: taskResult.actualTime,
+             reminders: taskResult.reminders,
+             createdAt: taskResult.createdAt instanceof Date ? taskResult.createdAt : new Date(taskResult.createdAt),
+             updatedAt: taskResult.updatedAt instanceof Date ? taskResult.updatedAt : new Date(taskResult.updatedAt),
+             listId: taskResult.listId,
+             list: listsList.find((l) => l.id === newTask.listId) || {
+               id: '',
+               name: 'No List',
+               color: 'bg-gray-500',
+               emoji: '🔲',
+             },
+             labels: newTask.labelIds.map(labelId => {
+               const label = labelsList.find(l => l.id === labelId);
+               return label || {
+                 id: labelId,
+                 name: 'Unknown',
+                 color: 'bg-gray-500',
+                 emoji: '❓',
+               };
+             }),
+           },
+           ...prev,
+         ]);
 
-       toast.success('Task added successfully');
-     } catch (error) {
-       console.error('Failed to add task:', error);
-       toast.error('Failed to add task');
-       setIsAddingTask(false);
-     }
+        setNewTask({
+          name: '',
+          description: '',
+          listId: '',
+          date: null as Date | null,
+          deadline: null as Date | null,
+          priority: 'none' as const,
+          recurrence: 'none' as const,
+          labelIds: [] as string[],
+        });
+        setIsAddingTask(false);
+
+        toast.success('Task added successfully');
+      } catch (error) {
+        console.error('Failed to add task:', error);
+        toast.error('Failed to add task');
+        setIsAddingTask(false);
+      }
    };
 
   const handleUpdateTask = async (taskId: string, updates: Partial<typeof tasks.$inferSelect>) => {
@@ -254,18 +278,27 @@ const [editTaskData, setEditTaskData] = useState<{
     }
   };
 
-  const handleStartEdit = (task: Task) => {
-    setEditTaskId(task.id);
-    setEditTaskData({
-      name: task.name,
-      description: task.description || '',
-      listId: task.list.id,
-      date: task.date ? new Date(task.date) : null,
-      deadline: task.deadline ? new Date(task.deadline) : null,
-      priority: task.priority,
-      recurrence: task.recurrence || 'none',
-    });
-  };
+   const handleStartEdit = async (task: Task) => {
+     setEditTaskId(task.id);
+     
+     // Fetch labels for this task
+     const taskLabelsResult = await db
+       .select({ labelId: taskLabels.labelId })
+       .from(taskLabels)
+       .where(eq(taskLabels.taskId, task.id))
+       .execute();
+     
+     setEditTaskData({
+       name: task.name,
+       description: task.description || '',
+       listId: task.list.id,
+       date: task.date ? new Date(task.date) : null,
+       deadline: task.deadline ? new Date(task.deadline) : null,
+       priority: task.priority,
+       recurrence: task.recurrence || 'none',
+       labelIds: taskLabelsResult.map(tl => tl.labelId),
+     });
+   };
 
   const handleSaveEdit = async () => {
     if (!editTaskId || !editTaskData.name.trim() || !editTaskData.listId) {
@@ -273,29 +306,41 @@ const [editTaskData, setEditTaskData] = useState<{
       return;
     }
 
-      try {
-        await db
-          .update(tasks)
-          .set({
-            name: editTaskData.name,
-            description: editTaskData.description,
-            listId: editTaskData.listId,
-            date: editTaskData.date ? editTaskData.date.getTime() : null,
-            deadline: editTaskData.deadline ? editTaskData.deadline.getTime() : null,
-            priority: editTaskData.priority,
-            recurrence: editTaskData.recurrence,
-            updatedAt: Date.now(),
-          } as any)
-          .where(eq(tasks.id, editTaskId));
+       try {
+         await db
+           .update(tasks)
+           .set({
+             name: editTaskData.name,
+             description: editTaskData.description,
+             listId: editTaskData.listId,
+             date: editTaskData.date ? editTaskData.date.getTime() : null,
+             deadline: editTaskData.deadline ? editTaskData.deadline.getTime() : null,
+             priority: editTaskData.priority,
+             recurrence: editTaskData.recurrence,
+             updatedAt: Date.now(),
+           } as any)
+           .where(eq(tasks.id, editTaskId));
 
-      await fetchTasks();
-      setEditTaskId(null);
+         // Update labels - delete existing and insert new ones
+         await db.delete(taskLabels).where(eq(taskLabels.taskId, editTaskId));
+         if (editTaskData.labelIds && editTaskData.labelIds.length > 0) {
+           await db.insert(taskLabels).values(
+             editTaskData.labelIds.map(labelId => ({
+               id: createId(),
+               taskId: editTaskId,
+               labelId: labelId,
+             }))
+           );
+         }
 
-      toast.success('Task updated successfully');
-    } catch (error) {
-      console.error('Failed to update task:', error);
-      toast.error('Failed to update task');
-    }
+       await fetchTasks();
+       setEditTaskId(null);
+
+       toast.success('Task updated successfully');
+     } catch (error) {
+       console.error('Failed to update task:', error);
+       toast.error('Failed to update task');
+     }
   };
 
   const handleCancelEdit = () => {
@@ -452,33 +497,30 @@ const [editTaskData, setEditTaskData] = useState<{
                            ))}
                          </select>
                        </div>
-                       <div>
-                         <Label htmlFor="task-label">Label</Label>
-                         <select
-                           id="task-label"
-                           multiple
-                           onChange={(e) => {
-                             // Handle multiple select - for now we'll just store the first selected value
-                             // In a full implementation, we'd need to handle the task_labels relationship
-                             const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
-                             // For simplicity, we're not storing labels in the task directly
-                             // but rather in the task_labels table - this would require a more complex implementation
-                           }}
-                           className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                         >
-                           <option value="">Select labels</option>
-                           {labelsList.map((label) => (
-                             <option key={label.id} value={label.id}>
-                               <span className="flex items-center gap-2">
-                                 <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
-                                   {label.emoji}
-                                 </span>
-                                 <span>{label.name}</span>
-                               </span>
-                             </option>
-                           ))}
-                         </select>
-                       </div>
+                      <div>
+                          <Label htmlFor="task-label">Label</Label>
+                          <select
+                            id="task-label"
+                            multiple
+                            value={newTask.labelIds}
+                            onChange={(e) => {
+                              setNewTask({ ...newTask, labelIds: Array.from(e.target.selectedOptions).map(opt => opt.value) });
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          >
+                            <option value="">Select labels</option>
+                            {labelsList.map((label) => (
+                              <option key={label.id} value={label.id}>
+                                <span className="flex items-center gap-2">
+                                  <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
+                                    {label.emoji}
+                                  </span>
+                                  <span>{label.name}</span>
+                                </span>
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                      </div>
                      <DialogFooter>
                         <Button
@@ -625,22 +667,19 @@ const [editTaskData, setEditTaskData] = useState<{
                              ))}
                           </select>
                         </div>
-                        <div>
-                          <Label htmlFor="edit-task-label">Label</Label>
-                          <select
-                            id="edit-task-label"
-                            multiple
-                            onChange={(e) => {
-                              // Handle multiple select - for now we'll just store the first selected value
-                              // In a full implementation, we'd need to handle the task_labels relationship
-                              const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
-                              // For simplicity, we're not storing labels in the task directly
-                              // but rather in the task_labels table - this would require a more complex implementation
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          >
-                            <option value="">Select labels</option>
-                            {labelsList.map((label) => (
+                      <div>
+                           <Label htmlFor="edit-task-label">Label</Label>
+                           <select
+                             id="edit-task-label"
+                             multiple
+                             value={editTaskData.labelIds}
+                             onChange={(e) => {
+                               setEditTaskData({ ...editTaskData, labelIds: Array.from(e.target.selectedOptions).map(opt => opt.value) });
+                             }}
+                             className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           >
+                             <option value="">Select labels</option>
+                             {labelsList.map((label) => (
                                <option key={label.id} value={label.id}>
                                  <span className="flex items-center gap-2">
                                    <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
@@ -649,9 +688,9 @@ const [editTaskData, setEditTaskData] = useState<{
                                    <span>{label.name}</span>
                                  </span>
                                </option>
-                            ))}
-                          </select>
-                        </div>
+                             ))}
+                           </select>
+                         </div>
                       </div>
                       <DialogFooter>
                         <Button
