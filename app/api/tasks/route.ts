@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const filterLabelId = searchParams.get('filterLabelId') || null;
 
   try {
-      // Build the base query
+      // Build the base query with labels pre-fetched to avoid N+1 problem
       let query = db
         .select({
           id: tasks.id,
@@ -105,11 +105,12 @@ export async function GET(request: Request) {
       // Execute the query
       const results = await query.execute();
 
-      // Fetch labels for each task
-      const tasksWithLabels = await Promise.all(
-        results.map(async (task: any) => {
-          const taskLabelsResult = await db
+      // Fetch all labels for all tasks in a single query to avoid N+1 problem
+      const taskIds = results.map((task: any) => task.id);
+      const allTaskLabels = taskIds.length > 0 
+        ? await db
             .select({
+              taskId: taskLabels.taskId,
               id: labels.id,
               name: labels.name,
               color: labels.color,
@@ -117,22 +118,35 @@ export async function GET(request: Request) {
             })
             .from(taskLabels)
             .innerJoin(labels, eq(taskLabels.labelId, labels.id))
-            .where(eq(taskLabels.taskId, task.id))
-            .execute()
-            .then((labels: any[]) => labels);
+            .where(sql`${taskLabels.taskId} IN (${taskIds.map(() => '?').join(',')})`)
+            .execute(taskIds)
+        : [];
 
-          return {
-            ...task,
-            list: task.list || {
-              id: '',
-              name: 'No List',
-              color: 'bg-gray-500',
-              emoji: '🔲',
-            },
-            labels: taskLabelsResult || [],
-          };
-        })
-      );
+      // Group labels by taskId
+      const labelsByTaskId: Record<string, any[]> = {};
+      allTaskLabels.forEach((tl: any) => {
+        if (!labelsByTaskId[tl.taskId]) {
+          labelsByTaskId[tl.taskId] = [];
+        }
+        labelsByTaskId[tl.taskId].push({
+          id: tl.id,
+          name: tl.name,
+          color: tl.color,
+          emoji: tl.emoji,
+        });
+      });
+
+      // Format results with labels
+      const tasksWithLabels = results.map((task: any) => ({
+        ...task,
+        list: task.list || {
+          id: '',
+          name: 'No List',
+          color: 'bg-gray-500',
+          emoji: '🔲',
+        },
+        labels: labelsByTaskId[task.id] || [],
+      }));
 
       return NextResponse.json(tasksWithLabels);
     } catch (error) {
