@@ -243,8 +243,8 @@ setTask({
        const actualTimeMinutes = parseInt(actualTimeParts[1] || '0') || 0;
        const actualTimeTotalMinutes = actualTimeHours * 60 + actualTimeMinutes;
 
-      data.estimate = estimateMinutes;
-      data.actualTime = actualTimeMinutes;
+      data.estimate = estimateTotalMinutes;
+      data.actualTime = actualTimeTotalMinutes;
 
       await db.update(tasks).set(data).where(eq(tasks.id, taskId));
 
