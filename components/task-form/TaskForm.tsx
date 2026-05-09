@@ -7,23 +7,14 @@ import {
    DialogFooter, 
    DialogHeader, 
    DialogTitle, 
-   DialogTrigger, 
-   DialogRoot 
+   DialogTrigger 
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { 
-   Plus, 
-   Edit
-} from 'lucide-react';
-import { useDebounce } from '@/hooks/use-debounce';
 import { db } from '@/app/lib/db/index';
-import { lists, labels, taskLabels } from '@/app/lib/db/schema';
-import { eq } from 'drizzle-orm';
-import { createId } from '@paralleldrive/cuid2';
+import { lists, labels } from '@/app/lib/db/schema';
 import { RECURRENCE_OPTIONS } from '@/app/(dashboard)/page';
 
 interface TaskFormProps {
@@ -88,7 +79,6 @@ export default function TaskForm({
   const [listsList, setListsList] = useState<Array<{id: string; name: string; color: string; emoji: string}>>([]);
   const [labelsList, setLabelsList] = useState<Array<{id: string; name: string; color: string; emoji: string}>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const debouncedSearchQuery = useDebounce('', 300); // Placeholder for future search implementation
 
   useEffect(() => {
     // Fetch lists and labels when form opens
