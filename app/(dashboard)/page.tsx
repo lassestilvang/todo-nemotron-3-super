@@ -129,29 +129,9 @@ export default function DashboardPage() {
        }
      };
 
-   const handleStartEdit = async (task: Task) => {
-     setEditTaskId(task.id);
-     
-     // Fetch labels for this task
-     const taskLabelsResult = await db
-       .select({ labelId: taskLabels.labelId })
-       .from(taskLabels)
-       .where(eq(taskLabels.taskId, task.id))
-       .execute();
-   };
-
-   const handleStartEdit = async (task: Task) => {
-     setEditTaskId(task.id);
-     
-     // Fetch labels for this task
-     const taskLabelsResult = await db
-       .select({ labelId: taskLabels.labelId })
-       .from(taskLabels)
-       .where(eq(taskLabels.taskId, task.id))
-       .execute();
-     
-     // We don't need to store this data anymore since TaskForm handles it
-   };
+    const handleStartEdit = async (task: Task) => {
+      setEditTaskId(task.id);
+    };
 
   const handleAddTask = async () => {
     if (!newTask.name.trim() || !newTask.listId) {
