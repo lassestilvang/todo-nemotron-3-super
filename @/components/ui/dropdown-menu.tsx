@@ -29,7 +29,7 @@ DropdownMenuTrigger.displayName = DropdownMenuPrimitive.Trigger.displayName;
 const DropdownMenuContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, sideOffset = 4, align = 'start', ...props }, ref) => {
+>(({ className, sideOffset = 4, align = 'start', children, ...props }, ref) => {
   // We're going to override the default className to use Tailwind CSS
   let classNameValue = 'z-50 min-w-[8rem] overflow-hidden bg-[hsl(var(--background))] px-2 py-1 text-[hsl(var(--foreground))] shadow-md border border-[hsl(var(--border))] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[50%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[50%]';
 
@@ -48,7 +48,7 @@ const DropdownMenuContent = React.forwardRef<
       {...props}
     >
       <div className={cn('p-1 space-y-1')}>
-        <slot />
+        {children}
       </div>
     </DropdownMenuPrimitive.Content>
   );
@@ -58,7 +58,7 @@ DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 const DropdownMenuItem = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>
->(({ className, disabled, ...props }, ref) => (
+>(({ className, disabled, children, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
@@ -69,7 +69,7 @@ const DropdownMenuItem = React.forwardRef<
     {...props}
   >
     <span className={cn('block truncate')}>
-      <slot />
+      {children}
     </span>
   </DropdownMenuPrimitive.Item>
 ));
@@ -78,7 +78,7 @@ DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
 const DropdownMenuCheckboxItem = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & { checked?: boolean; onCheckedChange?: (checked: boolean) => void }
->(({ className, checked = false, onCheckedChange, ...props }, ref) => (
+>(({ className, checked = false, onCheckedChange, children, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
@@ -89,7 +89,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     {...props}
   >
     <span className={cn('block truncate')}>
-      <slot />
+      {children}
     </span>
     <Checkbox className={cn('ml-4 h-4 w-4 shrink-0') } 
       checked={checked}
