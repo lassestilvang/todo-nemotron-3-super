@@ -12,22 +12,17 @@ import {
   Tag,
   Circle,
   Inbox,
-  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger,
-  DropdownMenuRoot 
+   DropdownMenu, 
+   DropdownMenuContent, 
+   DropdownMenuItem, 
+   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { MotionWrapper, slideInLeft } from '@/components/animations/motion-wrapper';
 
 const views = [
@@ -133,18 +128,31 @@ export default function Sidebar() {
                  </span>
                </Button>
                {/* Add other lists here */}
-               {lists.map((list) => (
-                 <Button
-                   key={list.id}
-                   variant="default"
-                   className="w-full text-left justify-start px-3 py-2"
-                   onClick={() => {}}
-                 >
-                   <List className="h-4 w-4" />
-                   <span className="flex-1">{list.name}</span>
-                 </Button>
-               ))}
-             </CardContent>
+                {lists.map((list) => (
+                  <Button
+                    key={list.id}
+                    variant="default"
+                    className="w-full text-left justify-start px-3 py-2"
+                    onClick={() => {}}
+                  >
+                    <List className="h-4 w-4" />
+                    <span className="flex-1">{list.name}</span>
+                  </Button>
+                ))}
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="List name"
+                    value={newListName}
+                    onChange={(e) => setNewListName(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') addList();
+                    }}
+                  />
+                  <Button onClick={addList} size="icon" aria-label="Add list">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
            </Card>
 
            {/* Labels */}
@@ -152,13 +160,18 @@ export default function Sidebar() {
              <CardHeader className="pb-2">
                <div className="flex items-center justify-between">
                  <CardTitle className="text-lg font-semibold">Labels</CardTitle>
-                  <DropdownMenu>
-                    <DropdownMenuContent align="end" sideOffset={4}>
-                      <DropdownMenuItem onClick={() => setNewLabelName('')}>
-                        New label
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                   <DropdownMenu>
+                     <DropdownMenuTrigger asChild>
+                       <Button variant="ghost" size="icon" aria-label="Add label">
+                         <Plus className="h-4 w-4" />
+                       </Button>
+                     </DropdownMenuTrigger>
+                     <DropdownMenuContent align="end" sideOffset={4}>
+                       <DropdownMenuItem onClick={() => setNewLabelName('')}>
+                         New label
+                       </DropdownMenuItem>
+                     </DropdownMenuContent>
+                   </DropdownMenu>
                </div>
              </CardHeader>
             <CardContent className="space-y-2">
