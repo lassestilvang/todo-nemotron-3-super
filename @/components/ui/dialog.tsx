@@ -79,7 +79,6 @@ const Dialog = ({ children, ...props }: React.ComponentPropsWithoutRef<typeof Di
   </DialogPrimitive.Root>
 );
 Dialog.displayName = DialogPrimitive.Root.displayName;
-Dialog.displayName = DialogPrimitive.Root.displayName;
 
 export {
   Dialog,
