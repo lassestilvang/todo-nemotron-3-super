@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/app/lib/db/index';
 import { tasks, lists, labels, taskLabels, subtasks, attachments, taskChanges } from '@/app/lib/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Dialog, 
@@ -13,25 +13,14 @@ import {
   DialogTitle, 
   DialogTrigger
 } from '@/components/ui/dialog';
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuRoot } from '@/components/ui/dropdown-menu';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { 
   Calendar, 
-  Clock, 
-  Timer, 
-  Tag, 
-  Flag, 
-  Repeat, 
-  Paperclip, 
-  MapPin, 
-  Gift,
-  Settings,
-  Share2,
   Loader,
 } from 'lucide-react';
 

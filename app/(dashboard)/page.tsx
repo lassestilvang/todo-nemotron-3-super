@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/app/lib/db/index';
 import { tasks, lists, labels, taskLabels } from '@/app/lib/db/schema';
-import { eq, desc, and, isNotNull, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
    Dialog, 
@@ -13,42 +13,22 @@ import {
    DialogFooter, 
    DialogHeader, 
    DialogTitle, 
-   DialogTrigger, 
-   DialogRoot 
+   DialogTrigger 
 } from '@/components/ui/dialog';
-import { 
-   DropdownMenuContent, 
-   DropdownMenuItem, 
-   DropdownMenuTrigger as DropdownMenu, 
-   DropdownMenuRoot 
-} from '@/components/ui/dropdown-menu';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
-import { MotionWrapper, fadeIn, staggerContainer } from '@/components/animations/motion-wrapper';
+
 import { toast, Toaster } from 'sonner';
 import { 
    Plus, 
    Calendar, 
    Edit, 
-   Filter, 
    Clock, 
-   Folder, 
-   Trash2, 
-   ChevronDown,
-   CheckCircle,
-   X,
-   Upload,
-   List,
-   PenTool,
-   Minus,
-   History,
-   Repeat,
-   Flag,
-   Timer
+   Folder 
 } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import { createId } from '@paralleldrive/cuid2';
@@ -530,9 +510,8 @@ export default function DashboardPage() {
                  toast.error('Failed to update task');
                }
              }}
-           />
-              </MotionWrapper>
-            ) : (
+            />
+             ) : (
               <div className="space-y-4">
                 {tasksList.map((task, index) => (
                    <div 
@@ -611,13 +590,10 @@ export default function DashboardPage() {
                      </Card>
                    </div>
                 ))}
-              </div>
-            )}
-          </MotionWrapper>
-        </main>
+               </div>
+             )}
+         </main>
       </div>
     </>
   );
 }
-
-// Filter icon is imported from lucide-react above
