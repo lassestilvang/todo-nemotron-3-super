@@ -12,11 +12,12 @@ import {
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'theme') {
-        setTheme(e.newValue as any);
+        setTheme(e.newValue as 'light' | 'dark' | 'system');
       }
     };
 
@@ -31,42 +32,33 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     const root = window.document.documentElement;
-    
-    const applyTheme = () => {
-      let effectiveTheme = theme;
-      if (theme === 'system') {
-        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
-      
-      root.classList.remove('light', 'dark');
-      root.classList.add(effectiveTheme);
-      
-      // Store preference
-      localStorage.setItem('theme', theme);
-    };
-
-    applyTheme();
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => applyTheme();
-    
+    const resolved = theme === 'system' ? (mediaQuery.matches ? 'dark' : 'light') : theme;
+
+    setEffectiveTheme(resolved);
+    root.classList.remove('light', 'dark');
+    root.classList.add(resolved);
+    localStorage.setItem('theme', theme);
+
+    const handleChange = () => {
+      const newResolved = theme === 'system' ? (mediaQuery.matches ? 'dark' : 'light') : theme;
+      setEffectiveTheme(newResolved);
+      root.classList.remove('light', 'dark');
+      root.classList.add(newResolved);
+    };
+
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
-   return (
-     <DropdownMenuRoot>
-       <DropdownMenuTrigger asChild>
-         <Button variant="ghost" size="icon" aria-label="Theme settings">
-           {theme === 'system' ? (
-             <Moon className="h-4 w-4" />
-           ) : theme === 'dark' ? (
-             <Sun className="h-4 w-4" />
-           ) : (
-             <Moon className="h-4 w-4" />
-           )}
-         </Button>
-       </DropdownMenuTrigger>
+    return (
+      <DropdownMenuRoot>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label="Theme settings">
+            {effectiveTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+        </DropdownMenuTrigger>
        <DropdownMenuContent align="end" sideOffset={4}>
          <DropdownMenuItem onClick={() => setTheme('system')}>
            System
