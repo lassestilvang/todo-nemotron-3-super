@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { db } from '@/app/lib/db/index';
 import { lists, labels } from '@/app/lib/db/schema';
-import { RECURRENCE_OPTIONS } from '@/app/(dashboard)/page';
+import { RECURRENCE_OPTIONS } from '@/lib/constants';
 
 interface TaskFormProps {
   isOpen: boolean;

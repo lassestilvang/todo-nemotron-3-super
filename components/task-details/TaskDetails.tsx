@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { RECURRENCE_OPTIONS } from '@/lib/constants';
 import { 
   Calendar, 
   Loader,
@@ -411,14 +412,7 @@ setTask({
                   onChange={(e) => setEditData({ ...editData, recurrence: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
-                  {[
-                    { value: 'none', label: 'None' },
-                    { value: 'daily', label: 'Daily' },
-                    { value: 'weekly', label: 'Weekly' },
-                    { value: 'monthly', label: 'Monthly' },
-                    { value: 'yearly', label: 'Yearly' },
-                    { value: 'custom', label: 'Custom' },
-                  ].map((option) => (
+                  {RECURRENCE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>

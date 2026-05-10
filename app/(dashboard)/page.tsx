@@ -32,16 +32,7 @@ import {
 } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import { createId } from '@paralleldrive/cuid2';
-
-const RECURRENCE_OPTIONS = [
-  { value: 'none', label: 'None' },
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'weekday', label: 'Weekdays' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'yearly', label: 'Yearly' },
-  { value: 'custom', label: 'Custom' },
-];
+import { RECURRENCE_OPTIONS } from '@/lib/constants';
 
 type Task = typeof tasks.$inferSelect & {
   list: Pick<typeof lists.$inferSelect, 'id' | 'name' | 'color' | 'emoji'>;
