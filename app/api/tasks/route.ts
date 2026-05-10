@@ -132,7 +132,7 @@ export async function GET(request: Request) {
         if (!labelsByTaskId[tl.taskId]) {
           labelsByTaskId[tl.taskId] = [];
         }
-        labelsByTaskId[tl.taskId].push({
+        labelsByTaskId[tl.taskId]!.push({
           id: tl.id,
           name: tl.name,
           color: tl.color,
