@@ -7,18 +7,6 @@ import { eq } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { 
-   Dialog, 
-   DialogContent, 
-   DialogFooter, 
-   DialogHeader, 
-   DialogTitle, 
-   DialogTrigger 
-} from '@/components/ui/dialog';
-
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
 
@@ -99,12 +87,6 @@ export default function DashboardPage() {
          toast.error('Failed to load tasks');
        }
      };
-
-    const handleStartEdit = async (task: Task) => {
-      setEditTaskId(task.id);
-    };
-
-
 
   const handleUpdateTask = async (taskId: string, updates: Partial<typeof tasks.$inferSelect>) => {
     try {
@@ -253,175 +235,6 @@ export default function DashboardPage() {
                 }
               }}
             />
-
-          {/* Edit Task Form */}
-          {editTaskId && (
-             <div className="mb-6">
-               <Dialog>
-                 <DialogTrigger asChild>
-                   <Button variant="outline" className="w-full">
-                     <span className="flex items-center gap-2">
-                       <Edit className="h-4 w-4" />
-                       <span>Edit Task</span>
-                     </span>
-                   </Button>
-                 </DialogTrigger>
-                 <DialogContent className="w-full max-w-md">
-                   <DialogHeader>
-                     <DialogTitle>Edit Task</DialogTitle>
-                   </DialogHeader>
-                   <form className="space-y-4" onSubmit={(e) => {
-                       e.preventDefault();
-                       handleSaveEdit();
-                     }}>
-                      <div>
-                        <Label htmlFor="edit-task-name">Task Name</Label>
-                        <Input
-                          id="edit-task-name"
-                          value={editTaskData.name}
-                          onChange={(e) => setEditTaskData({ ...editTaskData, name: e.target.value })}
-                          placeholder="Enter task name"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="edit-task-description">Description</Label>
-                        <Textarea
-                          id="edit-task-description"
-                          value={editTaskData.description}
-                          onChange={(e) => setEditTaskData({ ...editTaskData, description: e.target.value })}
-                          placeholder="Enter task description (optional)"
-                          rows={3}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="edit-task-list">List</Label>
-                          <select
-                            id="edit-task-list"
-                            value={editTaskData.listId}
-                            onChange={(e) => setEditTaskData({ ...editTaskData, listId: e.target.value })}
-                            required
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          >
-                            <option value="">Select a list</option>
-                            {listsList.map((list) => (
-                              <option key={list.id} value={list.id}>
-                                <span className="flex items-center gap-2">
-                                  <span className={`${list.color} h-4 w-4 flex items-center justify-center rounded`}>
-                                    {list.emoji}
-                                  </span>
-                                 <span>{list.name}</span>
-                               </span>
-                             </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <Label htmlFor="edit-task-priority">Priority</Label>
-                          <select
-                            id="edit-task-priority"
-                            value={editTaskData.priority ?? undefined}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setEditTaskData({ ...editTaskData, priority: value as typeof editTaskData.priority });
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          >
-                            <option value="none">None</option>
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="edit-task-date">Date</Label>
-                          <input
-                            id="edit-task-date"
-                            type="date"
-                            value={editTaskData.date ? editTaskData.date.toISOString().split('T')[0] : ''}
-                            onChange={(e) => {
-                              const date = e.target.value ? new Date(e.target.value) : null;
-                              setEditTaskData({ ...editTaskData, date });
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="edit-task-deadline">Deadline</Label>
-                          <input
-                            id="edit-task-deadline"
-                            type="datetime-local"
-                            value={editTaskData.deadline ? editTaskData.deadline.toISOString().slice(0, 16) : ''}
-                            onChange={(e) => {
-                              const date = e.target.value ? new Date(e.target.value) : null;
-                              setEditTaskData({ ...editTaskData, deadline: date });
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="edit-task-recurrence">Recurrence</Label>
-                           <select
-                             id="edit-task-recurrence"
-                             value={editTaskData.recurrence ?? undefined}
-                             onChange={(e) => setEditTaskData({ ...editTaskData, recurrence: e.target.value })}
-                             className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                           >
-                             {RECURRENCE_OPTIONS.map((option) => (
-                               <option key={option.value} value={option.value}>
-                                 {option.label}
-                               </option>
-                             ))}
-                          </select>
-                        </div>
-                      <div>
-                           <Label htmlFor="edit-task-label">Label</Label>
-                           <select
-                             id="edit-task-label"
-                             multiple
-                             value={editTaskData.labelIds}
-                             onChange={(e) => {
-                               setEditTaskData({ ...editTaskData, labelIds: Array.from(e.target.selectedOptions).map(opt => opt.value) });
-                             }}
-                             className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                           >
-                             <option value="">Select labels</option>
-                             {labelsList.map((label) => (
-                               <option key={label.id} value={label.id}>
-                                 <span className="flex items-center gap-2">
-                                   <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
-                                     {label.emoji}
-                                   </span>
-                                   <span>{label.name}</span>
-                                 </span>
-                               </option>
-                             ))}
-                           </select>
-                         </div>
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          variant="ghost"
-                          onClick={handleCancelEdit}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleSaveEdit}
-                        >
-                          Save Changes
-                        </Button>
-                       </DialogFooter>
-                     </form>
-                   </DialogContent>
-                 </Dialog>
-               </div>
-          )}
 
             {/* Task Details Dialog */}
            <TaskDetails 
