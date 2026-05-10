@@ -88,30 +88,6 @@ export default function DashboardPage() {
        }
      };
 
-  const handleUpdateTask = async (taskId: string, updates: Partial<typeof tasks.$inferSelect>) => {
-    try {
-      await db.update(tasks).set(updates).where(eq(tasks.id, taskId));
-      await fetchTasks();
-      
-      toast.success('Task updated successfully');
-    } catch (error) {
-      console.error('Failed to update task:', error);
-      toast.error('Failed to update task');
-    }
-  };
-
-  const handleDeleteTask = async (taskId: string) => {
-    try {
-      await db.delete(tasks).where(eq(tasks.id, taskId));
-      setTasksList(tasksList.filter((task) => task.id !== taskId));
-      
-      toast.success('Task deleted successfully');
-    } catch (error) {
-      console.error('Failed to delete task:', error);
-      toast.error('Failed to delete task');
-    }
-  };
-
    const handleToggleComplete = async (taskId: string, completed: boolean) => {
      try {
        await db.update(tasks).set({ completed }).where(eq(tasks.id, taskId));
