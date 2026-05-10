@@ -103,10 +103,15 @@ export async function GET(request: Request) {
       }
 
       // Execute the query
-      const results = await query.execute();
+      const results = await query.execute() as Array<{
+        id: string; name: string; description: string | null;
+        date: Date | null; deadline: Date | null; priority: string;
+        completed: boolean; recurrence: string | null; listId: string;
+        createdAt: Date; updatedAt: Date;
+        list: { id: string; name: string; color: string; emoji: string } | null;
+      }>;
 
-      // Fetch all labels for all tasks in a single query to avoid N+1 problem
-      const taskIds = results.map((task: any) => task.id);
+      const taskIds = results.map(task => task.id);
       const allTaskLabels = taskIds.length > 0 
         ? await db
             .select({
@@ -122,9 +127,8 @@ export async function GET(request: Request) {
             .execute(taskIds)
         : [];
 
-      // Group labels by taskId
-      const labelsByTaskId: Record<string, any[]> = {};
-      allTaskLabels.forEach((tl: any) => {
+      const labelsByTaskId: Record<string, Array<{ id: string; name: string; color: string; emoji: string }>> = {};
+      allTaskLabels.forEach((tl: { taskId: string; id: string; name: string; color: string; emoji: string }) => {
         if (!labelsByTaskId[tl.taskId]) {
           labelsByTaskId[tl.taskId] = [];
         }
@@ -137,7 +141,7 @@ export async function GET(request: Request) {
       });
 
       // Format results with labels
-      const tasksWithLabels = results.map((task: any) => ({
+      const tasksWithLabels = results.map(task => ({
         ...task,
         list: task.list || {
           id: '',

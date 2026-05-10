@@ -94,14 +94,14 @@ export default function TaskForm({
         db.select().from(labels),
       ]);
       
-      setListsList(listsResult.map(list => ({
+      setListsList(listsResult.map((list: typeof lists.$inferSelect) => ({
         id: list.id,
         name: list.name,
         color: list.color,
         emoji: list.emoji,
       })));
       
-      setLabelsList(labelsResult.map(label => ({
+      setLabelsList(labelsResult.map((label: typeof labels.$inferSelect) => ({
         id: label.id,
         name: label.name,
         color: label.color,

@@ -314,8 +314,7 @@ export default function DashboardPage() {
                  toast.error('Failed to update task');
                }
              }}
-            />
-             ) : (
+             />
               <div className="space-y-4">
                 {tasksList.map((task, index) => (
                    <div 
@@ -395,8 +394,7 @@ export default function DashboardPage() {
                    </div>
                 ))}
                </div>
-             )}
-         </main>
+          </main>
       </div>
     </>
   );
