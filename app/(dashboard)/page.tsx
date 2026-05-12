@@ -19,6 +19,7 @@ import {
    Folder 
 } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
+import ThemeToggle from '@/components/theme/ThemeToggle';
 import { createId } from '@paralleldrive/cuid2';
 import { RECURRENCE_OPTIONS } from '@/lib/constants';
 
@@ -104,26 +105,27 @@ export default function DashboardPage() {
         <div className="flex-1 overflow-hidden flex flex-col">
          <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
            <h1 className="text-2xl font-bold">Daily Planner</h1>
-           <div className="flex items-center gap-4">
-             <Button
-               variant="outline"
-               size="icon"
-               onClick={() => setIsAddingTask(true)}
-               aria-label="Add new task"
-             >
-               <Plus className="h-4 w-4" />
-             </Button>
-             <Button
-               variant="outline"
-               size="icon"
-               onClick={() => {
-                 // TODO: Implement filters modal
-               }}
-               aria-label="Filter tasks"
-             >
-               <Calendar className="h-4 w-4" />
-             </Button>
-           </div>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsAddingTask(true)}
+                aria-label="Add new task"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  // TODO: Implement filters modal
+                }}
+                aria-label="Filter tasks"
+              >
+                <Calendar className="h-4 w-4" />
+              </Button>
+            </div>
           </header>
           <main className="flex-1 overflow-y-auto p-6">
             {/* Add Task Form */}
