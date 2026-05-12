@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
+  DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuRoot
 } from '@/components/ui/dropdown-menu';
 
 export default function ThemeToggle() {
@@ -53,7 +53,7 @@ export default function ThemeToggle() {
   }, [theme]);
 
     return (
-      <DropdownMenuRoot>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" aria-label="Theme settings">
             {effectiveTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -70,6 +70,6 @@ export default function ThemeToggle() {
            Dark
          </DropdownMenuItem>
        </DropdownMenuContent>
-     </DropdownMenuRoot>
+      </DropdownMenu>
    );
 }

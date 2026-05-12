@@ -103,13 +103,10 @@ const DropdownMenuCheckboxItem = React.forwardRef<
 ));
 DropdownMenuCheckboxItem.displayName = 'DropdownMenuCheckboxItem';
 
-const DropdownMenuRoot = DropdownMenuPrimitive.Root;
-
 export {
   DropdownMenuTrigger,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuCheckboxItem,
-  DropdownMenuRoot,
 };
