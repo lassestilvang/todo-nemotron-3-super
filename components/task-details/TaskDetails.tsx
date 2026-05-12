@@ -289,7 +289,7 @@ setTask({
 
     if (isLoading) {
       return (
-        <Dialog>
+        <Dialog open={!!taskId} onOpenChange={(open) => { if (!open) onClose(); }}>
           <DialogContent className="w-[500px]">
             <DialogHeader>
               <DialogTitle>Loading...</DialogTitle>
@@ -305,11 +305,11 @@ setTask({
 
    if (!task) {
      return (
-       <Dialog>
-         <DialogContent className="w-[500px]">
-           <DialogHeader>
-             <DialogTitle>Error</DialogTitle>
-           </DialogHeader>
+       <Dialog open={!!taskId} onOpenChange={(open) => { if (!open) onClose(); }}>
+          <DialogContent className="w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Error</DialogTitle>
+            </DialogHeader>
            <div className="flex flex-col items-center justify-center py-8">
              <p className="text-center py-8">Task not found</p>
              <DialogFooter>
@@ -324,7 +324,7 @@ setTask({
    }
 
     return (
-      <Dialog>
+      <Dialog open={!!taskId} onOpenChange={(open) => { if (!open) onClose(); }}>
         <DialogContent className="w-[600px] p-6 space-y-6">
           <DialogHeader>
             <DialogTitle>{task.name}</DialogTitle>
