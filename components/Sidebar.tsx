@@ -126,7 +126,7 @@ export default function Sidebar() {
                  </span>
                </Button>
                {/* Add other lists here */}
-                {lists.map((list) => (
+                {lists.filter(l => l.id !== 'inbox').map((list) => (
                   <Button
                     key={list.id}
                     variant="default"
