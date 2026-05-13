@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/app/lib/db/index';
 import { tasks, lists, labels, taskLabels } from '@/app/lib/db/schema';
-import { eq, desc, and, isNotNull, sql } from 'drizzle-orm';
+import { eq, desc, and, isNotNull, sql, inArray } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -123,8 +123,7 @@ export async function GET(request: Request) {
             })
             .from(taskLabels)
             .innerJoin(labels, eq(taskLabels.labelId, labels.id))
-            .where(sql`${taskLabels.taskId} IN (${taskIds.map(() => '?').join(',')})`)
-            .execute(taskIds)
+            .where(inArray(taskLabels.taskId, taskIds))
         : [];
 
       const labelsByTaskId: Record<string, Array<{ id: string; name: string; color: string; emoji: string }>> = {};
