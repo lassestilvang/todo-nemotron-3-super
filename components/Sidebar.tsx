@@ -141,10 +141,10 @@ export default function Sidebar() {
                   <Input
                     placeholder="List name"
                     value={newListName}
-                    onChange={(e) => setNewListName(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') addList();
-                    }}
+                   onChange={(e) => setNewListName(e.target.value)}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter') addList();
+                   }}
                   />
                   <Button onClick={addList} size="icon" aria-label="Add list">
                     <Plus className="h-4 w-4" />
@@ -193,10 +193,10 @@ export default function Sidebar() {
                 <Input
                   placeholder="Label name"
                   value={newLabelName}
-                  onChange={(e) => setNewLabelName(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') addLabel();
-                  }}
+                   onChange={(e) => setNewLabelName(e.target.value)}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter') addLabel();
+                   }}
                 />
                 <Button onClick={addLabel} size="icon" aria-label="Add label">
                   <Plus className="h-4 w-4" />
