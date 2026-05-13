@@ -21,7 +21,6 @@ import {
 import TaskForm from '@/components/task-form/TaskForm';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import { createId } from '@paralleldrive/cuid2';
-import { RECURRENCE_OPTIONS } from '@/lib/constants';
 
 type Task = typeof tasks.$inferSelect & {
   list: Pick<typeof lists.$inferSelect, 'id' | 'name' | 'color' | 'emoji'>;
