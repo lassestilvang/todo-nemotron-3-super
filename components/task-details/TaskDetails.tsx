@@ -460,7 +460,7 @@ setTask({
                      />
                     <div className="flex-1 space-y-1">
                       <div className="flex items-baseline gap-2">
-                        <span className={`line-through text-muted-foreground`}>
+                        <span className={subtask.completed ? 'line-through text-muted-foreground' : ''}>
                           {subtask.name}
                         </span>
                       </div>
