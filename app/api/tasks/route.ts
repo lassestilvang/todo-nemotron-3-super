@@ -86,7 +86,7 @@ export async function GET(request: Request) {
       // Apply search filter
       if (searchQuery.trim()) {
         query = query.where(
-          sql`${tasks.name} ILIKE '%' || ${searchQuery} || '%' OR ${tasks.description} ILIKE '%' || ${searchQuery} || '%'`
+          sql`${tasks.name} LIKE '%' || ${searchQuery} || '%' OR ${tasks.description} LIKE '%' || ${searchQuery} || '%'`
         );
       }
 
