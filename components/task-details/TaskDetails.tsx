@@ -495,28 +495,28 @@ setTask({
                <p className="text-center py-8 text-muted-foreground">No activity</p>
              )}
            </TabsContent>
-         </Tabs>
-       </DialogContent>
-      <DialogFooter className="flex justify-end space-x-3">
-        <Button variant="outline" onClick={onClose}>
-          Close
-        </Button>
-         <Button
-           variant="destructive"
-           onClick={handleDelete}
-           disabled={isSaving}
-         >
-           {isSaving ? 'Deleting...' : 'Delete'}
-         </Button>
-         <Button
-           variant="outline"
-           onClick={handleSave}
-           disabled={isSaving}
-         >
-           {isSaving ? 'Saving...' : 'Save Changes'}
-         </Button>
-       </DialogFooter>
-     </Dialog>
+          </Tabs>
+          <DialogFooter className="flex justify-end space-x-3">
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isSaving}
+            >
+              {isSaving ? 'Deleting...' : 'Delete'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
    );
 };
 
