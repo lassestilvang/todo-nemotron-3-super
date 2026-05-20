@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Plus,
   Calendar,
@@ -20,9 +20,10 @@ import {
    DropdownMenuContent, 
    DropdownMenuItem, 
    DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
+ } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { MotionWrapper, slideInLeft } from '@/components/animations/motion-wrapper';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const views = [
   { name: 'Today', icon: Calendar, count: 0 },
@@ -46,6 +47,36 @@ export default function Sidebar() {
   const [selectedView, setSelectedView] = useState('Today');
   const [newListName, setNewListName] = useState('');
   const [newLabelName, setNewLabelName] = useState('');
+  const [listsLoading, setListsLoading] = useState(false);
+  const [labelsLoading, setLabelsLoading] = useState(false);
+
+  // Fetch data from API on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      setListsLoading(true);
+      setLabelsLoading(true);
+      try {
+        // TODO: Replace with actual API calls when backend is ready
+        // For now, we'll simulate with a timeout
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // In a real app, we would fetch from API endpoints
+        // const [listsResult, labelsResult] = await Promise.all([
+        //   fetch('/api/lists').then(res => res.json()),
+        //   fetch('/api/labels').then(res => res.json())
+        // ]);
+        // setLists(listsResult);
+        // setLabels(labelsResult);
+      } catch (error) {
+        console.error('Failed to fetch sidebar data:', error);
+      } finally {
+        setListsLoading(false);
+        setLabelsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const addList = () => {
     if (newListName.trim()) {
@@ -106,104 +137,136 @@ export default function Sidebar() {
             </CardContent>
           </Card>
 
-           {/* Lists */}
-           <Card className="mb-4">
-             <CardHeader className="pb-2">
-               <div className="flex items-center justify-between">
-                 <CardTitle className="text-lg font-semibold">Lists</CardTitle>
-               </div>
-              </CardHeader>
-             <CardContent className="space-y-2">
-               {/* Inbox (always first) */}
-               <Button
-                 variant={lists.find((l) => l.id === 'inbox') ? 'outline' : 'default'}
-                 className="w-full text-left justify-start px-3 py-2"
-                 onClick={() => {}}
-               >
-                 <span className="flex items-center gap-3">
-                   <Inbox className="h-4 w-4" />
-                   <span className="font-medium">Inbox</span>
-                 </span>
-               </Button>
-               {/* Add other lists here */}
-                {lists.filter(l => l.id !== 'inbox').map((list) => (
-                  <Button
-                    key={list.id}
-                    variant="default"
-                    className="w-full text-left justify-start px-3 py-2"
-                    onClick={() => {}}
-                  >
-                    <List className="h-4 w-4" />
-                    <span className="flex-1">{list.name}</span>
-                  </Button>
-                ))}
+            {/* Lists */}
+            <Card className="mb-4">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold">Lists</CardTitle>
+                </div>
+               </CardHeader>
+              <CardContent className="space-y-2">
+                {/* Inbox (always first) */}
+                <Button
+                  variant={lists.find((l) => l.id === 'inbox') ? 'outline' : 'default'}
+                  className="w-full text-left justify-start px-3 py-2"
+                  onClick={() => {}}
+                >
+                  <span className="flex items-center gap-3">
+                    <Inbox className="h-4 w-4" />
+                    <span className="font-medium">Inbox</span>
+                  </span>
+                </Button>
+                {/* Add other lists here */}
+                {listsLoading ? (
+                  <>
+                    <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse mb-2" />
+                    <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse mb-2" />
+                    <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse" />
+                  </>
+                ) : (
+                  <>
+                    {/* Inbox (always first) */}
+                    <Button
+                      variant={lists.find((l) => l.id === 'inbox') ? 'outline' : 'default'}
+                      className="w-full text-left justify-start px-3 py-2"
+                      onClick={() => {}}
+                    >
+                      <span className="flex items-center gap-3">
+                        <Inbox className="h-4 w-4" />
+                        <span className="font-medium">Inbox</span>
+                      </span>
+                    </Button>
+                    {/* Add other lists here */}
+                     {lists.filter(l => l.id !== 'inbox').map((list) => (
+                       <Button
+                         key={list.id}
+                         variant="default"
+                         className="w-full text-left justify-start px-3 py-2"
+                         onClick={() => {}}
+                       >
+                         <List className="h-4 w-4" />
+                         <span className="flex-1">{list.name}</span>
+                       </Button>
+                     ))}
+                  </>
+                )}
                 <div className="flex space-x-2">
                   <Input
                     placeholder="List name"
                     value={newListName}
                    onChange={(e) => setNewListName(e.target.value)}
-                   onKeyDown={(e) => {
-                     if (e.key === 'Enter') addList();
-                   }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') addList();
+                    }}
                   />
                   <Button onClick={addList} size="icon" aria-label="Add list">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
-           </Card>
+            </Card>
 
-           {/* Labels */}
-           <Card>
-             <CardHeader className="pb-2">
-               <div className="flex items-center justify-between">
-                 <CardTitle className="text-lg font-semibold">Labels</CardTitle>
-                   <DropdownMenu>
-                     <DropdownMenuTrigger asChild>
-                       <Button variant="ghost" size="icon" aria-label="Add label">
-                         <Plus className="h-4 w-4" />
-                       </Button>
-                     </DropdownMenuTrigger>
-                     <DropdownMenuContent align="end" sideOffset={4}>
-                       <DropdownMenuItem onClick={() => setNewLabelName('')}>
-                         New label
-                       </DropdownMenuItem>
-                     </DropdownMenuContent>
-                   </DropdownMenu>
-               </div>
-             </CardHeader>
-            <CardContent className="space-y-2">
-              {labels.map((label) => (
-                <Button
-                  key={label.id}
-                  variant="default"
-                  className="w-full text-left justify-start px-3 py-2"
-                  onClick={() => {}}
-                >
-                  <span className="flex items-center gap-3">
-                    <span className={`${label.color} h-5 w-5 flex items-center justify-center rounded`}>
-                      {label.emoji}
-                    </span>
-                    <span>{label.name}</span>
-                  </span>
-                </Button>
-              ))}
-              {/* Add label input */}
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="Label name"
-                  value={newLabelName}
-                   onChange={(e) => setNewLabelName(e.target.value)}
-                   onKeyDown={(e) => {
-                     if (e.key === 'Enter') addLabel();
-                   }}
-                />
-                <Button onClick={addLabel} size="icon" aria-label="Add label">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Labels */}
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold">Labels</CardTitle>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" aria-label="Add label">
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" sideOffset={4}>
+                        <DropdownMenuItem onClick={() => setNewLabelName('')}>
+                          New label
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+              </CardHeader>
+             <CardContent className="space-y-2">
+               {labelsLoading ? (
+                 <>
+                   <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse mb-2" />
+                   <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse mb-2" />
+                   <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse" />
+                 </>
+               ) : (
+                 <>
+                   {labels.map((label) => (
+                     <Button
+                       key={label.id}
+                       variant="default"
+                       className="w-full text-left justify-start px-3 py-2"
+                       onClick={() => {}}
+                     >
+                       <span className="flex items-center gap-3">
+                         <span className={`${label.color} h-5 w-5 flex items-center justify-center rounded`}>
+                           {label.emoji}
+                         </span>
+                         <span>{label.name}</span>
+                       </span>
+                     </Button>
+                   ))}
+                   {/* Add label input */}
+                   <div className="flex space-x-2">
+                     <Input
+                       placeholder="Label name"
+                       value={newLabelName}
+                        onChange={(e) => setNewLabelName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') addLabel();
+                        }}
+                     />
+                     <Button onClick={addLabel} size="icon" aria-label="Add label">
+                       <Plus className="h-4 w-4" />
+                     </Button>
+                   </div>
+                 </>
+               )}
+             </CardContent>
+           </Card>
         </div>
     </MotionWrapper>
   );
