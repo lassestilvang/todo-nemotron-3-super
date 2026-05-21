@@ -96,24 +96,34 @@ export default function DashboardPage() {
     fetchTasks();
   }, [activeTab, showCompleted, debouncedSearchQuery, filterListId, filterLabelId]);
 
-   const fetchInitialData = async () => {
-     setListsLoading(true);
-     setLabelsLoading(true);
-     try {
-       const [listsResult, labelsResult] = await Promise.all([
-         db.select().from(lists),
-         db.select().from(labels),
-       ]);
-       setListsList(listsResult);
-       setLabelsList(labelsResult);
-     } catch (error) {
-       console.error('Failed to fetch initial data:', error);
-       toast.error('Failed to load lists and labels');
-     } finally {
-       setListsLoading(false);
-       setLabelsLoading(false);
-     }
-   };
+    const fetchInitialData = async () => {
+      setListsLoading(true);
+      setLabelsLoading(true);
+      const cacheKey = 'initial_data';
+      const cached = apiCache.get(cacheKey);
+      if (cached) {
+        setListsList(cached.lists);
+        setLabelsList(cached.labels);
+        setListsLoading(false);
+        setLabelsLoading(false);
+        return;
+      }
+      try {
+        const [listsResult, labelsResult] = await Promise.all([
+          db.select().from(lists),
+          db.select().from(labels),
+        ]);
+        setListsList(listsResult);
+        setLabelsList(labelsResult);
+        apiCache.set(cacheKey, { lists: listsResult, labels: labelsResult }, 300); // 5 minutes
+      } catch (error) {
+        console.error('Failed to fetch initial data:', error);
+        toast.error('Failed to load lists and labels');
+      } finally {
+        setListsLoading(false);
+        setLabelsLoading(false);
+      }
+    };
  
         const fetchTasks = async () => {
           setTasksLoading(true);
