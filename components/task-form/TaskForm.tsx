@@ -88,25 +88,36 @@ export default function TaskForm({
   }, [isOpen]);
 
   const fetchInitialData = async () => {
+    const cacheKey = 'form_lists_labels';
+    const cached = apiCache.get(cacheKey);
+    if (cached) {
+      setListsList(cached.lists);
+      setLabelsList(cached.labels);
+      return;
+    }
     try {
       const [listsResult, labelsResult] = await Promise.all([
         db.select().from(lists),
         db.select().from(labels),
       ]);
       
-      setListsList(listsResult.map((list: typeof lists.$inferSelect) => ({
+      const lists = listsResult.map((list: typeof lists.$inferSelect) => ({
         id: list.id,
         name: list.name,
         color: list.color,
         emoji: list.emoji,
-      })));
+      }));
       
-      setLabelsList(labelsResult.map((label: typeof labels.$inferSelect) => ({
+      const labels = labelsResult.map((label: typeof labels.$inferSelect) => ({
         id: label.id,
         name: label.name,
         color: label.color,
         emoji: label.emoji,
-      })));
+      }));
+      
+      setListsList(lists);
+      setLabelsList(labels);
+      apiCache.set(cacheKey, { lists, labels }, 300); // 5 minutes
     } catch (error) {
       console.error('Failed to fetch initial data:', error);
     }
