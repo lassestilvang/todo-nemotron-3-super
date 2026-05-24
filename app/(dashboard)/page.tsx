@@ -12,11 +12,6 @@ import useDebounce from '@/hooks/use-debounce';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FixedSizeList as List } from 'react-window';
 import { apiCache } from '@/lib/cache';
-import {
-  Plus,
-  Calendar,
-} from 'lucide-react';
-
 import { toast, Toaster } from 'sonner';
 import { 
    Plus, 
@@ -24,7 +19,7 @@ import {
    Edit, 
    Clock, 
    Folder 
-} from 'lucide-react';
+ } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import { createId } from '@paralleldrive/cuid2';
@@ -88,42 +83,42 @@ export default function DashboardPage() {
         };
     }, [isAddingTask, editTaskId, selectedTaskId]);
 
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
+   useEffect(() => {
+     fetchInitialData();
+   }, []);
 
-  useEffect(() => {
-    fetchTasks();
-  }, [activeTab, showCompleted, debouncedSearchQuery, filterListId, filterLabelId]);
+   useEffect(() => {
+     fetchTasks();
+   }, [activeTab, showCompleted, debouncedSearchQuery, filterListId, filterLabelId]);
 
-    const fetchInitialData = async () => {
-      setListsLoading(true);
-      setLabelsLoading(true);
-      const cacheKey = 'initial_data';
-      const cached = apiCache.get(cacheKey);
-      if (cached) {
-        setListsList(cached.lists);
-        setLabelsList(cached.labels);
-        setListsLoading(false);
-        setLabelsLoading(false);
-        return;
-      }
-      try {
-        const [listsResult, labelsResult] = await Promise.all([
-          db.select().from(lists),
-          db.select().from(labels),
-        ]);
-        setListsList(listsResult);
-        setLabelsList(labelsResult);
-        apiCache.set(cacheKey, { lists: listsResult, labels: labelsResult }, 300); // 5 minutes
-      } catch (error) {
-        console.error('Failed to fetch initial data:', error);
-        toast.error('Failed to load lists and labels');
-      } finally {
-        setListsLoading(false);
-        setLabelsLoading(false);
-      }
-    };
+     const fetchInitialData = async () => {
+       setListsLoading(true);
+       setLabelsLoading(true);
+       const cacheKey = 'initial_data';
+       const cached = apiCache.get(cacheKey);
+       if (cached) {
+         setListsList(cached.lists);
+         setLabelsList(cached.labels);
+         setListsLoading(false);
+         setLabelsLoading(false);
+         return;
+       }
+       try {
+         const [listsResult, labelsResult] = await Promise.all([
+           db.select().from(lists),
+           db.select().from(labels),
+         ]);
+         setListsList(listsResult);
+         setLabelsList(labelsResult);
+         apiCache.set(cacheKey, { lists: listsResult, labels: labelsResult }, 300); // 5 minutes
+       } catch (error) {
+         console.error('Failed to fetch initial data:', error);
+         toast.error('Failed to load lists and labels');
+       } finally {
+         setListsLoading(false);
+         setLabelsLoading(false);
+       }
+     };
  
         const fetchTasks = async () => {
           setTasksLoading(true);
@@ -515,93 +510,93 @@ export default function DashboardPage() {
                 ) : (
                   <div className="space-y-4">
                     {tasksList.length > 0 ? (
-                      <List
-                        height={600}
-                        itemCount={tasksList.length}
-                        itemSize={100}
-                        width="full"
-                      >
-                        {({ index, style }) => (
-                          <div
-                            style={style}
-                            key={tasksList[index].id}
-                            className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
-                            onClick={() => setSelectedTaskId(tasksList[index].id)}
-                          >
-                            <Card className="p-4">
-                              <div className="flex items-start gap-4">
-                                  <Checkbox
-                                    checked={Boolean(tasksList[index].completed)}
-                                    onCheckedChange={(checkedState) => handleToggleComplete(tasksList[index].id, checkedState === true)}
-                                    className="flex-shrink-0"
-                                  />
-                                <div className="flex-1 space-y-2">
-                                  <div className="flex items-center gap-2">
-                                    <h3 className={`flex-1 font-semibold ${tasksList[index].completed ? 'line-through text-muted-foreground' : ''}`}>
-                                      {tasksList[index].name}
-                                    </h3>
-                                     <div className="flex items-center gap-2 text-xs">
-                                       {/* Priority badge */}
-                                       {tasksList[index].priority && tasksList[index].priority !== 'none' && (
-                                         <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                           tasksList[index].priority === 'high'
-                                             ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                           : tasksList[index].priority === 'medium'
-                                             ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                             : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                         }`}>
-                                           {tasksList[index].priority.charAt(0).toUpperCase() + tasksList[index].priority.slice(1)}
-                                         </span>
-                                       )}
-                                       {/* Overdue badge */}
-                                       {tasksList[index].deadline && new Date(tasksList[index].deadline) < new Date(Date.now()) && !tasksList[index].completed && (
-                                         <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                           Overdue
-                                         </span>
-                                       )}
-                                     </div>
-                                 </div>
-                                 
-                                 {tasksList[index].description && (
-                                   <p className="text-sm text-muted-foreground line-clamp-2">
-                                     {tasksList[index].description}
-                                   </p>
-                                 )}
-                                 
-                                 <div className="flex items-center gap-4 text-xs">
+                   <List
+                         height={600}
+                         itemCount={tasksList.length}
+                         itemSize={100}
+                         width="full"
+                         overscanCount={5}
+                       >
+                         {({ index, style }) => (
+                           <div
+                             style={style}
+                             key={tasksList[index].id}
+                             className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
+                             onClick={() => setSelectedTaskId(tasksList[index].id)}
+                           >
+                             <Card className="p-4">
+                               <div className="flex items-start gap-4">
+                                   <Checkbox
+                                     checked={Boolean(tasksList[index].completed)}
+                                     onCheckedChange={(checkedState) => handleToggleComplete(tasksList[index].id, checkedState === true)}
+                                     className="flex-shrink-0"
+                                   />
+                                 <div className="flex-1 space-y-2">
                                    <div className="flex items-center gap-2">
-                                     <Calendar className="h-4 w-4" />
-                                     <span>{tasksList[index].date ? new Date(tasksList[index].date).toLocaleDateString() : 'No date'}</span>
-                                   </div>
-                                   <div className="flex items-center gap-2">
-                                     <Clock className="h-4 w-4" />
-                                     <span>{tasksList[index].deadline ? new Date(tasksList[index].deadline).toLocaleString() : 'No deadline'}</span>
-                                   </div>
-                                   <div className="flex items-center gap-2">
-                                     <Folder className="h-4 w-4" />
-                                     <span>{tasksList[index].list.name}</span>
-                                   </div>
-                                   {tasksList[index].labels.length > 0 && (
-                                     <div className="flex flex-wrap gap-1">
-                                       {tasksList[index].labels.map((label) => (
-                                         <span
-                                           key={label.id}
-                                           className={`px-2 py-0.5 rounded text-xs font-medium ${label.color} text-${label.color === 'bg-blue-500' ? 'white' : label.color === 'bg-green-500' ? 'white' : label.color === 'bg-purple-500' ? 'white' : 'black'}`}
-                                         >
-                                           {label.emoji} {label.name}
-                                         </span>
-                                       ))}
-                                     </div>
-                                   )}
-                                 </div>
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                       </Card>
-                     </div>
-                        )}
-                      </List>
+                                     <h3 className={`flex-1 font-semibold ${tasksList[index].completed ? 'line-through text-muted-foreground' : ''}`}>
+                                       {tasksList[index].name}
+                                     </h3>
+                                      <div className="flex items-center gap-2 text-xs">
+                                        {/* Priority badge */}
+                                        {tasksList[index].priority && tasksList[index].priority !== 'none' && (
+                                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                            tasksList[index].priority === 'high'
+                                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                              : tasksList[index].priority === 'medium'
+                                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                          }`}>
+                                            {tasksList[index].priority.charAt(0).toUpperCase() + tasksList[index].priority.slice(1)}
+                                          </span>
+                                        )}
+                                        {/* Overdue badge */}
+                                        {tasksList[index].deadline && new Date(tasksList[index].deadline) < new Date(Date.now()) && !tasksList[index].completed && (
+                                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                            Overdue
+                                          </span>
+                                        )}
+                                      </div>
+                                  </div>
+                                  
+                                  {tasksList[index].description && (
+                                    <p className="text-sm text-muted-foreground line-clamp-2">
+                                      {tasksList[index].description}
+                                    </p>
+                                  )}
+                                  
+                                  <div className="flex items-center gap-4 text-xs">
+                                    <div className="flex items-center gap-2">
+                                      <Calendar className="h-4 w-4" />
+                                      <span>{tasksList[index].date ? new Date(tasksList[index].date).toLocaleDateString() : 'No date'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Clock className="h-4 w-4" />
+                                      <span>{tasksList[index].deadline ? new Date(tasksList[index].deadline).toLocaleString() : 'No deadline'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Folder className="h-4 w-4" />
+                                      <span>{tasksList[index].list.name}</span>
+                                    </div>
+                                    {tasksList[index].labels.length > 0 && (
+                                      <div className="flex flex-wrap gap-1">
+                                        {tasksList[index].labels.map((label) => (
+                                          <span
+                                            key={label.id}
+                                            className={`px-2 py-0.5 rounded text-xs font-medium ${label.color} text-${label.color === 'bg-blue-500' ? 'white' : label.color === 'bg-green-500' ? 'white' : label.color === 'bg-purple-500' ? 'white' : 'black'}`}
+                                          >
+                                            {label.emoji} {label.name}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        </div>
+                         )}
+                       </List>
                      ) : (
                        <div className="text-center py-16">
                          <div className="flex h-64 w-64 mx-auto items-center justify-center">
