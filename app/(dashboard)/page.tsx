@@ -513,9 +513,9 @@ export default function DashboardPage() {
                    <List
                          height={600}
                          itemCount={tasksList.length}
-                         itemSize={100}
+                         itemSize={120}
                          width="full"
-                         overscanCount={5}
+                         overscanCount={10}
                        >
                          {({ index, style }) => (
                            <div
