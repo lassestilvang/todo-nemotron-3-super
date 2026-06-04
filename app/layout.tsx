@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Sidebar from '@/components/Sidebar';
+import { AppProvider } from '@/lib/app-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,8 +19,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.className}>
       <body className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-background duration-200">
-        <Sidebar />
-        {children}
+        <AppProvider>
+          <Sidebar />
+          {children}
+        </AppProvider>
       </body>
     </html>
   );
