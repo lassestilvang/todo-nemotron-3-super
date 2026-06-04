@@ -11,8 +11,8 @@ import { Input } from '@/components/ui/input';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
 import { Skeleton } from '@/components/ui/skeleton';
-import { List } from 'react-window';
 import { apiCache } from '@/lib/cache';
+import { List } from 'react-window';
 import { toast, Toaster } from 'sonner';
 import { 
    Plus, 
@@ -22,13 +22,14 @@ import {
    Folder,
    Search,
    X,
- } from 'lucide-react';
+  } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import KeyboardShortcutsHelp from '@/components/keyboard-shortcuts';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { createId } from '@paralleldrive/cuid2';
 import { useApp } from '@/lib/app-context';
+import { SortableTaskList } from '@/components/task-list/SortableTaskList';
 
 type Task = typeof tasks.$inferSelect & {
   list: Pick<typeof lists.$inferSelect, 'id' | 'name' | 'color' | 'emoji'>;
@@ -36,111 +37,6 @@ type Task = typeof tasks.$inferSelect & {
 };
 
 type ViewType = 'today' | 'next7' | 'upcoming' | 'all';
-
-interface TaskRowProps {
-  index: number;
-  style: React.CSSProperties;
-  ariaAttributes: {
-    "aria-posinset": number;
-    "aria-setsize": number;
-    role: "listitem";
-  };
-  tasks: Task[];
-  onToggleComplete: (taskId: string, completed: boolean) => void;
-  onSelectTask: (taskId: string) => void;
-  selectedTaskIds: Set<string>;
-}
-
-function TaskRow({ index, style, tasks, onToggleComplete, onSelectTask, selectedTaskIds }: TaskRowProps) {
-  const task = tasks[index];
-  if (!task) return null;
-
-  const isSelected = selectedTaskIds.has(task.id);
-
-  return (
-    <div
-      style={style}
-      key={task.id}
-      className={`border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer ${isSelected ? 'ring-2 ring-primary bg-primary/5' : ''}`}
-      onClick={() => onSelectTask(task.id)}
-    >
-      <Card className="p-4">
-        <div className="flex items-start gap-4">
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={(checked) => onSelectTask(task.id)}
-            className="flex-shrink-0"
-          />
-          <Checkbox
-            checked={Boolean(task.completed)}
-            onCheckedChange={(checkedState) => onToggleComplete(task.id, checkedState === true)}
-            className="flex-shrink-0"
-          />
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-2">
-              <h3 className={`flex-1 font-semibold ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
-                {task.name}
-              </h3>
-              <div className="flex items-center gap-2 text-xs">
-                {/* Priority badge */}
-                {task.priority && task.priority !== 'none' && (
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    task.priority === 'high'
-                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      : task.priority === 'medium'
-                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                  }`}>
-                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                  </span>
-                )}
-                {/* Overdue badge */}
-                {task.deadline && new Date(task.deadline) < new Date(Date.now()) && !task.completed && (
-                  <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                    Overdue
-                  </span>
-                )}
-              </div>
-            </div>
-            
-            {task.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {task.description}
-              </p>
-            )}
-            
-            <div className="flex items-center gap-4 text-xs">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span>{task.date ? new Date(task.date).toLocaleDateString() : 'No date'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>{task.deadline ? new Date(task.deadline).toLocaleString() : 'No deadline'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Folder className="h-4 w-4" />
-                <span>{task.list.name}</span>
-              </div>
-              {task.labels.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {task.labels.map((label) => (
-                    <span
-                      key={label.id}
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${label.color} text-${label.color === 'bg-blue-500' ? 'white' : label.color === 'bg-green-500' ? 'white' : label.color === 'bg-purple-500' ? 'white' : 'black'}`}
-                    >
-                      {label.emoji} {label.name}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const {
@@ -723,19 +619,19 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-4">
               {tasksList.length > 0 ? (
-                <List
-                  rowCount={tasksList.length}
-                  rowHeight={120}
-                  defaultHeight={600}
-                  style={{ width: '100%' }}
-                  overscanCount={10}
-                  rowComponent={TaskRow as any}
-                  rowProps={{
-                    tasks: tasksList,
-                    onToggleComplete: handleToggleComplete,
-                    onSelectTask: handleSelectTask,
-                    selectedTaskIds,
+                <SortableTaskList
+                  tasks={tasksList}
+                  onToggleComplete={handleToggleComplete}
+                  onSelectTask={handleSelectTask}
+                  onReorderTasks={async (taskIds) => {
+                    // Update order in database
+                    for (let i = 0; i < taskIds.length; i++) {
+                      await db.update(tasks).set({ sortOrder: i }).where(eq(tasks.id, taskIds[i]));
+                    }
+                    await fetchTasks();
                   }}
+                  selectedTaskIds={selectedTaskIds}
+                  isLoading={tasksLoading}
                 />
               ) : (
                 <div className="text-center py-16">

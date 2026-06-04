@@ -36,6 +36,7 @@ export const tasks = sqliteTable('tasks', {
    priority: text('priority', { enum: ['high', 'medium', 'low', 'none'] }).default('none'),
    completed: integer('completed', { mode: 'boolean' }).default(false),
    recurrence: text('recurrence'), // e.g., 'daily', 'weekly', 'monthly', 'yearly', 'custom'
+   sortOrder: integer('sort_order').default(0),
    createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
@@ -87,3 +88,4 @@ export const tasksListIdIndex = index('tasks_list_id_idx').on(tasks.listId);
 export const tasksDateIndex = index('tasks_date_idx').on(tasks.date);
 export const tasksDeadlineIndex = index('tasks_deadline_idx').on(tasks.deadline);
 export const tasksCompletedIndex = index('tasks_completed_idx').on(tasks.completed);
+export const tasksSortOrderIndex = index('tasks_sort_order_idx').on(tasks.sortOrder);
