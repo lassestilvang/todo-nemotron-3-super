@@ -267,6 +267,23 @@ setTask({
     }
   };
 
+  const handleSubtaskToggle = async (subtaskId: string, completed: boolean) => {
+    setIsSaving(true);
+    try {
+      await db
+        .update(subtasks)
+        .set({ completed })
+        .where(eq(subtasks.id, subtaskId));
+
+      toast.success(`Subtask marked as ${completed ? 'complete' : 'incomplete'}`);
+    } catch (error) {
+      console.error('Failed to toggle subtask completion:', error);
+      toast.error('Failed to toggle subtask');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleToggleComplete = async () => {
     if (!task) return;
 
@@ -446,18 +463,16 @@ setTask({
               </div>
             </div>
           </TabsContent>
-           <TabsContent value="subtasks" className="mt-2">
-             {task.subtasks.length > 0 ? (
-               <div className="space-y-2">
-                 {task.subtasks.map((subtask) => (
-                   <div key={subtask.id} className="flex items-start gap-3">
-                     <Checkbox
-                       checked={Boolean(subtask.completed)}
-                       onCheckedChange={(checked) => {
-                         // TODO: Implement subtask toggle
-                       }}
-                       className="flex-shrink-0"
-                     />
+          <TabsContent value="subtasks" className="mt-2">
+            {task.subtasks.length > 0 ? (
+              <div className="space-y-2">
+                {task.subtasks.map((subtask) => (
+                  <div key={subtask.id} className="flex items-start gap-3">
+                      <Checkbox
+                        checked={Boolean(subtask.completed)}
+                        onCheckedChange={(checked) => handleSubtaskToggle(subtask.id, checked === true)}
+                        className="flex-shrink-0"
+                      />
                     <div className="flex-1 space-y-1">
                       <div className="flex items-baseline gap-2">
                         <span className={subtask.completed ? 'line-through text-muted-foreground' : ''}>
@@ -471,7 +486,7 @@ setTask({
             ) : (
               <p className="text-center py-8 text-muted-foreground">No subtasks</p>
             )}
-           </TabsContent>
+          </TabsContent>
            <TabsContent value="activity" className="mt-2">
              {task.changes.length > 0 ? (
                <div className="space-y-2">
