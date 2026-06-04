@@ -45,21 +45,29 @@ interface TaskRowProps {
   tasks: Task[];
   onToggleComplete: (taskId: string, completed: boolean) => void;
   onSelectTask: (taskId: string) => void;
+  selectedTaskIds: Set<string>;
 }
 
-function TaskRow({ index, style, tasks, onToggleComplete, onSelectTask }: TaskRowProps) {
+function TaskRow({ index, style, tasks, onToggleComplete, onSelectTask, selectedTaskIds }: TaskRowProps) {
   const task = tasks[index];
   if (!task) return null;
+
+  const isSelected = selectedTaskIds.has(task.id);
 
   return (
     <div
       style={style}
       key={task.id}
-      className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
+      className={`border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer ${isSelected ? 'ring-2 ring-primary bg-primary/5' : ''}`}
       onClick={() => onSelectTask(task.id)}
     >
       <Card className="p-4">
         <div className="flex items-start gap-4">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={(checked) => onSelectTask(task.id)}
+            className="flex-shrink-0"
+          />
           <Checkbox
             checked={Boolean(task.completed)}
             onCheckedChange={(checkedState) => onToggleComplete(task.id, checkedState === true)}
@@ -151,6 +159,7 @@ export default function DashboardPage() {
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [tasksLoading, setTasksLoading] = useState(false);
 
   // Keyboard shortcuts
@@ -250,6 +259,64 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSelectTask = (taskId: string) => {
+    if (selectedTaskIds.has(taskId)) {
+      setSelectedTaskIds(prev => {
+        const next = new Set(prev);
+        next.delete(taskId);
+        return next;
+      });
+    } else {
+      setSelectedTaskIds(prev => new Set(prev).add(taskId));
+    }
+    // Also set selectedTaskId for details view (single click)
+    if (!selectedTaskIds.has(taskId)) {
+      setSelectedTaskId(taskId);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedTaskIds.size === tasksList.length) {
+      setSelectedTaskIds(new Set());
+    } else {
+      setSelectedTaskIds(new Set(tasksList.map(t => t.id)));
+    }
+  };
+
+  const handleBulkComplete = async (completed: boolean) => {
+    if (selectedTaskIds.size === 0) return;
+    
+    try {
+      for (const taskId of selectedTaskIds) {
+        await db.update(tasks).set({ completed }).where(eq(tasks.id, taskId));
+      }
+      setSelectedTaskIds(new Set());
+      await fetchTasks();
+      toast.success(`${selectedTaskIds.size} task${selectedTaskIds.size > 1 ? 's' : ''} marked as ${completed ? 'complete' : 'incomplete'}`);
+    } catch (error) {
+      console.error('Failed to bulk update tasks:', error);
+      toast.error('Failed to update tasks');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedTaskIds.size === 0) return;
+    
+    if (!window.confirm(`Delete ${selectedTaskIds.size} task${selectedTaskIds.size > 1 ? 's' : ''}?`)) return;
+    
+    try {
+      for (const taskId of selectedTaskIds) {
+        await db.delete(tasks).where(eq(tasks.id, taskId));
+      }
+      setSelectedTaskIds(new Set());
+      await fetchTasks();
+      toast.success(`${selectedTaskIds.size} task${selectedTaskIds.size > 1 ? 's' : ''} deleted`);
+    } catch (error) {
+      console.error('Failed to delete tasks:', error);
+      toast.error('Failed to delete tasks');
+    }
+  };
+
   return (
     <>
       <Toaster />
@@ -280,6 +347,48 @@ export default function DashboardPage() {
               </Button>
             </div>
           </header>
+          {selectedTaskIds.size > 0 && (
+            <div className="px-6 py-2 bg-primary/5 border-b border-primary/20 flex items-center justify-between">
+              <span className="text-sm font-medium text-primary">
+                {selectedTaskIds.size} task{selectedTaskIds.size > 1 ? 's' : ''} selected
+              </span>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={selectedTaskIds.size === tasksList.length && tasksList.length > 0}
+                  onCheckedChange={() => handleSelectAll()}
+                  aria-label="Select all"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkComplete(true)}
+                >
+                  Mark Complete
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkComplete(false)}
+                >
+                  Mark Incomplete
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                >
+                  Delete
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedTaskIds(new Set())}
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+          )}
           <main className="flex-1 overflow-y-auto p-6">
           {/* Add Task Form */}
           <TaskForm
@@ -594,7 +703,8 @@ export default function DashboardPage() {
                   rowProps={{
                     tasks: tasksList,
                     onToggleComplete: handleToggleComplete,
-                    onSelectTask: setSelectedTaskId,
+                    onSelectTask: handleSelectTask,
+                    selectedTaskIds,
                   }}
                 />
               ) : (
