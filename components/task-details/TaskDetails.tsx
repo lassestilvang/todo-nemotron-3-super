@@ -24,7 +24,9 @@ import { RECURRENCE_OPTIONS } from '@/lib/constants';
 import { 
   Calendar, 
   Loader,
+  Plus,
 } from 'lucide-react';
+import { createId } from '@paralleldrive/cuid2';
 
 const TaskDetails = ({ 
   taskId, 
@@ -66,6 +68,118 @@ const TaskDetails = ({
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [newSubtaskName, setNewSubtaskName] = useState('');
+
+  const handleAddSubtask = async () => {
+    if (!newSubtaskName.trim() || !task) return;
+    
+    setIsSaving(true);
+    try {
+      await db.insert(subtasks).values({
+        id: createId(),
+        taskId: task.id,
+        name: newSubtaskName.trim(),
+        completed: false,
+      });
+      
+      toast.success('Subtask added');
+      setNewSubtaskName('');
+      
+      // Refresh the task to get updated subtasks
+      const taskResult = await db
+        .select({
+          id: tasks.id,
+          name: tasks.name,
+          description: tasks.description,
+          date: tasks.date,
+          deadline: tasks.deadline,
+          reminders: tasks.reminders,
+          estimate: tasks.estimate,
+          actualTime: tasks.actualTime,
+          priority: tasks.priority,
+          completed: tasks.completed,
+          recurrence: tasks.recurrence,
+          listId: tasks.listId,
+          createdAt: tasks.createdAt,
+          updatedAt: tasks.updatedAt,
+          list: {
+            id: lists.id,
+            name: lists.name,
+            color: lists.color,
+            emoji: lists.emoji,
+          },
+        })
+        .from(tasks)
+        .leftJoin(lists, eq(tasks.listId, lists.id))
+        .where(eq(tasks.id, taskId))
+        .limit(1);
+
+      const taskData = taskResult[0];
+      if (taskData) {
+        const labelsResult = await db
+          .select({
+            id: labels.id,
+            name: labels.name,
+            color: labels.color,
+            emoji: labels.emoji,
+          })
+          .from(taskLabels)
+          .innerJoin(labels, eq(taskLabels.labelId, labels.id))
+          .where(eq(taskLabels.taskId, taskId));
+
+        const subtasksResult = await db
+          .select()
+          .from(subtasks)
+          .where(eq(subtasks.taskId, taskId))
+          .orderBy(desc(subtasks.createdAt));
+
+        const attachmentsResult = await db
+          .select()
+          .from(attachments)
+          .where(eq(attachments.taskId, taskId))
+          .orderBy(desc(attachments.uploadedAt));
+
+        const changesResult = await db
+          .select()
+          .from(taskChanges)
+          .where(eq(taskChanges.taskId, taskId))
+          .orderBy(desc(taskChanges.changedAt))
+          .limit(50);
+
+        setTask({
+          id: taskData.id,
+          name: taskData.name,
+          description: taskData.description,
+          date: taskData.date ? new Date(taskData.date) : null,
+          deadline: taskData.deadline ? new Date(taskData.deadline) : null,
+          reminders: taskData.reminders,
+          estimate: taskData.estimate,
+          actualTime: taskData.actualTime,
+          priority: taskData.priority,
+          completed: !!taskData.completed,
+          recurrence: taskData.recurrence,
+          listId: taskData.listId,
+          createdAt: new Date(taskData.createdAt),
+          updatedAt: new Date(taskData.updatedAt),
+          list: taskData.list || {
+            id: '',
+            name: 'No List',
+            color: 'bg-gray-500',
+            emoji: '🔲',
+          },
+          labels: labelsResult,
+          subtasks: subtasksResult,
+          attachments: attachmentsResult,
+          changes: changesResult,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to add subtask:', error);
+      toast.error('Failed to add subtask');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     const loadTask = async () => {
@@ -464,6 +578,17 @@ setTask({
             </div>
           </TabsContent>
           <TabsContent value="subtasks" className="mt-2">
+            <div className="flex gap-2 mb-4">
+              <Input
+                placeholder="Add subtask..."
+                value={newSubtaskName}
+                onChange={(e) => setNewSubtaskName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleAddSubtask(); }}
+              />
+              <Button onClick={handleAddSubtask} disabled={!newSubtaskName.trim() || isSaving} size="sm">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
             {task.subtasks.length > 0 ? (
               <div className="space-y-2">
                 {task.subtasks.map((subtask) => (
