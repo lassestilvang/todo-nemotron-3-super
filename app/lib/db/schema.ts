@@ -19,6 +19,10 @@ export const labels = sqliteTable('labels', {
    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
+// Type exports for use in components
+export type List = typeof lists.$inferSelect;
+export type Label = typeof labels.$inferSelect;
+
 export const tasks = sqliteTable('tasks', {
    id: text('id').primaryKey().$defaultFn(() => createId()),
    listId: text('list_id').notNull().references(() => lists.id),

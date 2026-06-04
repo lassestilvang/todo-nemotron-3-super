@@ -3,15 +3,15 @@ interface CacheItem<T> {
   timestamp: number;
 }
 
-class Cache<T> {
-  private cache: Map<string, CacheItem<T>> = new Map();
+class Cache {
+  private cache: Map<string, CacheItem<any>> = new Map();
   private defaultTTL: number;
 
   constructor(defaultTTLSeconds: number = 30) {
     this.defaultTTL = defaultTTLSeconds * 1000; // Convert to milliseconds
   }
 
-  get(key: string): T | null {
+  get<T>(key: string): T | null {
     const item = this.cache.get(key);
     if (!item) {
       return null;
@@ -24,10 +24,10 @@ class Cache<T> {
       return null;
     }
 
-    return item.data;
+    return item.data as T;
   }
 
-  set(key: string, data: T, ttlSeconds?: number): void {
+  set(key: string, data: any, ttlSeconds?: number): void {
     const ttl = ttlSeconds ? ttlSeconds * 1000 : this.defaultTTL;
     this.cache.set(key, {
       data,
@@ -44,7 +44,7 @@ class Cache<T> {
   }
 
   // Utility method to create cached fetch function
-  createCachedFetch(
+  createCachedFetch<T>(
     fetchFn: () => Promise<T>,
     key: string,
     ttlSeconds?: number

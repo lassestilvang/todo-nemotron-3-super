@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FixedSizeList as List } from 'react-window';
+import { List } from 'react-window';
 import { apiCache } from '@/lib/cache';
 import { toast, Toaster } from 'sonner';
 import { 
@@ -30,6 +30,103 @@ type Task = typeof tasks.$inferSelect & {
 };
 
 type ViewType = 'today' | 'next7' | 'upcoming' | 'all';
+
+interface TaskRowProps {
+  index: number;
+  style: React.CSSProperties;
+  ariaAttributes: {
+    "aria-posinset": number;
+    "aria-setsize": number;
+    role: "listitem";
+  };
+  tasks: Task[];
+  onToggleComplete: (taskId: string, completed: boolean) => void;
+  onSelectTask: (taskId: string) => void;
+}
+
+function TaskRow({ index, style, tasks, onToggleComplete, onSelectTask }: TaskRowProps) {
+  const task = tasks[index];
+  if (!task) return null;
+
+  return (
+    <div
+      style={style}
+      key={task.id}
+      className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
+      onClick={() => onSelectTask(task.id)}
+    >
+      <Card className="p-4">
+        <div className="flex items-start gap-4">
+          <Checkbox
+            checked={Boolean(task.completed)}
+            onCheckedChange={(checkedState) => onToggleComplete(task.id, checkedState === true)}
+            className="flex-shrink-0"
+          />
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center gap-2">
+              <h3 className={`flex-1 font-semibold ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+                {task.name}
+              </h3>
+              <div className="flex items-center gap-2 text-xs">
+                {/* Priority badge */}
+                {task.priority && task.priority !== 'none' && (
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    task.priority === 'high'
+                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      : task.priority === 'medium'
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                  }`}>
+                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                  </span>
+                )}
+                {/* Overdue badge */}
+                {task.deadline && new Date(task.deadline) < new Date(Date.now()) && !task.completed && (
+                  <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                    Overdue
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            {task.description && (
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {task.description}
+              </p>
+            )}
+            
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span>{task.date ? new Date(task.date).toLocaleDateString() : 'No date'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                <span>{task.deadline ? new Date(task.deadline).toLocaleString() : 'No deadline'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Folder className="h-4 w-4" />
+                <span>{task.list.name}</span>
+              </div>
+              {task.labels.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {task.labels.map((label) => (
+                    <span
+                      key={label.id}
+                      className={`px-2 py-0.5 rounded text-xs font-medium ${label.color} text-${label.color === 'bg-blue-500' ? 'white' : label.color === 'bg-green-500' ? 'white' : label.color === 'bg-purple-500' ? 'white' : 'black'}`}
+                    >
+                      {label.emoji} {label.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
     const [tasksList, setTasksList] = useState<Task[]>([]);
@@ -91,14 +188,14 @@ export default function DashboardPage() {
      fetchTasks();
    }, [activeTab, showCompleted, debouncedSearchQuery, filterListId, filterLabelId]);
 
-     const fetchInitialData = async () => {
-       setListsLoading(true);
-       setLabelsLoading(true);
-       const cacheKey = 'initial_data';
-       const cached = apiCache.get(cacheKey);
-       if (cached) {
-         setListsList(cached.lists);
-         setLabelsList(cached.labels);
+      const fetchInitialData = async () => {
+        setListsLoading(true);
+        setLabelsLoading(true);
+        const cacheKey = 'initial_data';
+        const cached = apiCache.get<{ lists: typeof lists.$inferSelect[]; labels: typeof labels.$inferSelect[] }>(cacheKey);
+        if (cached) {
+          setListsList(cached.lists);
+          setLabelsList(cached.labels);
          setListsLoading(false);
          setLabelsLoading(false);
          return;
@@ -507,97 +604,23 @@ export default function DashboardPage() {
                      </div>
                    </div>
                  </>
-                ) : (
-                  <div className="space-y-4">
-                    {tasksList.length > 0 ? (
-                   <List
-                         height={600}
-                         itemCount={tasksList.length}
-                         itemSize={120}
-                         width="full"
-                         overscanCount={10}
-                       >
-                         {({ index, style }) => (
-                           <div
-                             style={style}
-                             key={tasksList[index].id}
-                             className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer"
-                             onClick={() => setSelectedTaskId(tasksList[index].id)}
-                           >
-                             <Card className="p-4">
-                               <div className="flex items-start gap-4">
-                                   <Checkbox
-                                     checked={Boolean(tasksList[index].completed)}
-                                     onCheckedChange={(checkedState) => handleToggleComplete(tasksList[index].id, checkedState === true)}
-                                     className="flex-shrink-0"
-                                   />
-                                 <div className="flex-1 space-y-2">
-                                   <div className="flex items-center gap-2">
-                                     <h3 className={`flex-1 font-semibold ${tasksList[index].completed ? 'line-through text-muted-foreground' : ''}`}>
-                                       {tasksList[index].name}
-                                     </h3>
-                                      <div className="flex items-center gap-2 text-xs">
-                                        {/* Priority badge */}
-                                        {tasksList[index].priority && tasksList[index].priority !== 'none' && (
-                                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                            tasksList[index].priority === 'high'
-                                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                              : tasksList[index].priority === 'medium'
-                                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                          }`}>
-                                            {tasksList[index].priority.charAt(0).toUpperCase() + tasksList[index].priority.slice(1)}
-                                          </span>
-                                        )}
-                                        {/* Overdue badge */}
-                                        {tasksList[index].deadline && new Date(tasksList[index].deadline) < new Date(Date.now()) && !tasksList[index].completed && (
-                                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                            Overdue
-                                          </span>
-                                        )}
-                                      </div>
-                                  </div>
-                                  
-                                  {tasksList[index].description && (
-                                    <p className="text-sm text-muted-foreground line-clamp-2">
-                                      {tasksList[index].description}
-                                    </p>
-                                  )}
-                                  
-                                  <div className="flex items-center gap-4 text-xs">
-                                    <div className="flex items-center gap-2">
-                                      <Calendar className="h-4 w-4" />
-                                      <span>{tasksList[index].date ? new Date(tasksList[index].date).toLocaleDateString() : 'No date'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Clock className="h-4 w-4" />
-                                      <span>{tasksList[index].deadline ? new Date(tasksList[index].deadline).toLocaleString() : 'No deadline'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Folder className="h-4 w-4" />
-                                      <span>{tasksList[index].list.name}</span>
-                                    </div>
-                                    {tasksList[index].labels.length > 0 && (
-                                      <div className="flex flex-wrap gap-1">
-                                        {tasksList[index].labels.map((label) => (
-                                          <span
-                                            key={label.id}
-                                            className={`px-2 py-0.5 rounded text-xs font-medium ${label.color} text-${label.color === 'bg-blue-500' ? 'white' : label.color === 'bg-green-500' ? 'white' : label.color === 'bg-purple-500' ? 'white' : 'black'}`}
-                                          >
-                                            {label.emoji} {label.name}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </Card>
-                        </div>
-                         )}
-                       </List>
-                     ) : (
+                  ) : (
+                    <div className="space-y-4">
+                      {tasksList.length > 0 ? (
+                        <List
+                          rowCount={tasksList.length}
+                          rowHeight={120}
+                          defaultHeight={600}
+                          style={{ width: '100%' }}
+                          overscanCount={10}
+                          rowComponent={TaskRow as any}
+                          rowProps={{
+                            tasks: tasksList,
+                            onToggleComplete: handleToggleComplete,
+                            onSelectTask: setSelectedTaskId,
+                          }}
+                        />
+                      ) : (
                        <div className="text-center py-16">
                          <div className="flex h-64 w-64 mx-auto items-center justify-center">
                            <svg className="h-full w-full text-muted-foreground/50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

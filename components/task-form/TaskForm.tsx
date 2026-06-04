@@ -14,8 +14,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { db } from '@/app/lib/db/index';
-import { lists, labels } from '@/app/lib/db/schema';
+import { lists, labels, type List, type Label as LabelType } from '@/app/lib/db/schema';
 import { RECURRENCE_OPTIONS } from '@/lib/constants';
+import { apiCache } from '@/lib/cache';
 
 interface TaskFormProps {
   isOpen: boolean;
@@ -89,35 +90,33 @@ export default function TaskForm({
 
   const fetchInitialData = async () => {
     const cacheKey = 'form_lists_labels';
-    const cached = apiCache.get(cacheKey);
+    const cached = apiCache.get<{ lists: Array<{id: string; name: string; color: string; emoji: string}>; labels: Array<{id: string; name: string; color: string; emoji: string}> }>(cacheKey);
     if (cached) {
       setListsList(cached.lists);
       setLabelsList(cached.labels);
       return;
     }
     try {
-      const [listsResult, labelsResult] = await Promise.all([
-        db.select().from(lists),
-        db.select().from(labels),
-      ]);
+      const listsResult: List[] = await db.select().from(lists) as unknown as List[];
+      const labelsResult: LabelType[] = await db.select().from(labels) as unknown as LabelType[];
       
-      const lists = listsResult.map((list: typeof lists.$inferSelect) => ({
+      const listItems = listsResult.map((list: List) => ({
         id: list.id,
         name: list.name,
         color: list.color,
         emoji: list.emoji,
       }));
       
-      const labels = labelsResult.map((label: typeof labels.$inferSelect) => ({
+      const labelItems = labelsResult.map((label: LabelType) => ({
         id: label.id,
         name: label.name,
         color: label.color,
         emoji: label.emoji,
       }));
       
-      setListsList(lists);
-      setLabelsList(labels);
-      apiCache.set(cacheKey, { lists, labels }, 300); // 5 minutes
+      setListsList(listItems);
+      setLabelsList(labelItems);
+      apiCache.set(cacheKey, { lists: listItems, labels: labelItems }, 300); // 5 minutes
     } catch (error) {
       console.error('Failed to fetch initial data:', error);
     }
