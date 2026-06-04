@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,7 +19,9 @@ import {
    Calendar, 
    Edit, 
    Clock, 
-   Folder 
+   Folder,
+   Search,
+   X,
  } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import ThemeToggle from '@/components/theme/ThemeToggle';
@@ -161,6 +164,7 @@ export default function DashboardPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [tasksLoading, setTasksLoading] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -330,6 +334,15 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="icon"
+                onClick={() => setShowSearch(!showSearch)}
+                aria-label="Toggle search"
+                className={showSearch ? 'bg-primary/10' : ''}
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={() => setIsAddingTask(true)}
                 aria-label="Add new task"
               >
@@ -347,6 +360,23 @@ export default function DashboardPage() {
               </Button>
             </div>
           </header>
+          {showSearch && (
+            <div className="px-6 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <Search className="h-5 w-5 text-muted-foreground" />
+                <Input
+                  placeholder="Search tasks..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1"
+                  autoFocus
+                />
+                <Button variant="ghost" size="icon" onClick={() => { setSearchQuery(''); setShowSearch(false); }}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
           {selectedTaskIds.size > 0 && (
             <div className="px-6 py-2 bg-primary/5 border-b border-primary/20 flex items-center justify-between">
               <span className="text-sm font-medium text-primary">
