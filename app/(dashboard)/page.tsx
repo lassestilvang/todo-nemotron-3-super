@@ -47,6 +47,7 @@ export default function DashboardPage() {
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
+  const [editTaskData, setEditTaskData] = useState<Task | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [tasksLoading, setTasksLoading] = useState(false);
@@ -55,6 +56,7 @@ export default function DashboardPage() {
   const closeAllModals = useCallback(() => {
     setIsAddingTask(false);
     setEditTaskId(null);
+    setEditTaskData(null);
     setSelectedTaskId(null);
   }, []);
 
@@ -129,6 +131,13 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  useEffect(() => {
+    if (editTaskId) {
+      const task = tasksList.find(t => t.id === editTaskId);
+      setEditTaskData(task || null);
+    }
+  }, [editTaskId, tasksList]);
 
   const handleToggleComplete = async (taskId: string, completed: boolean) => {
     // Optimistic update
@@ -441,7 +450,17 @@ export default function DashboardPage() {
           {/* Edit Task Form */}
           <TaskForm
             isOpen={!!editTaskId}
-            onOpenChange={(open) => { if (!open) setEditTaskId(null); }}
+            onOpenChange={(open) => { if (!open) { setEditTaskId(null); setEditTaskData(null); } }}
+            initialData={editTaskData ? {
+              name: editTaskData.name,
+              description: editTaskData.description || '',
+              listId: editTaskData.listId,
+              date: editTaskData.date,
+              deadline: editTaskData.deadline,
+              priority: editTaskData.priority || 'none',
+              recurrence: editTaskData.recurrence || 'none',
+              labelIds: editTaskData.labels?.map(l => l.id) || [],
+            } : undefined}
             title="Edit Task"
             submitLabel="Save Changes"
             triggerContent={
@@ -470,7 +489,6 @@ export default function DashboardPage() {
                   } as any)
                   .where(eq(tasks.id, editTaskId));
 
-                // Update labels - delete existing and insert new ones
                 await db.delete(taskLabels).where(eq(taskLabels.taskId, editTaskId));
                 if (data.labelIds && data.labelIds.length > 0) {
                   await db.insert(taskLabels).values(
@@ -484,6 +502,7 @@ export default function DashboardPage() {
 
                 await fetchTasks();
                 setEditTaskId(null);
+                setEditTaskData(null);
 
                 toast.success('Task updated successfully');
               } catch (error) {

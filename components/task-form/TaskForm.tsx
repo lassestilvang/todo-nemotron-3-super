@@ -76,6 +76,21 @@ export default function TaskForm({
     recurrence: initialData?.recurrence ?? 'none',
     labelIds: initialData?.labelIds ?? [],
   }));
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name ?? '',
+        description: initialData.description ?? '',
+        listId: initialData.listId ?? '',
+        date: initialData.date ?? null,
+        deadline: initialData.deadline ?? null,
+        priority: initialData.priority ?? 'none',
+        recurrence: initialData.recurrence ?? 'none',
+        labelIds: initialData.labelIds ?? [],
+      });
+    }
+  }, [initialData]);
   
   const [listsList, setListsList] = useState<Array<{id: string; name: string; color: string; emoji: string}>>([]);
   const [labelsList, setLabelsList] = useState<Array<{id: string; name: string; color: string; emoji: string}>>([]);
@@ -178,18 +193,22 @@ export default function TaskForm({
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
-                <option value="">Select a list</option>
-                {listsList.map((list) => (
-                  <option key={list.id} value={list.id}>
-                    <span className="flex items-center gap-2">
-                      <span className={`${list.color} h-4 w-4 flex items-center justify-center rounded`}>
-                        {list.emoji}
-                      </span>
-                      <span>{list.name}</span>
-                    </span>
-                  </option>
-                ))}
-              </select>
+<option value="">Select a list</option>
+                 {listsList.length === 0 ? (
+                   <option value="" disabled>No lists available</option>
+                 ) : (
+                   listsList.map((list) => (
+                     <option key={list.id} value={list.id}>
+                       <span className="flex items-center gap-2">
+                         <span className={`${list.color} h-4 w-4 flex items-center justify-center rounded`}>
+                           {list.emoji}
+                         </span>
+                         <span>{list.name}</span>
+                       </span>
+                     </option>
+                   ))
+                 )}
+               </select>
             </div>
             <div>
               <Label htmlFor="task-priority">Priority</Label>
@@ -261,18 +280,22 @@ export default function TaskForm({
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
-                <option value="">Select labels</option>
-                {labelsList.map((label) => (
-                  <option key={label.id} value={label.id}>
-                    <span className="flex items-center gap-2">
-                      <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
-                        {label.emoji}
-                      </span>
-                      <span>{label.name}</span>
-                    </span>
-                  </option>
-                ))}
-              </select>
+<option value="">Select labels</option>
+                 {labelsList.length === 0 ? (
+                   <option value="" disabled>No labels available</option>
+                 ) : (
+                   labelsList.map((label) => (
+                     <option key={label.id} value={label.id}>
+                       <span className="flex items-center gap-2">
+                         <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
+                           {label.emoji}
+                         </span>
+                         <span>{label.name}</span>
+                       </span>
+                     </option>
+                   ))
+                 )}
+               </select>
             </div>
           </div>
           <DialogFooter>
