@@ -7,23 +7,18 @@ import {
   CalendarCheck,
   CalendarPlus,
   List,
-  Briefcase,
-  User,
-  Tag,
-  Circle,
   Inbox,
+  Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-   DropdownMenu, 
-   DropdownMenuContent, 
-   DropdownMenuItem, 
-   DropdownMenuTrigger 
- } from '@/components/ui/dropdown-menu';
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { MotionWrapper, slideInLeft } from '@/components/animations/motion-wrapper';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useApp } from '@/lib/app-context';
 
 const viewOptions = [
@@ -95,12 +90,7 @@ export default function Sidebar() {
   };
 
   return (
-    <MotionWrapper 
-      variants={slideInLeft()} 
-      initial={false} 
-      animate={true}
-      className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-screen"
-    >
+    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-screen">
       <div className="flex-1 overflow-y-auto p-4">
         {/* Views */}
         <Card className="mb-4">
@@ -157,7 +147,7 @@ export default function Sidebar() {
                     onClick={() => setFilterListId(filterListId === list.id ? null : list.id)}
                   >
                     <span className="flex items-center gap-3">
-                      <span className={`${list.color} h-4 w-4 flex items-center justify-center rounded`}>
+                      <span className={`h-4 w-4 flex items-center justify-center rounded ${list.color}`}>
                         {list.emoji}
                       </span>
                       <span className="flex-1">{list.name}</span>
@@ -244,7 +234,7 @@ export default function Sidebar() {
                     onClick={() => setFilterLabelId(filterLabelId === label.id ? null : label.id)}
                   >
                     <span className="flex items-center gap-3">
-                      <span className={`${label.color} h-5 w-5 flex items-center justify-center rounded`}>
+                      <span className={`h-5 w-5 flex items-center justify-center rounded ${label.color}`}>
                         {label.emoji}
                       </span>
                       <span>{label.name}</span>
@@ -309,6 +299,6 @@ export default function Sidebar() {
           </CardContent>
         </Card>
       </div>
-    </MotionWrapper>
+    </div>
   );
 }
