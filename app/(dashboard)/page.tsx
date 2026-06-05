@@ -5,24 +5,14 @@ import { db } from '@/app/lib/db/index';
 import { tasks, lists, labels, taskLabels } from '@/app/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
-import { Skeleton } from '@/components/ui/skeleton';
 import { apiCache } from '@/lib/cache';
-import { List } from 'react-window';
+import { TaskSkeleton } from '@/components/task-list/SortableTaskList';
 import { toast, Toaster } from 'sonner';
-import { 
-   Plus, 
-   Calendar, 
-   Edit, 
-   Clock, 
-   Folder,
-   Search,
-   X,
-  } from 'lucide-react';
+import { Plus, Calendar, Edit, Search, X, Clock, Folder } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import KeyboardShortcutsHelp from '@/components/keyboard-shortcuts';
@@ -150,10 +140,20 @@ export default function DashboardPage() {
   }, [fetchTasks]);
 
   const handleToggleComplete = async (taskId: string, completed: boolean) => {
+    // Optimistic update
+    const previousTasks = tasksList;
+    setTasksList(prev => 
+      prev.map(task => 
+        task.id === taskId ? { ...task, completed } : task
+      )
+    );
+
     try {
       await db.update(tasks).set({ completed }).where(eq(tasks.id, taskId));
-      await fetchTasks();
+      toast.success(`Task marked as ${completed ? 'complete' : 'incomplete'}`);
     } catch (error) {
+      // Rollback on error
+      setTasksList(previousTasks);
       console.error('Failed to toggle task completion:', error);
       toast.error('Failed to update task');
     }
@@ -186,14 +186,26 @@ export default function DashboardPage() {
   const handleBulkComplete = async (completed: boolean) => {
     if (selectedTaskIds.size === 0) return;
     
+    const previousTasks = tasksList;
+    const taskIds = Array.from(selectedTaskIds);
+    
+    // Optimistic update
+    setTasksList(prev => 
+      prev.map(task => 
+        taskIds.includes(task.id) ? { ...task, completed } : task
+      )
+    );
+    setSelectedTaskIds(new Set());
+
     try {
-      for (const taskId of selectedTaskIds) {
+      for (const taskId of taskIds) {
         await db.update(tasks).set({ completed }).where(eq(tasks.id, taskId));
       }
-      setSelectedTaskIds(new Set());
-      await fetchTasks();
-      toast.success(`${selectedTaskIds.size} task${selectedTaskIds.size > 1 ? 's' : ''} marked as ${completed ? 'complete' : 'incomplete'}`);
+      toast.success(`${taskIds.length} task${taskIds.length > 1 ? 's' : ''} marked as ${completed ? 'complete' : 'incomplete'}`);
     } catch (error) {
+      // Rollback on error
+      setTasksList(previousTasks);
+      setSelectedTaskIds(new Set(taskIds));
       console.error('Failed to bulk update tasks:', error);
       toast.error('Failed to update tasks');
     }
@@ -204,14 +216,22 @@ export default function DashboardPage() {
     
     if (!window.confirm(`Delete ${selectedTaskIds.size} task${selectedTaskIds.size > 1 ? 's' : ''}?`)) return;
     
+    const previousTasks = tasksList;
+    const taskIds = Array.from(selectedTaskIds);
+    
+    // Optimistic update - remove tasks immediately
+    setTasksList(prev => prev.filter(task => !taskIds.includes(task.id)));
+    setSelectedTaskIds(new Set());
+
     try {
-      for (const taskId of selectedTaskIds) {
+      for (const taskId of taskIds) {
         await db.delete(tasks).where(eq(tasks.id, taskId));
       }
-      setSelectedTaskIds(new Set());
-      await fetchTasks();
-      toast.success(`${selectedTaskIds.size} task${selectedTaskIds.size > 1 ? 's' : ''} deleted`);
+      toast.success(`${taskIds.length} task${taskIds.length > 1 ? 's' : ''} deleted`);
     } catch (error) {
+      // Rollback on error
+      setTasksList(previousTasks);
+      setSelectedTaskIds(new Set(taskIds));
       console.error('Failed to delete tasks:', error);
       toast.error('Failed to delete tasks');
     }
@@ -482,140 +502,7 @@ export default function DashboardPage() {
             }}
           />
           {tasksLoading ? (
-            <>
-              {/* Render 3 skeleton loaders for tasks */}
-              <div className="space-y-4">
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer">
-                  <Card className="p-4">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <Skeleton className="h-4 w-4 rounded-full" />
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <h3 className="flex-1 font-semibold">
-                            <Skeleton className="h-4 w-32" />
-                          </h3>
-                          <div className="flex items-center gap-2 text-xs">
-                            <Skeleton className="h-2 w-16 rounded" />
-                            <Skeleton className="h-2 w-12 rounded" />
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          <Skeleton className="h-4 w-40" />
-                          <Skeleton className="h-4 w-32" />
-                        </p>
-                        <div className="flex items-center gap-4 text-xs">
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-3 w-3" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-3 w-3" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-3 w-3" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            <Skeleton className="h-3 w-12 rounded" />
-                            <Skeleton className="h-3 w-12 rounded" />
-                            <Skeleton className="h-3 w-12 rounded" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer">
-                  <Card className="p-4">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <Skeleton className="h-4 w-4 rounded-full" />
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <h3 className="flex-1 font-semibold">
-                            <Skeleton className="h-4 w-32" />
-                          </h3>
-                          <div className="flex items-center gap-2 text-xs">
-                            <Skeleton className="h-2 w-16 rounded" />
-                            <Skeleton className="h-2 w-12 rounded" />
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          <Skeleton className="h-4 w-40" />
-                          <Skeleton className="h-4 w-32" />
-                        </p>
-                        <div className="flex items-center gap-4 text-xs">
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-3 w-3" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-3 w-3" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-3 w-3" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            <Skeleton className="h-3 w-12 rounded" />
-                            <Skeleton className="h-3 w-12 rounded" />
-                            <Skeleton className="h-3 w-12 rounded" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-pointer">
-                  <Card className="p-4">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <Skeleton className="h-4 w-4 rounded-full" />
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <h3 className="flex-1 font-semibold">
-                            <Skeleton className="h-4 w-32" />
-                          </h3>
-                          <div className="flex items-center gap-2 text-xs">
-                            <Skeleton className="h-2 w-16 rounded" />
-                            <Skeleton className="h-2 w-12 rounded" />
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          <Skeleton className="h-4 w-40" />
-                          <Skeleton className="h-4 w-32" />
-                        </p>
-                        <div className="flex items-center gap-4 text-xs">
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-3 w-3" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-3 w-3" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Skeleton className="h-3 w-3" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            <Skeleton className="h-3 w-12 rounded" />
-                            <Skeleton className="h-3 w-12 rounded" />
-                            <Skeleton className="h-3 w-12 rounded" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </div>
-            </>
+            <TaskSkeleton />
           ) : (
             <div className="space-y-4">
               {tasksList.length > 0 ? (

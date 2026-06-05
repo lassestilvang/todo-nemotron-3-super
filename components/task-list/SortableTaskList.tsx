@@ -45,7 +45,54 @@ export function SortableTaskList({
   isLoading = false,
 }: SortableTaskListProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const dragOverlayRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Keyboard navigation
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (tasks.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setFocusedIndex(prev => Math.min(prev + 1, tasks.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setFocusedIndex(prev => Math.max(prev - 1, 0));
+        break;
+      case 'Home':
+        e.preventDefault();
+        setFocusedIndex(0);
+        break;
+      case 'End':
+        e.preventDefault();
+        setFocusedIndex(tasks.length - 1);
+        break;
+      case 'Enter':
+      case ' ':
+        if (focusedIndex >= 0 && focusedIndex < tasks.length) {
+          e.preventDefault();
+          const task = tasks[focusedIndex];
+          onSelectTask(task.id);
+        }
+        break;
+      case 'Escape':
+        setFocusedIndex(-1);
+        break;
+    }
+  }, [tasks, onSelectTask]);
+
+  // Auto-scroll to focused item
+  useEffect(() => {
+    if (focusedIndex >= 0 && listRef.current) {
+      const item = listRef.current.querySelector(`[data-task-index="${focusedIndex}"]`);
+      if (item) {
+        item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [focusedIndex]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -112,7 +159,14 @@ export function SortableTaskList({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-        <div className="space-y-4" role="list" aria-label="Tasks">
+        <div
+          ref={listRef}
+          className="space-y-4"
+          role="list"
+          aria-label="Tasks"
+          onKeyDown={handleKeyDown}
+          tabIndex={0}
+        >
           {tasks.map((task, index) => (
             <SortableTaskItem
               key={task.id}
@@ -122,6 +176,7 @@ export function SortableTaskList({
               onSelectTask={onSelectTask}
               isSelected={selectedTaskIds.has(task.id)}
               isDragging={activeId === task.id}
+              isFocused={focusedIndex === index}
             />
           ))}
         </div>
@@ -137,6 +192,7 @@ interface SortableTaskItemProps {
   onSelectTask: (taskId: string) => void;
   isSelected: boolean;
   isDragging: boolean;
+  isFocused: boolean;
 }
 
 function SortableTaskItem({
@@ -146,6 +202,7 @@ function SortableTaskItem({
   onSelectTask,
   isSelected,
   isDragging,
+  isFocused,
 }: SortableTaskItemProps) {
   const {
     attributes,
@@ -267,7 +324,7 @@ function SortableTaskItem({
   );
 }
 
-function TaskSkeleton() {
+export function TaskSkeleton() {
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
       <Card className="p-4">
@@ -305,6 +362,16 @@ function TaskSkeleton() {
           </div>
         </div>
       </Card>
+    </div>
+  );
+}
+
+export function TaskListLoadingSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <TaskSkeleton key={i} />
+      ))}
     </div>
   );
 }
