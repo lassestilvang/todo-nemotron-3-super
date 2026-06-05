@@ -9,7 +9,6 @@ import {
   useSensor,
   useSensors,
   DragStartEvent,
-  DragOverEvent,
   DragEndEvent,
 } from '@dnd-kit/core';
 import {
@@ -109,21 +108,6 @@ export function SortableTaskList({
     setActiveId(event.active.id as string);
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const oldIndex = tasks.findIndex((task) => task.id === active.id);
-      const newIndex = tasks.findIndex((task) => task.id === over.id);
-
-      if (oldIndex !== -1 && newIndex !== -1) {
-        const newTasks = arrayMove(tasks, oldIndex, newIndex);
-        const newTaskIds = newTasks.map((task) => task.id);
-        onReorderTasks(newTaskIds);
-      }
-    }
-  };
-
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveId(null);
     const { active, over } = event;
@@ -155,7 +139,6 @@ export function SortableTaskList({
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
