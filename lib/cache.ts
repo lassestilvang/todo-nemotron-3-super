@@ -8,7 +8,7 @@ class Cache {
   private defaultTTL: number;
 
   constructor(defaultTTLSeconds: number = 30) {
-    this.defaultTTL = defaultTTLSeconds * 1000; // Convert to milliseconds
+    this.defaultTTL = defaultTTLSeconds * 1000;
   }
 
   get<T>(key: string): T | null {
@@ -19,7 +19,6 @@ class Cache {
 
     const now = Date.now();
     if (now - item.timestamp > this.defaultTTL) {
-      // Expired
       this.cache.delete(key);
       return null;
     }
@@ -31,7 +30,7 @@ class Cache {
     const ttl = ttlSeconds ? ttlSeconds * 1000 : this.defaultTTL;
     this.cache.set(key, {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now() + ttl,
     });
   }
 
@@ -43,7 +42,10 @@ class Cache {
     this.cache.clear();
   }
 
-  // Utility method to create cached fetch function
+  has(key: string): boolean {
+    return this.cache.has(key);
+  }
+
   createCachedFetch<T>(
     fetchFn: () => Promise<T>,
     key: string,
@@ -61,5 +63,5 @@ class Cache {
   }
 }
 
-// Create a singleton instance for API calls
-export const apiCache = new Cache(30); // 30 seconds TTL by default
+export const apiCache = new Cache(30);
+export default Cache;
