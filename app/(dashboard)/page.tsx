@@ -273,14 +273,14 @@ export default function DashboardPage() {
             </div>
           </header>
           {showSearch && (
-            <div className="px-6 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="px-6 py-3 bg-white dark:bg-gray-800 border-b border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-2">
-                <Search className="h-5 w-5 text-muted-foreground" />
+                <Search className="h-5 w-5 text-blue-500" />
                 <Input
                   placeholder="Search tasks..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1"
+                  className="flex-1 border-blue-200 dark:border-blue-800 focus:border-blue-500"
                   autoFocus
                 />
                 <Button variant="ghost" size="icon" onClick={() => { setSearchQuery(''); setShowSearch(false); }}>

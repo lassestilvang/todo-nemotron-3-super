@@ -36,6 +36,9 @@ export default function KeyboardShortcutsHelp() {
         e.preventDefault();
         setIsOpen(true);
       }
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
