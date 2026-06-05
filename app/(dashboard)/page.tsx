@@ -52,40 +52,31 @@ export default function DashboardPage() {
   const [tasksLoading, setTasksLoading] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-          // Ctrl+Shift+A: Add new task
-          if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-              e.preventDefault();
-              setIsAddingTask(true);
-          }
-          
-          // Escape: Close modals
-          if (e.key === 'Escape') {
-              if (isAddingTask) {
-                  setIsAddingTask(false);
-              }
-              if (editTaskId) {
-                  setEditTaskId(null);
-              }
-              if (selectedTaskId) {
-                  setSelectedTaskId(null);
-              }
-          }
-          
-          // Ctrl+Enter: Save task (when editing or adding)
-          if (e.ctrlKey && e.key === 'Enter') {
-              e.preventDefault();
-              // This would trigger form submission - handled by the form itself
-          }
-      };
+  const closeAllModals = useCallback(() => {
+    setIsAddingTask(false);
+    setEditTaskId(null);
+    setSelectedTaskId(null);
+  }, []);
 
-      window.addEventListener('keydown', handleKeyDown);
-      return () => {
-          window.removeEventListener('keydown', handleKeyDown);
-      };
-  }, [isAddingTask, editTaskId, selectedTaskId]);
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        setIsAddingTask(true);
+      }
+      
+      if (e.key === 'Escape') {
+        closeAllModals();
+      }
+      
+      if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [closeAllModals]);
 
   const fetchTasks = useCallback(async () => {
     setTasksLoading(true);
