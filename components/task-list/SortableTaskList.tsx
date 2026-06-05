@@ -8,8 +8,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragStartEvent,
-  DragEndEvent,
+  type DragStartEvent,
+  type DragEndEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -19,12 +19,12 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Loader } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Clock, Folder } from 'lucide-react';
-import { Task } from '@/app/(dashboard)/page';
+import type { Task } from '@/types/task';
 
 interface SortableTaskListProps {
   tasks: Task[];
@@ -76,7 +76,9 @@ export function SortableTaskList({
         if (focusedIndex >= 0 && focusedIndex < tasks.length) {
           e.preventDefault();
           const task = tasks[focusedIndex];
-          onSelectTask(task.id);
+          if (task) {
+            onSelectTask(task.id);
+          }
         }
         break;
       case 'Escape':
@@ -157,6 +159,7 @@ export function SortableTaskList({
               key={task.id}
               task={task}
               index={index}
+              tasksLength={tasks.length}
               onToggleComplete={onToggleComplete}
               onSelectTask={onSelectTask}
               isSelected={selectedTaskIds.has(task.id)}
@@ -174,6 +177,7 @@ export function SortableTaskList({
 interface SortableTaskItemProps {
   task: Task;
   index: number;
+  tasksLength: number;
   onToggleComplete: (taskId: string, completed: boolean) => void;
   onSelectTask: (taskId: string) => void;
   isSelected: boolean;
@@ -185,6 +189,7 @@ interface SortableTaskItemProps {
 function SortableTaskItem({
   task,
   index,
+  tasksLength,
   onToggleComplete,
   onSelectTask,
   isSelected,
@@ -211,7 +216,9 @@ function SortableTaskItem({
     if (e.target instanceof HTMLButtonElement || e.target instanceof HTMLInputElement) {
       return;
     }
-    listeners.onMouseDown(e);
+    if (listeners?.onMouseDown) {
+      listeners.onMouseDown(e);
+    }
   };
 
   return (
@@ -222,7 +229,7 @@ function SortableTaskItem({
       onMouseDown={handleDragStart}
       role="listitem"
       aria-posinset={index + 1}
-      aria-setsize={tasks.length}
+      aria-setsize={tasksLength}
       aria-selected={isSelected}
       aria-grabbed={isDragging}
     >

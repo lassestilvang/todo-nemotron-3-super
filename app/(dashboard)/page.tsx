@@ -20,13 +20,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { createId } from '@paralleldrive/cuid2';
 import { useApp } from '@/lib/app-context';
 import { SortableTaskList } from '@/components/task-list/SortableTaskList';
-
-type Task = typeof tasks.$inferSelect & {
-  list: Pick<typeof lists.$inferSelect, 'id' | 'name' | 'color' | 'emoji'>;
-  labels: (Pick<typeof labels.$inferSelect, 'id' | 'name' | 'color' | 'emoji'>)[];
-};
-
-type ViewType = 'today' | 'next7' | 'upcoming' | 'all';
+import type { Task, ViewType } from '@/types/task';
 
 export default function DashboardPage() {
   const {
@@ -394,6 +388,7 @@ export default function DashboardPage() {
                     reminders: taskResult.reminders,
                     createdAt: taskResult.createdAt instanceof Date ? taskResult.createdAt : new Date(taskResult.createdAt),
                     updatedAt: taskResult.updatedAt instanceof Date ? taskResult.updatedAt : new Date(taskResult.updatedAt),
+                    sortOrder: taskResult.sortOrder ?? 0,
                     listId: taskResult.listId,
                     list: lists.find((l) => l.id === data.listId) || {
                       id: '',
@@ -524,7 +519,10 @@ export default function DashboardPage() {
                   onSelectTask={handleSelectTask}
                   onReorderTasks={async (taskIds) => {
                     for (let i = 0; i < taskIds.length; i++) {
-                      await db.update(tasks).set({ sortOrder: i }).where(eq(tasks.id, taskIds[i]));
+                      const taskId = taskIds[i];
+                      if (taskId) {
+                        await db.update(tasks).set({ sortOrder: i }).where(eq(tasks.id, taskId));
+                      }
                     }
                     await fetchTasks();
                   }}

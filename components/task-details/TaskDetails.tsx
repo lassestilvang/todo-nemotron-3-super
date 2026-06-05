@@ -27,6 +27,8 @@ import {
   Plus,
 } from 'lucide-react';
 import { createId } from '@paralleldrive/cuid2';
+import { formatTimeHHMM, parseHHMMtoMinutes } from '@/lib/utils';
+import type { Task } from '@/types/task';
 
 const TaskDetails = ({ 
   taskId, 
@@ -146,7 +148,7 @@ const TaskDetails = ({
           .orderBy(desc(taskChanges.changedAt))
           .limit(50);
 
-        setTask({
+setTask({
           id: taskData.id,
           name: taskData.name,
           description: taskData.description,
@@ -161,6 +163,7 @@ const TaskDetails = ({
           listId: taskData.listId,
           createdAt: new Date(taskData.createdAt),
           updatedAt: new Date(taskData.updatedAt),
+          sortOrder: taskData.sortOrder ?? 0,
           list: taskData.list || {
             id: '',
             name: 'No List',
@@ -185,7 +188,6 @@ const TaskDetails = ({
     const loadTask = async () => {
       setIsLoading(true);
       try {
-        // Fetch task with list (without timestamps in list and labels to match Task type)
         const taskResult = await db
           .select({
             id: tasks.id,
@@ -199,6 +201,7 @@ const TaskDetails = ({
             priority: tasks.priority,
             completed: tasks.completed,
             recurrence: tasks.recurrence,
+            sortOrder: tasks.sortOrder,
             listId: tasks.listId,
             createdAt: tasks.createdAt,
             updatedAt: tasks.updatedAt,
@@ -270,6 +273,7 @@ setTask({
           listId: taskData.listId,
           createdAt: new Date(taskData.createdAt),
           updatedAt: new Date(taskData.updatedAt),
+          sortOrder: taskData.sortOrder ?? 0,
           list: taskData.list || {
             id: '',
             name: 'No List',
@@ -282,7 +286,6 @@ setTask({
           changes: changesResult,
         });
 
-        // Set edit data
         setEditData({
           name: taskData.name,
           description: taskData.description || '',
@@ -291,10 +294,10 @@ setTask({
           priority: taskData.priority ?? 'none',
           recurrence: taskData.recurrence ?? 'none',
           estimate: taskData.estimate 
-            ? Math.floor(taskData.estimate / 60).toString().padStart(2, '0') + ':' + (taskData.estimate % 60).toString().padStart(2, '0') 
+            ? formatTimeHHMM(taskData.estimate)
             : '00:00',
           actualTime: taskData.actualTime 
-            ? Math.floor(taskData.actualTime / 60).toString().padStart(2, '0') + ':' + (taskData.actualTime % 60).toString().padStart(2, '0') 
+            ? formatTimeHHMM(taskData.actualTime)
             : '00:00',
         });
       } catch (error) {
@@ -316,7 +319,7 @@ setTask({
       return;
     }
 
-    setIsSaving(true);
+setIsSaving(true);
     try {
       const data: any = {
         name: editData.name,
@@ -337,19 +340,8 @@ setTask({
         data.deadline = null;
       }
 
-       // Convert estimate and actualTime from "HH:MM" to minutes
-       const estimateParts = editData.estimate.split(':');
-       const estimateHours = parseInt(estimateParts[0] || '0') || 0;
-       const estimateMinutes = parseInt(estimateParts[1] || '0') || 0;
-       const estimateTotalMinutes = estimateHours * 60 + estimateMinutes;
-       
-       const actualTimeParts = editData.actualTime.split(':');
-       const actualTimeHours = parseInt(actualTimeParts[0] || '0') || 0;
-       const actualTimeMinutes = parseInt(actualTimeParts[1] || '0') || 0;
-       const actualTimeTotalMinutes = actualTimeHours * 60 + actualTimeMinutes;
-
-      data.estimate = estimateTotalMinutes;
-      data.actualTime = actualTimeTotalMinutes;
+      data.estimate = parseHHMMtoMinutes(editData.estimate);
+      data.actualTime = parseHHMMtoMinutes(editData.actualTime);
 
       await db.update(tasks).set(data).where(eq(tasks.id, taskId));
 

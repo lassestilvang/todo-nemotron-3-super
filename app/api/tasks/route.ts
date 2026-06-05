@@ -120,7 +120,7 @@ export async function GET(request: Request) {
       : [];
 
     const labelsByTaskId: Record<string, Array<{ id: string; name: string; color: string; emoji: string }>> = {};
-    allTaskLabels.forEach((tl) => {
+    allTaskLabels.forEach((tl: { taskId: string; id: string; name: string; color: string; emoji: string }) => {
       if (!labelsByTaskId[tl.taskId]) {
         labelsByTaskId[tl.taskId] = [];
       }
