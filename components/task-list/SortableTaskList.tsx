@@ -33,6 +33,7 @@ interface SortableTaskListProps {
   onReorderTasks: (taskIds: string[]) => void;
   selectedTaskIds: Set<string>;
   isLoading?: boolean;
+  operatingOnTaskId?: string | null;
 }
 
 export function SortableTaskList({
@@ -42,6 +43,7 @@ export function SortableTaskList({
   onReorderTasks,
   selectedTaskIds,
   isLoading = false,
+  operatingOnTaskId,
 }: SortableTaskListProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
@@ -160,6 +162,7 @@ export function SortableTaskList({
               isSelected={selectedTaskIds.has(task.id)}
               isDragging={activeId === task.id}
               isFocused={focusedIndex === index}
+              isOperatingOnTask={task.id === operatingOnTaskId}
             />
           ))}
         </div>
@@ -176,6 +179,7 @@ interface SortableTaskItemProps {
   isSelected: boolean;
   isDragging: boolean;
   isFocused: boolean;
+  isOperatingOnTask: boolean;
 }
 
 function SortableTaskItem({
@@ -186,6 +190,7 @@ function SortableTaskItem({
   isSelected,
   isDragging,
   isFocused,
+  isOperatingOnTask,
 }: SortableTaskItemProps) {
   const {
     attributes,
@@ -242,6 +247,7 @@ function SortableTaskItem({
             onCheckedChange={(checkedState) => onToggleComplete(task.id, checkedState === true)}
             className="flex-shrink-0"
             aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
+            disabled={isOperatingOnTask}
           />
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">

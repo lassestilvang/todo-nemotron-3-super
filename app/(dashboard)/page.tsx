@@ -52,6 +52,7 @@ export default function DashboardPage() {
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [tasksLoading, setTasksLoading] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [operatingOnTaskId, setOperatingOnTaskId] = useState<string | null>(null);
 
   const closeAllModals = useCallback(() => {
     setIsAddingTask(false);
@@ -140,8 +141,8 @@ export default function DashboardPage() {
   }, [editTaskId, tasksList]);
 
   const handleToggleComplete = async (taskId: string, completed: boolean) => {
-    // Optimistic update
     const previousTasks = tasksList;
+    setOperatingOnTaskId(taskId);
     setTasksList(prev => 
       prev.map(task => 
         task.id === taskId ? { ...task, completed } : task
@@ -152,10 +153,11 @@ export default function DashboardPage() {
       await db.update(tasks).set({ completed }).where(eq(tasks.id, taskId));
       toast.success(`Task marked as ${completed ? 'complete' : 'incomplete'}`);
     } catch (error) {
-      // Rollback on error
       setTasksList(previousTasks);
       console.error('Failed to toggle task completion:', error);
       toast.error('Failed to update task');
+    } finally {
+      setOperatingOnTaskId(null);
     }
   };
 
@@ -521,7 +523,6 @@ export default function DashboardPage() {
                   onToggleComplete={handleToggleComplete}
                   onSelectTask={handleSelectTask}
                   onReorderTasks={async (taskIds) => {
-                    // Update order in database
                     for (let i = 0; i < taskIds.length; i++) {
                       await db.update(tasks).set({ sortOrder: i }).where(eq(tasks.id, taskIds[i]));
                     }
@@ -529,6 +530,7 @@ export default function DashboardPage() {
                   }}
                   selectedTaskIds={selectedTaskIds}
                   isLoading={tasksLoading}
+                  operatingOnTaskId={operatingOnTaskId}
                 />
               ) : (
                 <div className="text-center py-16">
