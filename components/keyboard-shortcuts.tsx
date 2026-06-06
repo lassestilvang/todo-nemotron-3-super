@@ -26,7 +26,7 @@ const shortcuts: Shortcut[] = [
   { keys: 'Enter', description: 'Open task details / submit forms' },
   { keys: 'Space', description: 'Toggle checkbox / activate buttons' },
   { keys: '↑ / ↓', description: 'Navigate task list' },
-  { keys: '? or Shift + ?', description: 'Show this help' },
+  { keys: '?', description: 'Show this help' },
 ];
 
 export default function KeyboardShortcutsHelp() {
