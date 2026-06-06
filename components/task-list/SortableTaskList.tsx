@@ -36,8 +36,18 @@ export function EmptyTaskList() {
       </div>
       <p className="mt-4 text-lg text-muted-foreground">No tasks yet</p>
       <p className="mt-2 text-sm text-muted-foreground/60">
-        Start by adding a new task above!
+        Start by adding a new task!
       </p>
+    </div>
+  );
+}
+
+export function TaskListLoading() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <TaskSkeleton key={i} />
+      ))}
     </div>
   );
 }

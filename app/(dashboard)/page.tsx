@@ -19,7 +19,7 @@ import KeyboardShortcutsHelp from '@/components/keyboard-shortcuts';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { createId } from '@paralleldrive/cuid2';
 import { useApp } from '@/lib/app-context';
-import { SortableTaskList, EmptyTaskList } from '@/components/task-list/SortableTaskList';
+import { SortableTaskList, EmptyTaskList, TaskListLoading } from '@/components/task-list/SortableTaskList';
 import type { Task, ViewType } from '@/types/task';
 
 export default function DashboardPage() {
@@ -372,10 +372,11 @@ export default function DashboardPage() {
           )}
           <main className="flex-1 overflow-y-auto p-6">
             <div className="max-w-4xl mx-auto">
-{tasksList.length === 0 && !tasksLoading && (
+            {tasksLoading ? (
+              <TaskListLoading />
+            ) : tasksList.length === 0 ? (
               <EmptyTaskList />
-            )}
-{tasksList.length > 0 ? (
+            ) : (
               <SortableTaskList
                 tasks={tasksList}
                 selectedTaskIds={selectedTaskIds}
@@ -393,8 +394,6 @@ export default function DashboardPage() {
                 isLoading={tasksLoading}
                 operatingOnTaskId={operatingOnTaskId}
               />
-            ) : (
-              <EmptyTaskList />
             )}
           </div>
         </main>
