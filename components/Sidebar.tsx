@@ -12,7 +12,10 @@ import {
   BarChart3,
   CheckCircle,
   Circle,
+  Filter,
+  SortAsc,
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -43,6 +46,8 @@ export default function Sidebar() {
     setFilterListId,
     filterLabelId,
     setFilterLabelId,
+    showCompleted,
+    setShowCompleted,
     addList,
     addLabel,
     refreshLists,
@@ -312,6 +317,22 @@ export default function Sidebar() {
               <Button onClick={handleAddLabel} size="icon" aria-label="Add label">
                 <Plus className="h-4 w-4" />
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Filters & Sort */}
+        <Card className="mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filters
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Show completed</span>
+              <Checkbox checked={showCompleted} onCheckedChange={setShowCompleted} />
             </div>
           </CardContent>
         </Card>
