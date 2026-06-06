@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
    Dialog, 
    DialogContent, 
@@ -66,6 +66,8 @@ export default function TaskForm({
   title,
   triggerContent,
 }: TaskFormProps) {
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  
   const [formData, setFormData] = useState<FormState>(() => ({
     name: initialData?.name ?? '',
     description: initialData?.description ?? '',
@@ -76,6 +78,12 @@ export default function TaskForm({
     recurrence: initialData?.recurrence ?? 'none',
     labelIds: initialData?.labelIds ?? [],
   }));
+
+  useEffect(() => {
+    if (isOpen && nameInputRef.current) {
+      setTimeout(() => nameInputRef.current?.focus(), 100);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (initialData) {
@@ -145,7 +153,6 @@ export default function TaskForm({
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to submit form:', error);
-      // In a real app, we'd show an error message
     } finally {
       setIsSubmitting(false);
     }
@@ -167,6 +174,7 @@ export default function TaskForm({
             <Label htmlFor="task-name">Task Name</Label>
             <Input
               id="task-name"
+              ref={nameInputRef}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Enter task name"
