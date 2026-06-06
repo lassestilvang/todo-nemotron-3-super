@@ -19,7 +19,7 @@ import KeyboardShortcutsHelp from '@/components/keyboard-shortcuts';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { createId } from '@paralleldrive/cuid2';
 import { useApp } from '@/lib/app-context';
-import { SortableTaskList } from '@/components/task-list/SortableTaskList';
+import { SortableTaskList, EmptyTaskList } from '@/components/task-list/SortableTaskList';
 import type { Task, ViewType } from '@/types/task';
 
 export default function DashboardPage() {
@@ -372,24 +372,10 @@ export default function DashboardPage() {
           )}
           <main className="flex-1 overflow-y-auto p-6">
             <div className="max-w-4xl mx-auto">
-              {tasksList.length === 0 && !tasksLoading && (
-                <div className="text-center py-16">
-                  <div className="flex h-64 w-64 mx-auto items-center justify-center">
-                    <svg className="h-full w-full text-muted-foreground/50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-                    </svg>
-                  </div>
-                  <p className="mt-6 text-lg text-muted-foreground">Your day is clear</p>
-                  <p className="mt-2 text-sm text-muted-foreground/60">
-                    Start by adding a new task to get organized!
-                  </p>
-                  <Button className="mt-4" onClick={() => setIsAddingTask(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add your first task
-                  </Button>
-                </div>
-              )}
-{tasksList.length > 0 && (
+{tasksList.length === 0 && !tasksLoading && (
+              <EmptyTaskList />
+            )}
+{tasksList.length > 0 ? (
               <SortableTaskList
                 tasks={tasksList}
                 selectedTaskIds={selectedTaskIds}
@@ -407,6 +393,8 @@ export default function DashboardPage() {
                 isLoading={tasksLoading}
                 operatingOnTaskId={operatingOnTaskId}
               />
+            ) : (
+              <EmptyTaskList />
             )}
           </div>
         </main>

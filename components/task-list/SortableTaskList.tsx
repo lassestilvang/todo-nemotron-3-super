@@ -26,6 +26,22 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Clock, Folder } from 'lucide-react';
 import type { Task } from '@/types/task';
 
+export function EmptyTaskList() {
+  return (
+    <div className="text-center py-16">
+      <div className="flex h-64 w-64 mx-auto items-center justify-center">
+        <svg className="h-full w-full text-muted-foreground/30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V7h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z" />
+        </svg>
+      </div>
+      <p className="mt-4 text-lg text-muted-foreground">No tasks yet</p>
+      <p className="mt-2 text-sm text-muted-foreground/60">
+        Start by adding a new task above!
+      </p>
+    </div>
+  );
+}
+
 interface SortableTaskListProps {
   tasks: Task[];
   onToggleComplete: (taskId: string, completed: boolean) => void;
