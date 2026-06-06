@@ -117,7 +117,10 @@ export default function Sidebar() {
         {/* Lists */}
         <Card className="mb-4">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">Lists</CardTitle>
+            <CardTitle className="text-lg font-semibold flex items-center justify-between">
+              <span>Lists</span>
+              <span className="text-xs text-muted-foreground">({lists.length})</span>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {/* Inbox (always first) */}
@@ -215,7 +218,10 @@ export default function Sidebar() {
         {/* Labels */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">Labels</CardTitle>
+            <CardTitle className="text-lg font-semibold flex items-center justify-between">
+              <span>Labels</span>
+              <span className="text-xs text-muted-foreground">({labels.length})</span>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {labelsLoading ? (
