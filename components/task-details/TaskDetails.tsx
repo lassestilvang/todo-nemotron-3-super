@@ -21,16 +21,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { RECURRENCE_OPTIONS } from '@/lib/constants';
-import { 
-  Calendar, 
-  Loader,
-  Plus,
-  Clock,
-  Tag,
-  ListIcon,
-  Repeat,
-  Timer,
-} from 'lucide-react';
+import {
+    Loader,
+    Plus,
+    CheckCircle2,
+    Circle,
+    Clock,
+    Tag,
+    ListIcon,
+    Repeat,
+    Timer,
+    TrendingUp,
+    Calendar,
+  } from 'lucide-react';
 import { createId } from '@paralleldrive/cuid2';
 import { formatTimeHHMM, parseHHMMtoMinutes } from '@/lib/utils';
 import type { Task } from '@/types/task';
@@ -513,6 +516,26 @@ setIsSaving(true);
               </div>
             )}
           </div>
+
+          {task.subtasks.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Subtasks
+                </span>
+                <span className="font-medium">
+                  {task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}
+                </span>
+              </div>
+              <div className="h-2 bg-muted rounded overflow-hidden">
+                <div 
+                  className="h-full bg-primary transition-all"
+                  style={{ width: `${(task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
 
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="grid w-full grid-cols-3 border-b">
