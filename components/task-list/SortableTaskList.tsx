@@ -263,18 +263,12 @@ function SortableTaskItem({
               </h3>
               <div className="flex items-center gap-2 text-xs">
                 {task.priority && task.priority !== 'none' && (
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    task.priority === 'high'
-                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      : task.priority === 'medium'
-                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                  }`}>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium priority-${task.priority}`}>
                     {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                   </span>
                 )}
                 {task.deadline && new Date(task.deadline) < new Date(Date.now()) && !task.completed && (
-                  <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                  <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 overdue">
                     Overdue
                   </span>
                 )}
