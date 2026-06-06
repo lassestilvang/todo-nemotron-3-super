@@ -304,6 +304,27 @@ export default function Sidebar() {
             )}
           </CardContent>
         </Card>
+
+        {/* Task Stats */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold">Statistics</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Total Tasks</span>
+              <span className="font-semibold">{lists.reduce((acc, l) => acc, 0)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Completed</span>
+              <span className="font-semibold text-green-600">0</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Pending</span>
+              <span className="font-semibold text-blue-600">0</span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
