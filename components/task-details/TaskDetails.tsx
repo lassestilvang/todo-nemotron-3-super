@@ -33,6 +33,8 @@ import {
     Timer,
     TrendingUp,
     Calendar,
+    Play,
+    Pause,
   } from 'lucide-react';
 import { createId } from '@paralleldrive/cuid2';
 import { formatTimeHHMM, parseHHMMtoMinutes } from '@/lib/utils';
@@ -79,6 +81,8 @@ const TaskDetails = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [newSubtaskName, setNewSubtaskName] = useState('');
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [timerStart, setTimerStart] = useState<Date | null>(null);
 
   const handleAddSubtask = async () => {
     if (!newSubtaskName.trim() || !task) return;
@@ -424,6 +428,30 @@ setIsSaving(true);
     }
   };
 
+  const handleStartTimer = () => {
+    setIsTimerRunning(true);
+    setTimerStart(new Date());
+  };
+
+  const handleStopTimer = async () => {
+    if (!timerStart || !task) return;
+    
+    const elapsed = Math.floor((Date.now() - timerStart.getTime()) / 60000);
+    const newActualTime = (task.actualTime || 0) + elapsed;
+    
+    setIsTimerRunning(false);
+    setTimerStart(null);
+    
+    try {
+      await db.update(tasks).set({ actualTime: newActualTime }).where(eq(tasks.id, task.id));
+      setTask(prev => prev ? { ...prev, actualTime: newActualTime } : null);
+      toast.success(`Added ${elapsed} minutes`);
+    } catch (error) {
+      console.error('Failed to update time:', error);
+      toast.error('Failed to update time');
+    }
+  };
+
   const handleToggleComplete = async () => {
     if (!task) return;
 
@@ -512,8 +540,39 @@ setIsSaving(true);
             {task.estimate && (
               <div className="flex items-center gap-1.5">
                 <Timer className="h-3 w-3" />
-                <span>{formatTimeHHMM(task.estimate)}</span>
+                <span>Est: {formatTimeHHMM(task.estimate)}</span>
               </div>
+            )}
+            {task.actualTime !== null && task.actualTime > 0 && (
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="h-3 w-3" />
+                <span>Actual: {formatTimeHHMM(task.actualTime)}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant={isTimerRunning ? 'destructive' : 'outline'}
+              size="sm"
+              onClick={isTimerRunning ? handleStopTimer : handleStartTimer}
+            >
+              {isTimerRunning ? (
+                <>
+                  <Pause className="h-3 w-3 mr-1" />
+                  Stop
+                </>
+              ) : (
+                <>
+                  <Play className="h-3 w-3 mr-1" />
+                  Start Timer
+                </>
+              )}
+            </Button>
+            {isTimerRunning && timerStart && (
+              <span className="text-xs text-muted-foreground">
+                Running: {formatTimeHHMM(Math.floor((Date.now() - timerStart.getTime()) / 60000))}
+              </span>
             )}
           </div>
 
