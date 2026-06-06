@@ -22,7 +22,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { RECURRENCE_OPTIONS } from '@/lib/constants';
 import { 
-  Calendar, 
   Loader,
   Plus,
   Clock,
@@ -638,29 +637,29 @@ setIsSaving(true);
               <p className="text-center py-8 text-muted-foreground">No subtasks</p>
             )}
           </TabsContent>
-           <TabsContent value="activity" className="mt-2">
-             {task.changes.length > 0 ? (
-               <div className="space-y-2">
-                 {task.changes.map((change) => (
-                   <div key={change.id} className="border p-3 rounded">
-                     <div className="flex items-start gap-3">
-                       <div className="flex-shrink-0">
-                         <Calendar className="h-4 w-4 text-muted-foreground" />
-                       </div>
-                       <div className="flex-1 space-y-1">
-                         <p className="text-sm font-medium">{change.fieldChanged}</p>
-                         <p className="text-xs text-muted-foreground">
-                           {new Date(change.changedAt).toLocaleString()}
-                         </p>
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             ) : (
-               <p className="text-center py-8 text-muted-foreground">No activity</p>
-             )}
-           </TabsContent>
+<TabsContent value="activity" className="mt-2">
+            {task.changes.length > 0 ? (
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {task.changes.map((change) => (
+                  <div key={change.id} className="border p-3 rounded text-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <Tag className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <p className="font-medium">{change.fieldChanged}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(change.changedAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-muted-foreground">No activity</p>
+            )}
+          </TabsContent>
           </Tabs>
           <DialogFooter className="flex justify-end space-x-3">
             <Button variant="outline" onClick={onClose}>
