@@ -25,6 +25,11 @@ import {
   Calendar, 
   Loader,
   Plus,
+  Clock,
+  Tag,
+  ListIcon,
+  Repeat,
+  Timer,
 } from 'lucide-react';
 import { createId } from '@paralleldrive/cuid2';
 import { formatTimeHHMM, parseHHMMtoMinutes } from '@/lib/utils';
@@ -453,6 +458,35 @@ setIsSaving(true);
             <DialogTitle>{task.name}</DialogTitle>
             <p className="text-muted-foreground">{task.description}</p>
           </DialogHeader>
+
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            {task.list && (
+              <div className="flex items-center gap-1.5">
+                <div className={`h-5 w-5 flex items-center justify-center rounded ${task.list.color}`}>
+                  {task.list.emoji}
+                </div>
+                <span>{task.list.name}</span>
+              </div>
+            )}
+            {task.date && (
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-3 w-3" />
+                <span>{task.date.toLocaleDateString()}</span>
+              </div>
+            )}
+            {task.deadline && (
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-3 w-3" />
+                <span>{task.deadline.toLocaleString()}</span>
+              </div>
+            )}
+            {task.estimate && (
+              <div className="flex items-center gap-1.5">
+                <Timer className="h-3 w-3" />
+                <span>{formatTimeHHMM(task.estimate)}</span>
+              </div>
+            )}
+          </div>
 
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="grid w-full grid-cols-3 border-b">
