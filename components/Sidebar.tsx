@@ -9,6 +9,9 @@ import {
   List,
   Inbox,
   Tag,
+  BarChart3,
+  CheckCircle,
+  Circle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -312,15 +315,24 @@ export default function Sidebar() {
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Total Tasks</span>
-              <span className="font-semibold">{lists.reduce((acc, l) => acc, 0)}</span>
+              <span className="text-muted-foreground flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Total
+              </span>
+              <span className="font-semibold">{lists.length}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Completed</span>
+              <span className="text-muted-foreground flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                Completed
+              </span>
               <span className="font-semibold text-green-600">0</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Pending</span>
+              <span className="text-muted-foreground flex items-center gap-2">
+                <Circle className="h-4 w-4 text-blue-500" />
+                Pending
+              </span>
               <span className="font-semibold text-blue-600">0</span>
             </div>
           </CardContent>
