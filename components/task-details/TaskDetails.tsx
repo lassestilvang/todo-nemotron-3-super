@@ -395,6 +395,21 @@ setIsSaving(true);
     }
   };
 
+  const handleDeleteSubtask = async (subtaskId: string) => {
+    if (!window.confirm('Delete this subtask?')) return;
+    
+    setIsSaving(true);
+    try {
+      await db.delete(subtasks).where(eq(subtasks.id, subtaskId));
+      toast.success('Subtask deleted');
+    } catch (error) {
+      console.error('Failed to delete subtask:', error);
+      toast.error('Failed to delete subtask');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleToggleComplete = async () => {
     if (!task) return;
 
@@ -619,16 +634,25 @@ setIsSaving(true);
               <div className="space-y-2">
                 {task.subtasks.map((subtask) => (
                   <div key={subtask.id} className="flex items-start gap-3">
-                      <Checkbox
-                        checked={Boolean(subtask.completed)}
-                        onCheckedChange={(checked) => handleSubtaskToggle(subtask.id, checked === true)}
-                        className="flex-shrink-0"
-                      />
+                    <Checkbox
+                      checked={Boolean(subtask.completed)}
+                      onCheckedChange={(checked) => handleSubtaskToggle(subtask.id, checked === true)}
+                      className="flex-shrink-0"
+                    />
                     <div className="flex-1 space-y-1">
-                      <div className="flex items-baseline gap-2">
+                      <div className="flex items-baseline justify-between gap-2">
                         <span className={subtask.completed ? 'line-through text-muted-foreground' : ''}>
                           {subtask.name}
                         </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteSubtask(subtask.id)}
+                          disabled={isSaving}
+                          className="h-6 px-2"
+                        >
+                          ×
+                        </Button>
                       </div>
                     </div>
                   </div>
