@@ -218,20 +218,39 @@ export default function TaskForm({
                  )}
                </select>
             </div>
-            <div>
-              <Label htmlFor="task-priority">Priority</Label>
-              <select
-                id="task-priority"
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              >
-                <option value="none">None</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-            </div>
+<div className="space-y-2">
+                <Label htmlFor="task-priority">Priority</Label>
+                <div className="flex items-center gap-2">
+                  {(['none', 'low', 'medium', 'high'] as const).map((priority) => (
+                    <button
+                      key={priority}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, priority })}
+                      className={`flex-1 py-2 px-3 rounded-md border-2 transition-all ${
+                        formData.priority === priority
+                          ? 'border-solid'
+                          : 'border-dashed border-gray-200 dark:border-gray-700'
+                      } ${
+                        priority === 'high'
+                          ? formData.priority === priority
+                            ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-200'
+                            : 'hover:border-red-200'
+                          : priority === 'medium'
+                          ? formData.priority === priority
+                            ? 'border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200'
+                            : 'hover:border-yellow-200'
+                          : priority === 'low'
+                          ? formData.priority === priority
+                            ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-200'
+                            : 'hover:border-green-200'
+                          : 'hover:border-gray-200'
+                      }`}
+                    >
+                      <span className="text-sm font-medium capitalize">{priority}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
