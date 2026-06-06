@@ -386,7 +386,7 @@ setIsSaving(true);
         .set({ completed })
         .where(eq(subtasks.id, subtaskId));
 
-      if (onTaskUpdate) {
+      if (onTaskUpdate && task) {
         const updatedSubtasks = task.subtasks.map(s => 
           s.id === subtaskId ? { ...s, completed } : s
         );
@@ -642,8 +642,19 @@ setIsSaving(true);
               </Button>
             </div>
             {task.subtasks.length > 0 ? (
-              <div className="space-y-2">
-                {task.subtasks.map((subtask) => (
+              <>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Subtasks ({task.subtasks.filter(s => s.completed).length}/{task.subtasks.length})</span>
+                  <span>{Math.round((task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100)}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded overflow-hidden mb-2">
+                  <div 
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${(task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100}%` }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  {task.subtasks.map((subtask) => (
                   <div key={subtask.id} className="flex items-start gap-3">
                     <Checkbox
                       checked={Boolean(subtask.completed)}
@@ -666,9 +677,10 @@ setIsSaving(true);
                         </Button>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+</div>
+                  ))}
+                </div>
+              </>
             ) : (
               <p className="text-center py-8 text-muted-foreground">No subtasks</p>
             )}
