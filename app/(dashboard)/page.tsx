@@ -49,6 +49,8 @@ export default function DashboardPage() {
   const [tasksLoading, setTasksLoading] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [operatingOnTaskId, setOperatingOnTaskId] = useState<string | null>(null);
+  const [quickAddText, setQuickAddText] = useState('');
+  const activeListId = filterListId || lists[0]?.id;
 
   const handleAddList = async () => {
     const name = prompt('Enter list name:');
@@ -406,8 +408,42 @@ export default function DashboardPage() {
                 operatingOnTaskId={operatingOnTaskId}
               />
             )}
-            </div>
-          </main>
+          </div>
+        </main>
+        
+        <footer className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+          <div className="max-w-4xl mx-auto flex items-center gap-2">
+            <Input
+              placeholder="Quick add task... (Ctrl+Shift+A)"
+              value={quickAddText}
+              onChange={(e) => setQuickAddText(e.target.value)}
+              onKeyDown={async (e) => {
+                if (e.key === 'Enter' && quickAddText.trim()) {
+                  e.preventDefault();
+                  try {
+                    const [taskResult] = await db
+                      .insert(tasks)
+                      .values({
+                        name: quickAddText.trim(),
+                        listId: activeListId || lists[0]?.id || '',
+                      })
+                      .returning();
+                    
+                    if (taskResult) {
+                      setTasksList(prev => [taskResult as any, ...prev]);
+                      setQuickAddText('');
+                      toast.success('Task added');
+                    }
+                  } catch (error) {
+                    console.error('Failed to add task:', error);
+                    toast.error('Failed to add task');
+                  }
+                }
+              }}
+              className="flex-1"
+            />
+          </div>
+        </footer>
           <TaskForm
             isOpen={isAddingTask}
             onOpenChange={(open) => setIsAddingTask(open)}
