@@ -386,6 +386,13 @@ setIsSaving(true);
         .set({ completed })
         .where(eq(subtasks.id, subtaskId));
 
+      if (onTaskUpdate) {
+        const updatedSubtasks = task.subtasks.map(s => 
+          s.id === subtaskId ? { ...s, completed } : s
+        );
+        onTaskUpdate({ ...task, subtasks: updatedSubtasks } as any);
+      }
+      
       toast.success(`Subtask marked as ${completed ? 'complete' : 'incomplete'}`);
     } catch (error) {
       console.error('Failed to toggle subtask completion:', error);
@@ -401,6 +408,10 @@ setIsSaving(true);
     setIsSaving(true);
     try {
       await db.delete(subtasks).where(eq(subtasks.id, subtaskId));
+      setTask(prev => prev ? { 
+        ...prev, 
+        subtasks: prev.subtasks.filter(s => s.id !== subtaskId) 
+      } : null);
       toast.success('Subtask deleted');
     } catch (error) {
       console.error('Failed to delete subtask:', error);
