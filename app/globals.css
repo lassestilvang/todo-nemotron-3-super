@@ -74,3 +74,25 @@
     @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
   }
 }
+
+@layer components {
+  .task-card {
+    @apply transition-all duration-200 hover:shadow-md;
+  }
+  
+  .priority-high {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+  }
+  
+  .priority-medium {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+  }
+  
+  .priority-low {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+  }
+  
+  .overdue {
+    @apply bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800;
+  }
+}
