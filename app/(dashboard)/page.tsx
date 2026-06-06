@@ -48,6 +48,28 @@ export default function DashboardPage() {
   const [showSearch, setShowSearch] = useState(false);
   const [operatingOnTaskId, setOperatingOnTaskId] = useState<string | null>(null);
 
+  const handleAddList = async () => {
+    const name = prompt('Enter list name:');
+    if (name?.trim()) {
+      try {
+        await addList(name.trim(), 'bg-blue-500', '📋');
+      } catch (error) {
+        console.error('Failed to add list:', error);
+      }
+    }
+  };
+
+  const handleAddLabel = async () => {
+    const name = prompt('Enter label name:');
+    if (name?.trim()) {
+      try {
+        await addLabel(name.trim(), 'bg-purple-500', '🏷️');
+      } catch (error) {
+        console.error('Failed to add label:', error);
+      }
+    }
+  };
+
   const closeAllModals = useCallback(() => {
     setIsAddingTask(false);
     setEditTaskId(null);
@@ -62,6 +84,16 @@ export default function DashboardPage() {
         setIsAddingTask(true);
       }
       
+      if (e.ctrlKey && e.shiftKey && e.key === 'L') {
+        e.preventDefault();
+        handleAddList();
+      }
+      
+      if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+        e.preventDefault();
+        handleAddLabel();
+      }
+      
       if (e.key === 'Escape') {
         closeAllModals();
       }
@@ -73,7 +105,7 @@ export default function DashboardPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [closeAllModals]);
+  }, [closeAllModals, handleAddList, handleAddLabel]);
 
   const fetchTasks = useCallback(async () => {
     setTasksLoading(true);

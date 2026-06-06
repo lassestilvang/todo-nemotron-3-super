@@ -17,6 +17,8 @@ interface Shortcut {
 
 const shortcuts: Shortcut[] = [
   { keys: 'Ctrl + Shift + A', description: 'Add new task' },
+  { keys: 'Ctrl + Shift + L', description: 'Add new list' },
+  { keys: 'Ctrl + Shift + K', description: 'Add new label' },
   { keys: 'Escape', description: 'Close modals / dialogs' },
   { keys: 'Ctrl + Enter', description: 'Save task (in forms)' },
   { keys: 'Tab', description: 'Navigate between elements' },
@@ -24,7 +26,7 @@ const shortcuts: Shortcut[] = [
   { keys: 'Enter', description: 'Open task details / submit forms' },
   { keys: 'Space', description: 'Toggle checkbox / activate buttons' },
   { keys: '↑ / ↓', description: 'Navigate task list' },
-  { keys: '?', description: 'Show this help' },
+  { keys: '? or Shift + ?', description: 'Show this help' },
 ];
 
 export default function KeyboardShortcutsHelp() {
