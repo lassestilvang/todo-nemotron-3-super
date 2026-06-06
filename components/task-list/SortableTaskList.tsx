@@ -107,11 +107,25 @@ export function SortableTaskList({
           }
         }
         break;
+      case 'c':
+        if (e.ctrlKey && focusedIndex >= 0 && focusedIndex < tasks.length) {
+          e.preventDefault();
+          const task = tasks[focusedIndex];
+          if (task) {
+            onToggleComplete(task.id, !task.completed);
+          }
+        }
+        break;
+      case 'Delete':
+        if (focusedIndex >= 0 && focusedIndex < tasks.length) {
+          // Could add delete handler here
+        }
+        break;
       case 'Escape':
         setFocusedIndex(-1);
         break;
     }
-  }, [tasks, onSelectTask]);
+  }, [tasks, onSelectTask, focusedIndex, onToggleComplete]);
 
   // Auto-scroll to focused item
   useEffect(() => {
