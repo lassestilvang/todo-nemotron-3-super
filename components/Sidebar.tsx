@@ -143,6 +143,10 @@ export default function Sidebar() {
                 <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse mb-2" />
                 <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse" />
               </>
+            ) : lists.length === 0 ? (
+              <div className="text-center py-4 text-sm text-muted-foreground">
+                No lists yet. Create one to get started!
+              </div>
             ) : (
               <>
                 {lists.map((list) => (
@@ -233,6 +237,10 @@ export default function Sidebar() {
                 <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse mb-2" />
                 <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse" />
               </>
+            ) : labels.length === 0 ? (
+              <div className="text-center py-4 text-sm text-muted-foreground">
+                No labels yet. Create one to organize tasks!
+              </div>
             ) : (
               <>
                 {labels.map((label) => (
@@ -250,61 +258,61 @@ export default function Sidebar() {
                     </span>
                   </Button>
                 ))}
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Label name"
-                    value={newLabelName}
-                    onChange={(e) => setNewLabelName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleAddLabel();
-                    }}
-                  />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon" aria-label="Select color">
-                        <div className={`h-4 w-4 rounded ${newLabelColor}`} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={4} className="p-2">
-                      <div className="grid grid-cols-5 gap-1">
-                        {colors.map((color) => (
-                          <button
-                            key={color}
-                            onClick={() => setNewLabelColor(color)}
-                            className={`h-6 w-6 rounded ${color} ${newLabelColor === color ? 'ring-2 ring-offset-2 ring-offset-background' : ''}`}
-                            aria-label={color}
-                          />
-                        ))}
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon" aria-label="Select emoji">
-                        <span className="h-4 w-4 text-lg">{newLabelEmoji}</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" sideOffset={4} className="p-2">
-                      <div className="grid grid-cols-5 gap-1">
-                        {emojis.map((emoji) => (
-                          <button
-                            key={emoji}
-                            onClick={() => setNewLabelEmoji(emoji)}
-                            className={`h-8 w-8 text-xl rounded ${newLabelEmoji === emoji ? 'ring-2 ring-offset-2 ring-offset-background bg-accent' : 'hover:bg-accent'}`}
-                            aria-label={emoji}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button onClick={handleAddLabel} size="icon" aria-label="Add label">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
               </>
             )}
+            <div className="flex space-x-2">
+              <Input
+                placeholder="Label name"
+                value={newLabelName}
+                onChange={(e) => setNewLabelName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAddLabel();
+                }}
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" aria-label="Select color">
+                    <div className={`h-4 w-4 rounded ${newLabelColor}`} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={4} className="p-2">
+                  <div className="grid grid-cols-5 gap-1">
+                    {colors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setNewLabelColor(color)}
+                        className={`h-6 w-6 rounded ${color} ${newLabelColor === color ? 'ring-2 ring-offset-2 ring-offset-background' : ''}`}
+                        aria-label={color}
+                      />
+                    ))}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" aria-label="Select emoji">
+                    <span className="h-4 w-4 text-lg">{newLabelEmoji}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={4} className="p-2">
+                  <div className="grid grid-cols-5 gap-1">
+                    {emojis.map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={() => setNewLabelEmoji(emoji)}
+                        className={`h-8 w-8 text-xl rounded ${newLabelEmoji === emoji ? 'ring-2 ring-offset-2 ring-offset-background bg-accent' : 'hover:bg-accent'}`}
+                        aria-label={emoji}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button onClick={handleAddLabel} size="icon" aria-label="Add label">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
