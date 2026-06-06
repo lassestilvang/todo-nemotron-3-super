@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { RECURRENCE_OPTIONS } from '@/lib/constants';
 import { 
+  Calendar, 
   Loader,
   Plus,
   Clock,
@@ -637,7 +638,7 @@ setIsSaving(true);
               <p className="text-center py-8 text-muted-foreground">No subtasks</p>
             )}
           </TabsContent>
-<TabsContent value="activity" className="mt-2">
+          <TabsContent value="activity" className="mt-2">
             {task.changes.length > 0 ? (
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {task.changes.map((change) => (
