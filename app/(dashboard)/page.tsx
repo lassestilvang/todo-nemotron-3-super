@@ -277,7 +277,7 @@ export default function DashboardPage() {
         <div className="flex-1 overflow-hidden flex flex-col">
           <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold">Daily Planner</h1>
+              <h1 className="text-xl sm:text-2xl font-bold">Daily Planner</h1>
               <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <PieChart className="h-3 w-3" />
@@ -297,19 +297,20 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Button
                 variant={focusMode ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFocusMode(!focusMode)}
                 aria-label="Toggle focus mode"
+                className="hidden sm:flex"
               >
                 <Target className="h-4 w-4 mr-2" />
-                Focus Mode
+                <span className="hidden md:inline">Focus Mode</span>
               </Button>
               <ThemeToggle />
               <KeyboardShortcutsHelp />
-              <Button
+<Button
                 variant="outline"
                 size="icon"
                 onClick={() => setShowSearch(!showSearch)}
