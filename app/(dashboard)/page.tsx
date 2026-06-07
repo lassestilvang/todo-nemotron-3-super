@@ -12,7 +12,7 @@ import useDebounce from '@/hooks/use-debounce';
 import { apiCache } from '@/lib/cache';
 import { TaskSkeleton } from '@/components/task-list/SortableTaskList';
 import { toast, Toaster } from 'sonner';
-import { Plus, Calendar, Edit, Search, X, Clock, Folder } from 'lucide-react';
+import { Plus, Calendar, Edit, Search, X, Clock, Folder, BarChart2, PieChart } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import KeyboardShortcutsHelp from '@/components/keyboard-shortcuts';
@@ -275,10 +275,19 @@ export default function DashboardPage() {
       <ErrorBoundary>
         <div className="flex-1 overflow-hidden flex flex-col">
           <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <h1 className="text-2xl font-bold">Daily Planner</h1>
-            <span className="text-sm text-muted-foreground">
-              {tasksList.length} task{tasksList.length !== 1 && 's'}
-            </span>
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold">Daily Planner</h1>
+              <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <PieChart className="h-3 w-3" />
+                  <span>{tasksList.length} tasks</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <BarChart2 className="h-3 w-3" />
+                  <span>{tasksList.filter(t => t.completed).length} done</span>
+                </div>
+              </div>
+            </div>
             <div className="flex items-center gap-4">
               <ThemeToggle />
               <KeyboardShortcutsHelp />
