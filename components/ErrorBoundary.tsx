@@ -2,7 +2,7 @@
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, Home } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -52,8 +52,9 @@ export class ErrorBoundary extends Component<Props, State> {
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
             </Button>
-            <Button onClick={() => window.location.reload()} variant="outline">
-              Reload Page
+            <Button onClick={() => window.location.href = '/'} variant="outline">
+              <Home className="h-4 w-4 mr-2" />
+              Go Home
             </Button>
           </div>
         </div>
