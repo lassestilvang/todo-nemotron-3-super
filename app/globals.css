@@ -111,6 +111,14 @@
   .status-overdue {
     @apply animate-pulse;
   }
+
+  .focus-mode {
+    @apply filtered grayscale;
+  }
+
+  .focus-mode .task-card {
+    @apply opacity-50;
+  }
   
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-4px); }

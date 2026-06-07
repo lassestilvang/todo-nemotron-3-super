@@ -12,7 +12,7 @@ import useDebounce from '@/hooks/use-debounce';
 import { apiCache } from '@/lib/cache';
 import { TaskSkeleton } from '@/components/task-list/SortableTaskList';
 import { toast, Toaster } from 'sonner';
-import { Plus, Calendar, Edit, Search, X, Clock, Folder, BarChart2, PieChart } from 'lucide-react';
+import { Plus, Calendar, Edit, Search, X, Clock, Folder, BarChart2, PieChart, Zap, Target } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import KeyboardShortcutsHelp from '@/components/keyboard-shortcuts';
@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const [showSearch, setShowSearch] = useState(false);
   const [operatingOnTaskId, setOperatingOnTaskId] = useState<string | null>(null);
   const [quickAddText, setQuickAddText] = useState('');
+  const [focusMode, setFocusMode] = useState(false);
   const activeListId = filterListId || lists[0]?.id;
 
   const handleAddList = async () => {
@@ -286,9 +287,22 @@ export default function DashboardPage() {
                   <BarChart2 className="h-3 w-3" />
                   <span>{tasksList.filter(t => t.completed).length} done</span>
                 </div>
+                <div className="flex items-center gap-1.5">
+                  <Zap className="h-3 w-3" />
+                  <span>{tasksList.filter(t => !t.completed && t.priority === 'high').length} high priority</span>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <Button
+                variant={focusMode ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFocusMode(!focusMode)}
+                aria-label="Toggle focus mode"
+              >
+                <Target className="h-4 w-4 mr-2" />
+                Focus Mode
+              </Button>
               <ThemeToggle />
               <KeyboardShortcutsHelp />
               <Button
