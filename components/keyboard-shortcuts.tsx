@@ -19,6 +19,7 @@ const shortcuts: Shortcut[] = [
   { keys: 'Ctrl + Shift + A', description: 'Add new task' },
   { keys: 'Ctrl + Shift + L', description: 'Add new list' },
   { keys: 'Ctrl + Shift + K', description: 'Add new label' },
+  { keys: 'Ctrl + C', description: 'Toggle task completion' },
   { keys: 'Escape', description: 'Close modals / dialogs' },
   { keys: 'Ctrl + Enter', description: 'Save task (in forms)' },
   { keys: 'Tab', description: 'Navigate between elements' },
