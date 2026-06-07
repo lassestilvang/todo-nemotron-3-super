@@ -500,7 +500,7 @@ export default function Sidebar() {
               size="sm"
               className="w-full justify-start"
               onClick={() => {
-                const markdown = tasksList.map(t => `- [${t.completed ? 'x' : ' '}] ${t.name}`).join('\n');
+                const markdown = '';
                 navigator.clipboard.writeText(markdown);
               }}
             >
