@@ -26,11 +26,18 @@ import {
   AlertCircle,
   Copy,
   Share2,
+  Plus,
+  Calendar,
+  Clock,
+  Folder,
+  BarChart3,
+  TrendingUp,
+  Zap,
+  Target,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, Clock, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/types/task';
 
@@ -58,16 +65,31 @@ function getLabelColorClass(color: string): string {
 
 export function EmptyTaskList() {
   return (
-    <div className="text-center py-16">
-      <div className="flex h-64 w-64 mx-auto items-center justify-center">
-        <svg className="h-full w-full text-muted-foreground/30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V7h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z" />
-        </svg>
+    <div className="text-center py-16 px-4">
+      <div className="flex h-64 w-64 mx-auto items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-secondary/10">
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+          <div className="relative flex h-64 w-64 items-center justify-center">
+            <svg className="h-24 w-24 text-primary/50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V7h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
       </div>
-      <p className="mt-4 text-lg text-muted-foreground">No tasks yet</p>
+      <p className="mt-6 text-xl font-semibold text-foreground">Your day is clear</p>
       <p className="mt-2 text-sm text-muted-foreground/60">
-        Start by adding a new task!
+        Start by adding a new task to get organized!
       </p>
+      <div className="mt-6 flex items-center justify-center gap-2">
+        <Button variant="outline" size="sm" onClick={() => {}}>
+          <Calendar className="h-4 w-4 mr-2" />
+          Add Task
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => {}}>
+          <BarChart3 className="h-4 w-4 mr-2" />
+          View Stats
+        </Button>
+      </div>
     </div>
   );
 }
