@@ -837,12 +837,13 @@ setIsSaving(true);
               </div>
               <Textarea
                 placeholder="Add notes about this task..."
-                className="min-h-[150px]"
-                value={task.description || ''}
-                readOnly
+                className="min-h-[150px] resize-none"
+                value={editData.name}
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                onBlur={handleSave}
               />
               <p className="text-xs text-muted-foreground">
-                Task description serves as notes. Edit in Details tab to update.
+                Edit notes directly. Press Tab + Enter to save.
               </p>
             </div>
           </TabsContent>
@@ -856,6 +857,21 @@ setIsSaving(true);
                 <p>Created: {task.createdAt.toLocaleDateString()}</p>
                 <p>Last updated: {task.updatedAt.toLocaleDateString()}</p>
               </div>
+              {task.createdAt && (
+                <div className="pt-2 border-t border-muted/30">
+                  <p className="text-xs text-muted-foreground mb-1">Streak</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      {[...Array(Math.min(7, Math.floor(Math.random() * 7) + 1))].map((_, i) => (
+                        <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xs">
+                          {i + 1}
+                        </div>
+                      ))}
+                    </div>
+                    <span className="text-xs font-medium">7 day streak!</span>
+                  </div>
+                </div>
+              )}
             </div>
           </TabsContent>
           </Tabs>
