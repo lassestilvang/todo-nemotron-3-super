@@ -19,7 +19,12 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import {
+  GripVertical,
+  CheckSquare,
+  Square,
+  AlertCircle,
+} from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -302,14 +307,15 @@ function SortableTaskItem({
                 {task.name}
               </h3>
               <div className="flex items-center gap-2 text-xs">
+                {task.completed && (
+                  <CheckSquare className="h-4 w-4 text-green-500" />
+                )}
+                {!task.completed && task.deadline && new Date(task.deadline) < new Date(Date.now()) && (
+                  <AlertCircle className="h-4 w-4 text-red-500 animate-pulse" />
+                )}
                 {task.priority && task.priority !== 'none' && (
                   <span className={`px-2 py-0.5 rounded text-xs font-medium priority-${task.priority}`}>
                     {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                  </span>
-                )}
-                {task.deadline && new Date(task.deadline) < new Date(Date.now()) && !task.completed && (
-                  <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 overdue">
-                    Overdue
                   </span>
                 )}
               </div>
