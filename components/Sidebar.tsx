@@ -495,6 +495,17 @@ export default function Sidebar() {
             >
               Clear Filters
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+              onClick={() => {
+                const markdown = tasksList.map(t => `- [${t.completed ? 'x' : ' '}] ${t.name}`).join('\n');
+                navigator.clipboard.writeText(markdown);
+              }}
+            >
+              Copy Markdown
+            </Button>
           </CardContent>
         </Card>
       </div>
