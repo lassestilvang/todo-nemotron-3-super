@@ -19,7 +19,7 @@ import KeyboardShortcutsHelp from '@/components/keyboard-shortcuts';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { createId } from '@paralleldrive/cuid2';
 import { useApp } from '@/lib/app-context';
-import { SortableTaskList, EmptyTaskList, TaskListLoading } from '@/components/task-list/SortableTaskList';
+import { SortableTaskList, EmptyTaskList, TaskListLoading, TaskStats } from '@/components/task-list/SortableTaskList';
 import type { Task, ViewType } from '@/types/task';
 
 export default function DashboardPage() {
@@ -398,25 +398,31 @@ export default function DashboardPage() {
             {tasksLoading ? (
               <TaskListLoading />
             ) : tasksList.length === 0 ? (
-              <EmptyTaskList />
+              <>
+                <TaskStats tasks={tasksList} />
+                <EmptyTaskList />
+              </>
             ) : (
-              <SortableTaskList
-                tasks={tasksList}
-                selectedTaskIds={selectedTaskIds}
-                onSelectTask={handleSelectTask}
-                onToggleComplete={handleToggleComplete}
-                onReorderTasks={async (taskIds) => {
-                  for (let i = 0; i < taskIds.length; i++) {
-                    const taskId = taskIds[i];
-                    if (taskId) {
-                      await db.update(tasks).set({ sortOrder: i }).where(eq(tasks.id, taskId));
+              <>
+                <TaskStats tasks={tasksList} />
+                <SortableTaskList
+                  tasks={tasksList}
+                  selectedTaskIds={selectedTaskIds}
+                  onSelectTask={handleSelectTask}
+                  onToggleComplete={handleToggleComplete}
+                  onReorderTasks={async (taskIds) => {
+                    for (let i = 0; i < taskIds.length; i++) {
+                      const taskId = taskIds[i];
+                      if (taskId) {
+                        await db.update(tasks).set({ sortOrder: i }).where(eq(tasks.id, taskId));
+                      }
                     }
-                  }
-                  await fetchTasks();
-                }}
-                isLoading={tasksLoading}
-                operatingOnTaskId={operatingOnTaskId}
-              />
+                    await fetchTasks();
+                  }}
+                  isLoading={tasksLoading}
+                  operatingOnTaskId={operatingOnTaskId}
+                />
+              </>
             )}
           </div>
         </main>

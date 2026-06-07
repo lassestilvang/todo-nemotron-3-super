@@ -34,6 +34,9 @@ import {
   TrendingUp,
   Zap,
   Target,
+  Award,
+  Flame,
+  Sparkles,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
@@ -61,6 +64,57 @@ function getLabelColorClass(color: string): string {
     'bg-gray-500': 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
   };
   return colorMap[color] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+}
+
+export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
+  const total = taskList.length;
+  const completed = taskList.filter(t => t.completed).length;
+  const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const highPriority = taskList.filter(t => t.priority === 'high' && !t.completed).length;
+  const dueToday = taskList.filter(t => {
+    if (!t.deadline) return false;
+    const today = new Date();
+    const deadline = new Date(t.deadline);
+    return deadline.toDateString() === today.toDateString();
+  }).length;
+  const overdue = taskList.filter(t => !t.completed && t.deadline && new Date(t.deadline) < new Date()).length;
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+      <div className="bg-card rounded-lg p-3 border">
+        <div className="flex items-center gap-2">
+          <Award className="h-4 w-4 text-primary" />
+          <span className="text-xs text-muted-foreground">Completion</span>
+        </div>
+        <p className="text-2xl font-bold mt-1">{completionRate}%</p>
+        <p className="text-xs text-muted-foreground">{completed}/{total} tasks</p>
+      </div>
+      <div className="bg-card rounded-lg p-3 border">
+        <div className="flex items-center gap-2">
+          <Flame className="h-4 w-4 text-red-500" />
+          <span className="text-xs text-muted-foreground">High Priority</span>
+        </div>
+        <p className="text-2xl font-bold mt-1">{highPriority}</p>
+        <p className="text-xs text-muted-foreground">active tasks</p>
+      </div>
+      <div className="bg-card rounded-lg p-3 border">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-blue-500" />
+          <span className="text-xs text-muted-foreground">Due Today</span>
+        </div>
+        <p className="text-2xl font-bold mt-1">{dueToday}</p>
+        <p className="text-xs text-muted-foreground">tasks due</p>
+      </div>
+      <div className="bg-card rounded-lg p-3 border">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-yellow-500" />
+          <span className="text-xs text-muted-foreground">Overdue</span>
+        </div>
+        <p className="text-2xl font-bold mt-1 text-red-500">{overdue}</p>
+        <p className="text-xs text-muted-foreground">tasks behind</p>
+      </div>
+    </div>
+  );
 }
 
 export function EmptyTaskList() {
