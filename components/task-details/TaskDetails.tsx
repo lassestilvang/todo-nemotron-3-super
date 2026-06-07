@@ -428,6 +428,34 @@ setIsSaving(true);
     }
   };
 
+  const handleQuickAddSubtask = async () => {
+    if (!newSubtaskName.trim() || !task) return;
+    
+    setIsSaving(true);
+    try {
+      const newSubtask = {
+        id: createId(),
+        taskId: task.id,
+        name: newSubtaskName.trim(),
+        completed: false,
+        createdAt: new Date(),
+      };
+      
+      await db.insert(subtasks).values(newSubtask);
+      setTask(prev => prev ? { 
+        ...prev, 
+        subtasks: [...prev.subtasks, newSubtask as any] 
+      } : null);
+      setNewSubtaskName('');
+      toast.success('Subtask added');
+    } catch (error) {
+      console.error('Failed to add subtask:', error);
+      toast.error('Failed to add subtask');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleStartTimer = () => {
     setIsTimerRunning(true);
     setTimerStart(new Date());
@@ -717,9 +745,9 @@ setIsSaving(true);
                 placeholder="Add subtask..."
                 value={newSubtaskName}
                 onChange={(e) => setNewSubtaskName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleAddSubtask(); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleQuickAddSubtask(); }}
               />
-              <Button onClick={handleAddSubtask} disabled={!newSubtaskName.trim() || isSaving} size="sm">
+              <Button onClick={handleQuickAddSubtask} disabled={!newSubtaskName.trim() || isSaving} size="sm">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
