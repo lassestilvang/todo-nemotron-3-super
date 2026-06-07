@@ -80,7 +80,7 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
   const overdue = taskList.filter(t => !t.completed && t.deadline && new Date(t.deadline) < new Date()).length;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+    <div className="task-stats grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
       <div className="bg-card rounded-lg p-3 border">
         <div className="flex items-center gap-2">
           <Award className="h-4 w-4 text-primary" />
@@ -388,13 +388,14 @@ function SortableTaskItem({
     <div
       ref={setNodeRef}
       style={style}
-      className={`border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-grab active:cursor-grabbing ${isSelected ? 'ring-2 ring-primary bg-primary/5' : ''} ${isDragging ? 'shadow-xl ring-2 ring-primary' : ''}`}
+      className={`border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-grab active:cursor-grabbing ${isSelected ? 'ring-2 ring-primary bg-primary/5' : ''} ${isDragging ? 'shadow-xl ring-2 ring-primary' : ''} ${isFocused ? 'ring-2 ring-secondary' : ''}`}
       onMouseDown={handleDragStart}
       role="listitem"
       aria-posinset={index + 1}
       aria-setsize={tasksLength}
       aria-selected={isSelected}
       aria-grabbed={isDragging}
+      data-task-index={index}
     >
       <Card className="p-4">
         <div className="flex items-start gap-4">
@@ -507,37 +508,36 @@ function SortableTaskItem({
 
 export function TaskSkeleton() {
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden animate-pulse">
       <Card className="p-4">
         <div className="flex items-start gap-4">
-          <Skeleton className="h-5 w-5 rounded" />
-          <Skeleton className="h-5 w-5 rounded" />
-          <Skeleton className="h-5 w-5 rounded" />
+          <Skeleton className="h-5 w-5 rounded bg-muted/50" />
+          <Skeleton className="h-5 w-5 rounded bg-muted/50" />
+          <Skeleton className="h-5 w-5 rounded bg-muted/50" />
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-2 w-16 rounded" />
-              <Skeleton className="h-2 w-12 rounded" />
+              <Skeleton className="h-4 w-32 bg-muted/50" />
+              <Skeleton className="h-2 w-16 rounded bg-muted/30" />
+              <Skeleton className="h-2 w-12 rounded bg-muted/30" />
             </div>
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-40 bg-muted/50" />
+            <Skeleton className="h-4 w-32 bg-muted/50" />
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-2">
-                <Skeleton className="h-3 w-3" />
-                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-3 w-3 bg-muted/50" />
+                <Skeleton className="h-3 w-16 bg-muted/30" />
               </div>
               <div className="flex items-center gap-2">
-                <Skeleton className="h-3 w-3" />
-                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-3 w-3 bg-muted/50" />
+                <Skeleton className="h-3 w-16 bg-muted/30" />
               </div>
               <div className="flex items-center gap-2">
-                <Skeleton className="h-3 w-3" />
-                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-3 w-3 bg-muted/50" />
+                <Skeleton className="h-3 w-16 bg-muted/30" />
               </div>
               <div className="flex flex-wrap gap-1">
-                <Skeleton className="h-3 w-12 rounded" />
-                <Skeleton className="h-3 w-12 rounded" />
-                <Skeleton className="h-3 w-12 rounded" />
+                <Skeleton className="h-3 w-12 rounded bg-muted/50" />
+                <Skeleton className="h-3 w-12 rounded bg-muted/30" />
               </div>
             </div>
           </div>
