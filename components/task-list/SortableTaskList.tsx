@@ -24,6 +24,8 @@ import {
   CheckSquare,
   Square,
   AlertCircle,
+  Copy,
+  Share2,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
@@ -229,6 +231,19 @@ export function SortableTaskList({
               tasksLength={tasks.length}
               onToggleComplete={onToggleComplete}
               onSelectTask={onSelectTask}
+              onDuplicateTask={(t) => {
+                const duplicated = { ...t, id: crypto.randomUUID(), name: `${t.name} (copy)` };
+                onReorderTasks([...tasks, duplicated]);
+              }}
+              onShareTask={(t) => {
+                navigator.share?.({
+                  title: t.name,
+                  text: t.description || undefined,
+                  url: window.location.href,
+                }).catch(() => {
+                  navigator.clipboard.writeText(`${window.location.href}#task-${t.id}`);
+                });
+              }}
               isSelected={selectedTaskIds.has(task.id)}
               isDragging={activeId === task.id}
               isFocused={focusedIndex === index}
@@ -247,6 +262,8 @@ interface SortableTaskItemProps {
   tasksLength: number;
   onToggleComplete: (taskId: string, completed: boolean) => void;
   onSelectTask: (taskId: string) => void;
+  onDuplicateTask: (task: Task) => void;
+  onShareTask: (task: Task) => void;
   isSelected: boolean;
   isDragging: boolean;
   isFocused: boolean;
@@ -259,6 +276,8 @@ function SortableTaskItem({
   tasksLength,
   onToggleComplete,
   onSelectTask,
+  onDuplicateTask,
+  onShareTask,
   isSelected,
   isDragging,
   isFocused,
@@ -358,10 +377,37 @@ function SortableTaskItem({
                 <Clock className="h-4 w-4" />
                 <span>{task.deadline ? new Date(task.deadline).toLocaleString() : 'No deadline'}</span>
               </div>
-              <div className="flex items-center gap-2">
+<div className="flex items-center gap-2">
                 <Folder className="h-4 w-4" />
                 <span>{task.list.name}</span>
               </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDuplicateTask(task);
+                  }}
+                  className="h-6 w-6 p-0"
+                  aria-label="Duplicate task"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShareTask(task);
+                  }}
+                  className="h-6 w-6 p-0"
+                  aria-label="Share task"
+                >
+                  <Share2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
               {task.labels.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {task.labels.map((label) => (
