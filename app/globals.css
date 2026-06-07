@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   :root {
@@ -64,10 +62,8 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 39.4% 37.6%;
   }
-}
 
-@layer base {
-  * {
+  *, body {
     @apply border-[hsl(var(--border))];
   }
   body {
@@ -75,60 +71,58 @@
   }
 }
 
-@layer components {
-  .task-card {
-    @apply transition-all duration-200 hover:shadow-md;
-  }
-  
-  .priority-high {
-    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
-  }
-  
-  .priority-medium {
-    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
-  }
-  
-  .priority-low {
-    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
-  }
-  
-  .overdue {
-    @apply bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800;
-  }
-  
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  
-  .animate-fade-out {
-    animation: fadeOut 0.3s ease-in-out;
-  }
+.task-card {
+  @apply transition-all duration-200;
+}
 
-  .status-completed {
-    @apply line-through text-muted-foreground/70;
-  }
+.priority-high {
+  @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+}
 
-  .status-overdue {
-    @apply animate-pulse;
-  }
+.priority-medium {
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+}
 
-  .focus-mode {
-    @apply filtered grayscale;
-  }
+.priority-low {
+  @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+}
 
-  .focus-mode .task-card {
-    @apply opacity-50;
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  @keyframes fadeOut {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(-4px); }
-  }
+.overdue {
+  @apply bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-in-out;
+}
+
+.status-completed {
+  @apply text-[hsl(var(--muted-foreground))] line-through opacity-70;
+}
+
+.status-overdue {
+  @apply animate-pulse;
+}
+
+.focus-mode {
+  @apply grayscale;
+}
+
+.focus-mode .task-card {
+  @apply opacity-50;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-4px); }
 }
 
 @media print {
@@ -142,40 +136,5 @@
   
   body {
     @apply bg-white;
-  }
-}
-  
-  .priority-high {
-    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
-  }
-  
-  .priority-medium {
-    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
-  }
-  
-  .priority-low {
-    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
-  }
-  
-  .overdue {
-    @apply bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800;
-  }
-  
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  
-  .animate-fade-out {
-    animation: fadeOut 0.3s ease-in-out;
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY-4px; }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  @keyframes fadeOut {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY-4px; }
   }
 }
