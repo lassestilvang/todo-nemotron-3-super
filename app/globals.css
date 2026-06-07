@@ -103,6 +103,49 @@
   .animate-fade-out {
     animation: fadeOut 0.3s ease-in-out;
   }
+
+  .status-completed {
+    @apply line-through text-muted-foreground/70;
+  }
+
+  .status-overdue {
+    @apply animate-pulse;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-4px); }
+  }
+}
+  
+  .priority-high {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+  }
+  
+  .priority-medium {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+  }
+  
+  .priority-low {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+  }
+  
+  .overdue {
+    @apply bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .animate-fade-out {
+    animation: fadeOut 0.3s ease-in-out;
+  }
   
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY-4px; }
