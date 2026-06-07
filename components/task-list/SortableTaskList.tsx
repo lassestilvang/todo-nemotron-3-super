@@ -37,11 +37,16 @@ import {
   Award,
   Flame,
   Sparkles,
+  Star,
+  Bell,
+  Link,
+  Paperclip,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { formatTimeHHMM } from '@/lib/utils';
 import type { Task } from '@/types/task';
 
 function getLabelColorClass(color: string): string {
@@ -415,7 +420,7 @@ function SortableTaskItem({
           />
           <Checkbox
             checked={Boolean(task.completed)}
-            onCheckedChange={(checkedState) => onToggleComplete(task.id, checkedState === true)}
+            onCheckedChange={(checked) => onToggleComplete(task.id, checked === true)}
             className="flex-shrink-0"
             aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
             disabled={isOperatingOnTask}
@@ -435,6 +440,11 @@ function SortableTaskItem({
                 {task.priority && task.priority !== 'none' && (
                   <span className={`px-2 py-0.5 rounded text-xs font-medium priority-${task.priority}`}>
                     {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                  </span>
+                )}
+                {task.estimate && !task.completed && (
+                  <span className="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    {formatTimeHHMM(task.estimate)}
                   </span>
                 )}
               </div>
@@ -468,7 +478,7 @@ function SortableTaskItem({
                 <Clock className="h-4 w-4" />
                 <span>{task.deadline ? new Date(task.deadline).toLocaleString() : 'No deadline'}</span>
               </div>
-<div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Folder className="h-4 w-4" />
                 <span>{task.list.name}</span>
               </div>
@@ -485,26 +495,26 @@ function SortableTaskItem({
                 >
                   <Copy className="h-3 w-3" />
                 </Button>
-<Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onShareTask(task);
-                    }}
-                    className="h-6 w-6 p-0"
-                    aria-label="Share task"
-                  >
-                    <Share2 className="h-3 w-3" />
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShareTask(task);
+                  }}
+                  className="h-6 w-6 p-0"
+                  aria-label="Share task"
+                >
+                  <Share2 className="h-3 w-3" />
+                </Button>
               </div>
             </div>
           </div>
-        </Card>
-      </div>
-    );
-  }
+        </div>
+      </Card>
+    </div>
+  );
+}
 
 export function TaskSkeleton() {
   return (
