@@ -31,6 +31,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Clock, Folder } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { Task } from '@/types/task';
 
 function getLabelColorClass(color: string): string {
@@ -233,7 +234,7 @@ export function SortableTaskList({
               onSelectTask={onSelectTask}
               onDuplicateTask={(t) => {
                 const duplicated = { ...t, id: crypto.randomUUID(), name: `${t.name} (copy)` };
-                onReorderTasks([...tasks, duplicated]);
+                onReorderTasks([...tasks.map((x) => x.id), duplicated.id]);
               }}
               onShareTask={(t) => {
                 navigator.share?.({
@@ -368,6 +369,19 @@ function SortableTaskItem({
               </p>
             )}
 
+            {task.labels.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {task.labels.map((label) => (
+                  <span
+                    key={label.id}
+                    className={`px-2 py-0.5 rounded text-xs font-medium ${getLabelColorClass(label.color)}`}
+                  >
+                    {label.emoji} {label.name}
+                  </span>
+                ))}
+              </div>
+            )}
+
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -394,39 +408,26 @@ function SortableTaskItem({
                 >
                   <Copy className="h-3 w-3" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onShareTask(task);
-                  }}
-                  className="h-6 w-6 p-0"
-                  aria-label="Share task"
-                >
-                  <Share2 className="h-3 w-3" />
-                </Button>
+<Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShareTask(task);
+                    }}
+                    className="h-6 w-6 p-0"
+                    aria-label="Share task"
+                  >
+                    <Share2 className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             </div>
-              {task.labels.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {task.labels.map((label) => (
-                    <span
-                      key={label.id}
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${getLabelColorClass(label.color)}`}
-                    >
-                      {label.emoji} {label.name}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
-        </div>
-      </Card>
-    </div>
-  );
-}
+        </Card>
+      </div>
+    );
+  }
 
 export function TaskSkeleton() {
   return (
