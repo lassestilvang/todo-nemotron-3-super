@@ -14,6 +14,7 @@ import {
   Circle,
   Filter,
   SortAsc,
+  PieChart,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -363,6 +364,37 @@ export default function Sidebar() {
                 Pending
               </span>
               <span className="font-semibold text-blue-600">0</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Progress Visualization */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <PieChart className="h-4 w-4" />
+              Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex items-center justify-center">
+              <div className="relative w-20 h-20">
+                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="45" fill="none" className="stroke-muted/30 stroke-8" />
+                  <circle 
+                    cx="50" cy="50" r="45" fill="none" 
+                    className="stroke-primary stroke-8" 
+                    strokeDasharray="141" 
+                    strokeDashoffset="35"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-lg font-bold">0%</span>
+                </div>
+              </div>
+            </div>
+            <div className="text-center text-xs text-muted-foreground">
+              <p>No tasks to track</p>
             </div>
           </CardContent>
         </Card>
