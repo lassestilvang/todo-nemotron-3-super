@@ -17,6 +17,7 @@ import { db } from '@/app/lib/db/index';
 import { lists, labels, type List, type Label as LabelType } from '@/app/lib/db/schema';
 import { RECURRENCE_OPTIONS } from '@/lib/constants';
 import { apiCache } from '@/lib/cache';
+import { HelpCircle } from 'lucide-react';
 
 interface TaskFormProps {
   isOpen: boolean;
@@ -167,7 +168,10 @@ export default function TaskForm({
       </DialogTrigger>
       <DialogContent className="w-full max-w-md">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {title}
+            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+          </DialogTitle>
         </DialogHeader>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
