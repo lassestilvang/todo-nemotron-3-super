@@ -83,9 +83,10 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
     return deadline.toDateString() === today.toDateString();
   }).length;
   const overdue = taskList.filter(t => !t.completed && t.deadline && new Date(t.deadline) < new Date()).length;
+  const withSubtasks = taskList.filter(t => t.subtasks && t.subtasks.length > 0).length;
 
   return (
-    <div className="task-stats grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+    <div className="task-stats grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
       <div className="bg-card rounded-lg p-3 border">
         <div className="flex items-center gap-2">
           <Award className="h-4 w-4 text-primary" />
@@ -97,10 +98,10 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
       <div className="bg-card rounded-lg p-3 border">
         <div className="flex items-center gap-2">
           <Flame className="h-4 w-4 text-red-500" />
-          <span className="text-xs text-muted-foreground">High Priority</span>
+          <span className="text-xs text-muted-foreground">High</span>
         </div>
         <p className="text-2xl font-bold mt-1">{highPriority}</p>
-        <p className="text-xs text-muted-foreground">active tasks</p>
+        <p className="text-xs text-muted-foreground">priority</p>
       </div>
       <div className="bg-card rounded-lg p-3 border">
         <div className="flex items-center gap-2">
@@ -108,7 +109,7 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
           <span className="text-xs text-muted-foreground">Due Today</span>
         </div>
         <p className="text-2xl font-bold mt-1">{dueToday}</p>
-        <p className="text-xs text-muted-foreground">tasks due</p>
+        <p className="text-xs text-muted-foreground">tasks</p>
       </div>
       <div className="bg-card rounded-lg p-3 border">
         <div className="flex items-center gap-2">
@@ -116,7 +117,15 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
           <span className="text-xs text-muted-foreground">Overdue</span>
         </div>
         <p className="text-2xl font-bold mt-1 text-red-500">{overdue}</p>
-        <p className="text-xs text-muted-foreground">tasks behind</p>
+        <p className="text-xs text-muted-foreground">tasks</p>
+      </div>
+      <div className="bg-card rounded-lg p-3 border hidden md:block">
+        <div className="flex items-center gap-2">
+          <CheckSquare className="h-4 w-4 text-purple-500" />
+          <span className="text-xs text-muted-foreground">Subtasks</span>
+        </div>
+        <p className="text-2xl font-bold mt-1">{withSubtasks}</p>
+        <p className="text-xs text-muted-foreground">with tasks</p>
       </div>
     </div>
   );
