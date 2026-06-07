@@ -15,6 +15,7 @@ import {
   Filter,
   SortAsc,
   PieChart,
+  Download,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -420,6 +421,39 @@ export default function Sidebar() {
               <option value="due-date">Due Date</option>
               <option value="priority">Priority</option>
             </select>
+          </CardContent>
+        </Card>
+
+        {/* Export */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Export
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => {
+                const data = {
+                  lists,
+                  labels,
+                  tasks: [],
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `todo-backup-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              Export Backup
+            </Button>
           </CardContent>
         </Card>
       </div>
