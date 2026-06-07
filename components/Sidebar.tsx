@@ -495,17 +495,16 @@ export default function Sidebar() {
             >
               Clear Filters
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-              onClick={() => {
-                const markdown = '';
-                navigator.clipboard.writeText(markdown);
-              }}
-            >
-              Copy Markdown
-            </Button>
+<Button
+               variant="outline"
+               size="sm"
+               className="w-full justify-start"
+               onClick={() => {
+                 navigator.clipboard.writeText('Todo Planner - Task Management');
+               }}
+             >
+               Copy Markdown
+             </Button>
           </CardContent>
         </Card>
       </div>
