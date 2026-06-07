@@ -477,6 +477,26 @@ export default function Sidebar() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+              onClick={() => {
+                setFilterListId(null);
+                setFilterLabelId(null);
+              }}
+            >
+              Clear Filters
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
