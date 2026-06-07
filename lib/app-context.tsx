@@ -7,6 +7,8 @@ import { apiCache } from '@/lib/cache';
 
 type ViewType = 'today' | 'next7' | 'upcoming' | 'all';
 
+type SortOption = 'newest' | 'oldest' | 'due-date' | 'priority';
+
 interface List {
   id: string;
   name: string;
@@ -30,6 +32,8 @@ interface AppContextType {
   setFilterListId: (id: string | null) => void;
   filterLabelId: string | null;
   setFilterLabelId: (id: string | null) => void;
+  sortBy: SortOption;
+  setSortBy: (sort: SortOption) => void;
   lists: List[];
   labels: Label[];
   listsLoading: boolean;
@@ -47,6 +51,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showCompleted, setShowCompleted] = useState(false);
   const [filterListId, setFilterListId] = useState<string | null>(null);
   const [filterLabelId, setFilterLabelId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [lists, setLists] = useState<List[]>([]);
   const [labels, setLabels] = useState<Label[]>([]);
   const [listsLoading, setListsLoading] = useState(true);
@@ -145,6 +150,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setFilterListId,
       filterLabelId,
       setFilterLabelId,
+      sortBy,
+      setSortBy,
       lists,
       labels,
       listsLoading,
