@@ -49,6 +49,8 @@ export default function Sidebar() {
     setFilterLabelId,
     showCompleted,
     setShowCompleted,
+    sortBy,
+    setSortBy,
     addList,
     addLabel,
     refreshLists,
@@ -396,6 +398,28 @@ export default function Sidebar() {
             <div className="text-center text-xs text-muted-foreground">
               <p>No tasks to track</p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Sort Options */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <SortAsc className="h-4 w-4" />
+              Sort By
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="due-date">Due Date</option>
+              <option value="priority">Priority</option>
+            </select>
           </CardContent>
         </Card>
       </div>
