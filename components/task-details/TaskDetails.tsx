@@ -37,6 +37,7 @@ import {
     Pause,
     History,
     ExternalLink,
+    BookOpen,
   } from 'lucide-react';
 import { createId } from '@paralleldrive/cuid2';
 import { formatTimeHHMM, parseHHMMtoMinutes } from '@/lib/utils';
@@ -629,12 +630,15 @@ setIsSaving(true);
           )}
 
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 border-b">
+          <TabsList className="grid w-full grid-cols-5 border-b">
             <TabsTrigger value="details" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
               Details
             </TabsTrigger>
             <TabsTrigger value="subtasks" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
               Subtasks
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
+              Notes
             </TabsTrigger>
             <TabsTrigger value="activity" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
               Activity
@@ -824,6 +828,23 @@ setIsSaving(true);
             ) : (
               <p className="text-center py-8 text-muted-foreground">No activity</p>
             )}
+          </TabsContent>
+          <TabsContent value="notes" className="mt-2">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <BookOpen className="h-4 w-4" />
+                <span>Notes</span>
+              </div>
+              <Textarea
+                placeholder="Add notes about this task..."
+                className="min-h-[150px]"
+                value={task.description || ''}
+                readOnly
+              />
+              <p className="text-xs text-muted-foreground">
+                Task description serves as notes. Edit in Details tab to update.
+              </p>
+            </div>
           </TabsContent>
           <TabsContent value="history" className="mt-2">
             <div className="space-y-3">
