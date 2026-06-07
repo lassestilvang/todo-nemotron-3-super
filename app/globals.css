@@ -130,6 +130,20 @@
     to { opacity: 0; transform: translateY(-4px); }
   }
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .task-card {
+    @apply border border-gray-300 shadow-none;
+  }
+  
+  body {
+    @apply bg-white;
+  }
+}
   
   .priority-high {
     @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;

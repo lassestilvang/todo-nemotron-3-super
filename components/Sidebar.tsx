@@ -16,6 +16,7 @@ import {
   SortAsc,
   PieChart,
   Download,
+  Printer,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -453,6 +454,26 @@ export default function Sidebar() {
               }}
             >
               Export Backup
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Print */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Printer className="h-4 w-4" />
+              Print
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => window.print()}
+            >
+              Print Tasks
             </Button>
           </CardContent>
         </Card>
