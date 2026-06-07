@@ -562,7 +562,9 @@ setIsSaving(true);
             {task.deadline && (
               <div className="flex items-center gap-1.5">
                 <Clock className="h-3 w-3" />
-                <span>{task.deadline.toLocaleString()}</span>
+                <span className={new Date(task.deadline).toDateString() === new Date().toDateString() ? 'font-bold text-red-500' : new Date(task.deadline) < new Date(Date.now()) ? 'text-red-500' : ''}>
+                  {new Date(task.deadline).toDateString() === new Date().toDateString() ? 'Due Today' : task.deadline.toLocaleString()}
+                </span>
               </div>
             )}
             {task.estimate && (
