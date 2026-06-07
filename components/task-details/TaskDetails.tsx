@@ -36,6 +36,7 @@ import {
     Play,
     Pause,
     History,
+    ExternalLink,
   } from 'lucide-react';
 import { createId } from '@paralleldrive/cuid2';
 import { formatTimeHHMM, parseHHMMtoMinutes } from '@/lib/utils';
@@ -838,8 +839,15 @@ setIsSaving(true);
           </TabsContent>
           </Tabs>
           <DialogFooter className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="ghost" onClick={onClose}>
               Close
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.open(`/task/${task.id}`, '_blank')}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Open in App
             </Button>
             <Button
               variant="destructive"
