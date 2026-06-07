@@ -12,7 +12,7 @@ import useDebounce from '@/hooks/use-debounce';
 import { apiCache } from '@/lib/cache';
 import { TaskSkeleton } from '@/components/task-list/SortableTaskList';
 import { toast, Toaster } from 'sonner';
-import { Plus, Calendar, Edit, Search, X, Clock, Folder, BarChart2, PieChart, Zap, Target } from 'lucide-react';
+import { Plus, Calendar, Edit, Search, X, Clock, Folder, BarChart2, PieChart, Zap, Target, Download, Upload } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import KeyboardShortcutsHelp from '@/components/keyboard-shortcuts';
@@ -289,7 +289,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Zap className="h-3 w-3" />
-                  <span>{tasksList.filter(t => !t.completed && t.priority === 'high').length} high priority</span>
+                  <span>{tasksList.filter(t => !t.completed && t.priority === 'high').length} high</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3 w-3" />
+                  <span>{tasksList.filter(t => t.deadline && new Date(t.deadline).toDateString() === new Date().toDateString()).length} today</span>
                 </div>
               </div>
             </div>
@@ -321,6 +325,59 @@ export default function DashboardPage() {
                 aria-label="Add new task"
               >
                 <Plus className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  const data = {
+                    tasks: tasksList.map(t => ({
+                      ...t,
+                      date: t.date?.toISOString() || null,
+                      deadline: t.deadline?.toISOString() || null,
+                      createdAt: t.createdAt.toISOString(),
+                      updatedAt: t.updatedAt.toISOString(),
+                    })),
+                    lists,
+                    labels,
+                    exportedAt: new Date().toISOString(),
+                  };
+                  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `tasks-export-${new Date().toISOString().split('T')[0]}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success('Tasks exported');
+                }}
+                aria-label="Export tasks"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = '.json';
+                  input.onchange = async (e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    if (!file) return;
+                    try {
+                      const text = await file.text();
+                      const data = JSON.parse(text);
+                      toast.success(`Found ${data.tasks?.length || 0} tasks in file. Import from API.`);
+                    } catch {
+                      toast.error('Invalid file format');
+                    }
+                  };
+                  input.click();
+                }}
+                aria-label="Import tasks"
+              >
+                <Upload className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
@@ -437,10 +494,22 @@ export default function DashboardPage() {
                 if (e.key === 'Enter' && quickAddText.trim()) {
                   e.preventDefault();
                   try {
+                    const trimmedName = quickAddText.trim();
+                    const existingCount = tasksList.filter(
+                      t => t.name.toLowerCase() === trimmedName.toLowerCase()
+                    ).length;
+                    
+                    if (existingCount > 0) {
+                      const proceed = window.confirm(
+                        `Task "${trimmedName}" already exists ${existingCount > 0 ? `${existingCount} time(s)` : ''}. Add anyway?`
+                      );
+                      if (!proceed) return;
+                    }
+                    
                     const [taskResult] = await db
                       .insert(tasks)
                       .values({
-                        name: quickAddText.trim(),
+                        name: trimmedName,
                         listId: activeListId || lists[0]?.id || '',
                       })
                       .returning();
