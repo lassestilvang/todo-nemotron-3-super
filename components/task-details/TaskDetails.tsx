@@ -590,6 +590,11 @@ setIsSaving(true);
               <div className="flex items-center gap-1.5">
                 <TrendingUp className="h-3 w-3" />
                 <span>Actual: {formatTimeHHMM(task.actualTime)}</span>
+                {task.estimate && (
+                  <span className="text-xs text-muted-foreground">
+                    ({Math.round((task.actualTime / (typeof task.estimate === 'string' ? parseHHMMtoMinutes(task.estimate) : task.estimate)) * 100)}%)
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -848,8 +853,8 @@ setIsSaving(true);
               <Textarea
                 placeholder="Add notes about this task..."
                 className="min-h-[150px] resize-none"
-                value={editData.name}
-                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                value={editData.description}
+                onChange={(e) => setEditData({ ...editData, description: e.target.value })}
                 onBlur={handleSave}
               />
               <p className="text-xs text-muted-foreground">
