@@ -1,15 +1,17 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/app/lib/db/index';
 import { tasks, lists, labels, taskLabels, subtasks } from '@/app/lib/db/schema';
-import { eq, desc, and, isNotNull, sql, inArray } from 'drizzle-orm';
+import { eq, desc, asc, and, isNotNull, sql, inArray } from 'drizzle-orm';
+import type { SortOption } from '@/types/task';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const activeTab = searchParams.get('activeTab') as 'today' | 'next7' | 'upcoming' | 'all' || 'today';
+  const activeTab = (searchParams.get('activeTab') as 'today' | 'next7' | 'upcoming' | 'all') || 'today';
   const showCompleted = searchParams.get('showCompleted') === 'true';
   const searchQuery = searchParams.get('searchQuery') || '';
   const filterListId = searchParams.get('filterListId') || null;
   const filterLabelId = searchParams.get('filterLabelId') || null;
+  const sortBy = (searchParams.get('sortBy') as SortOption) || 'newest';
 
   try {
     let query = db
@@ -93,6 +95,27 @@ export async function GET(request: Request) {
       query = query
         .innerJoin(taskLabels, eq(tasks.id, taskLabels.taskId))
         .where(eq(taskLabels.labelId, filterLabelId));
+    }
+
+    switch (sortBy) {
+      case 'newest':
+        query = query.orderBy(desc(tasks.createdAt));
+        break;
+      case 'oldest':
+        query = query.orderBy(asc(tasks.createdAt));
+        break;
+      case 'due-date':
+        query = query.orderBy(asc(tasks.deadline));
+        break;
+      case 'priority':
+        query = query.orderBy(
+          sql`CASE ${tasks.priority} 
+            WHEN 'high' THEN 1 
+            WHEN 'medium' THEN 2 
+            WHEN 'low' THEN 3 
+            ELSE 4 END`
+        );
+        break;
     }
 
     const results = await query.execute() as Array<{
