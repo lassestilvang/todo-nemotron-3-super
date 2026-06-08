@@ -28,6 +28,8 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { DEFAULT_LISTS, DEFAULT_LABELS } from '@/lib/constants';
 import { useApp } from '@/lib/app-context';
 
 const viewOptions = [
@@ -339,6 +341,22 @@ export default function Sidebar() {
               <span className="text-muted-foreground">Show completed</span>
               <Checkbox checked={showCompleted} onCheckedChange={setShowCompleted} />
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={async () => {
+                for (const list of DEFAULT_LISTS) {
+                  await addList(list.name, list.color, list.emoji);
+                }
+                for (const label of DEFAULT_LABELS) {
+                  await addLabel(label.name, label.color, label.emoji);
+                }
+                toast.success('Quick setup complete!');
+              }}
+            >
+              Quick Setup
+            </Button>
           </CardContent>
         </Card>
 
