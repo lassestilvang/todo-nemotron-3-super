@@ -131,7 +131,7 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
   );
 }
 
-export function EmptyTaskList() {
+export function EmptyTaskList({ onAddTask }: { onAddTask: () => void }) {
   return (
     <div className="text-center py-16 px-4">
       <div className="flex h-64 w-64 mx-auto items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-secondary/10">
@@ -149,7 +149,7 @@ export function EmptyTaskList() {
         Start by adding a new task to get organized!
       </p>
       <div className="mt-6 flex items-center justify-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => {}}>
+        <Button variant="outline" size="sm" onClick={onAddTask}>
           <Calendar className="h-4 w-4 mr-2" />
           Add Task
         </Button>

@@ -458,7 +458,7 @@ export default function DashboardPage() {
             ) : tasksList.length === 0 ? (
               <>
                 <TaskStats tasks={tasksList} />
-                <EmptyTaskList />
+                <EmptyTaskList onAddTask={() => setIsAddingTask(true)} />
               </>
             ) : (
               <>
