@@ -495,7 +495,7 @@ function SortableTaskItem({
             </div>
 
             {task.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2">
+              <p className="text-sm text-muted-foreground line-clamp-2" title={task.description}>
                 {task.description}
               </p>
             )}
@@ -517,6 +517,16 @@ function SortableTaskItem({
                     style={{ width: `${(task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100}%` }}
                   />
                 </div>
+              </div>
+            )}
+
+            {task.actualTime && task.actualTime > 0 && (
+              <div className="flex items-center gap-2 text-xs">
+                <Timer className="h-3 w-3 text-green-500" />
+                <span className="text-green-600 font-medium">{formatTimeHHMM(task.actualTime)}</span>
+                {task.estimate && typeof task.estimate === 'number' && (
+                  <span className="text-muted-foreground">({Math.round((task.actualTime / task.estimate) * 100)}%)</span>
+                )}
               </div>
             )}
 
