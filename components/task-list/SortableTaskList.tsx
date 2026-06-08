@@ -90,8 +90,15 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
   const totalActual = taskList.reduce((sum, t) => sum + (t.actualTime || 0), 0);
   const timeEfficiency = totalEstimate > 0 ? Math.round((totalActual / totalEstimate) * 100) : 0;
 
+  const streakDays = 7;
+  const streakActive = Array.from({ length: streakDays }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (streakDays - 1 - i));
+    return taskList.some(t => t.completed && t.updatedAt && new Date(t.updatedAt).toDateString() === d.toDateString());
+  });
+
   return (
-    <div className="task-stats grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
+    <div className="task-stats grid grid-cols-2 md:grid-cols-7 gap-3 mb-4">
       <div className="bg-card rounded-lg p-3 border">
         <div className="flex items-center gap-2">
           <Award className="h-4 w-4 text-primary" />
@@ -139,6 +146,21 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
         </div>
         <p className="text-2xl font-bold mt-1">{timeEfficiency}%</p>
         <p className="text-xs text-muted-foreground">efficiency</p>
+      </div>
+      <div className="bg-card rounded-lg p-3 border hidden lg:block">
+        <div className="flex items-center gap-2">
+          <Star className="h-4 w-4 text-orange-500" />
+          <span className="text-xs text-muted-foreground">Streak</span>
+        </div>
+        <div className="flex items-center gap-0.5 mt-1">
+          {streakActive.map((active, i) => (
+            <div 
+              key={i} 
+              className={`h-5 w-5 rounded-sm ${active ? 'bg-orange-500' : 'bg-muted/30'}`}
+              title={`${['Sat', 'Fri', 'Thu', 'Wed', 'Tue', 'Mon', 'Sun'][i] || ''}`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
