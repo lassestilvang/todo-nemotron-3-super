@@ -44,14 +44,45 @@ interface AppContextType {
   addLabel: (name: string, color: string, emoji: string) => Promise<void>;
 }
 
+const STORAGE_KEYS = {
+  SHOW_COMPLETED: 'todo_showCompleted',
+  ACTIVE_VIEW: 'todo_activeView',
+  SORT_BY: 'todo_sortBy',
+};
+
+export function loadFromStorage<T>(key: string, defaultValue: T): T {
+  if (typeof window === 'undefined') return defaultValue;
+  try {
+    const stored = localStorage.getItem(key);
+    return stored !== null ? (JSON.parse(stored) as T) : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+}
+
+export function saveToStorage<T>(key: string, value: T): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage disabled or full
+  }
+}
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [activeView, setActiveView] = useState<ViewType>('today');
-  const [showCompleted, setShowCompleted] = useState(false);
+  const [activeView, setActiveView] = useState<ViewType>(() => 
+    loadFromStorage<ViewType>(STORAGE_KEYS.ACTIVE_VIEW, 'today')
+  );
+  const [showCompleted, setShowCompleted] = useState<boolean>(() =>
+    loadFromStorage<boolean>(STORAGE_KEYS.SHOW_COMPLETED, false)
+  );
   const [filterListId, setFilterListId] = useState<string | null>(null);
   const [filterLabelId, setFilterLabelId] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [sortBy, setSortBy] = useState<SortOption>(() =>
+    loadFromStorage<SortOption>(STORAGE_KEYS.SORT_BY, 'newest')
+  );
   const [lists, setLists] = useState<List[]>([]);
   const [labels, setLabels] = useState<Label[]>([]);
   const [listsLoading, setListsLoading] = useState(true);
@@ -140,18 +171,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleSetActiveView = (view: ViewType) => {
+    setActiveView(view);
+    saveToStorage(STORAGE_KEYS.ACTIVE_VIEW, view);
+  };
+
+  const handleSetShowCompleted = (show: boolean) => {
+    setShowCompleted(show);
+    saveToStorage(STORAGE_KEYS.SHOW_COMPLETED, show);
+  };
+
+  const handleSetSortBy = (sort: SortOption) => {
+    setSortBy(sort);
+    saveToStorage(STORAGE_KEYS.SORT_BY, sort);
+  };
+
   return (
     <AppContext.Provider value={{
       activeView,
-      setActiveView,
+      setActiveView: handleSetActiveView,
       showCompleted,
-      setShowCompleted,
+      setShowCompleted: handleSetShowCompleted,
       filterListId,
       setFilterListId,
       filterLabelId,
       setFilterLabelId,
       sortBy,
-      setSortBy,
+      setSortBy: handleSetSortBy,
       lists,
       labels,
       listsLoading,
