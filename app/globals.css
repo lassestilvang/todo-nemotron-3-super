@@ -190,3 +190,46 @@
 .scroll-smooth {
   scroll-behavior: smooth;
 }
+
+.shimmer {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--accent)) 50%, hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.loading-skeleton {
+  @apply bg-gray-200 dark:bg-gray-700 rounded;
+}
+
+.task-card-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+.task-card-hover:hover {
+  @apply shadow-md;
+}
+
+.drag-item {
+  transition: transform 0.2s ease;
+}
+
+.drag-item.dragging {
+  transform: rotate(5deg);
+  opacity: 0.8;
+}
