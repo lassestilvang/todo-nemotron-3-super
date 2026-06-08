@@ -65,3 +65,33 @@ export function formatRelativeTime(date: Date | null | undefined): string {
   if (minutes > 0) return `${minutes}m ago`;
   return 'just now';
 }
+
+export function getDueDateText(deadline: Date | null | undefined): string {
+  if (!deadline) return 'No deadline';
+  const d = new Date(deadline);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  if (d.toDateString() === today.toDateString()) return 'Due Today';
+  if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+  if (d < new Date()) return 'Overdue';
+  return d.toLocaleDateString();
+}
+
+export function isToday(date: Date | null | undefined): boolean {
+  if (!date) return false;
+  const d = new Date(date);
+  const today = new Date();
+  return d.toDateString() === today.toDateString();
+}
+
+export function isThisWeek(date: Date | null | undefined): boolean {
+  if (!date) return false;
+  const d = new Date(date);
+  const now = new Date();
+  const weekAgo = new Date(now);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  return d >= weekAgo && d <= now;
+}
