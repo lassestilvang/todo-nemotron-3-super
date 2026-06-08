@@ -37,7 +37,6 @@ import {
   Award,
   Flame,
   Sparkles,
-  Star,
   Bell,
   Link,
   Paperclip,
@@ -90,15 +89,8 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
   const totalActual = taskList.reduce((sum, t) => sum + (t.actualTime || 0), 0);
   const timeEfficiency = totalEstimate > 0 ? Math.round((totalActual / totalEstimate) * 100) : 0;
 
-  const streakDays = 7;
-  const streakActive = Array.from({ length: streakDays }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (streakDays - 1 - i));
-    return taskList.some(t => t.completed && t.updatedAt && new Date(t.updatedAt).toDateString() === d.toDateString());
-  });
-
   return (
-    <div className="task-stats grid grid-cols-2 md:grid-cols-7 gap-3 mb-4">
+    <div className="task-stats grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
       <div className="bg-card rounded-lg p-3 border">
         <div className="flex items-center gap-2">
           <Award className="h-4 w-4 text-primary" />
@@ -146,21 +138,6 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
         </div>
         <p className="text-2xl font-bold mt-1">{timeEfficiency}%</p>
         <p className="text-xs text-muted-foreground">efficiency</p>
-      </div>
-      <div className="bg-card rounded-lg p-3 border hidden lg:block">
-        <div className="flex items-center gap-2">
-          <Star className="h-4 w-4 text-orange-500" />
-          <span className="text-xs text-muted-foreground">Streak</span>
-        </div>
-        <div className="flex items-center gap-0.5 mt-1">
-          {streakActive.map((active, i) => (
-            <div 
-              key={i} 
-              className={`h-5 w-5 rounded-sm ${active ? 'bg-orange-500' : 'bg-muted/30'}`}
-              title={`${['Sat', 'Fri', 'Thu', 'Wed', 'Tue', 'Mon', 'Sun'][i] || ''}`}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );
@@ -494,40 +471,10 @@ function SortableTaskItem({
               </div>
             </div>
 
-            {task.description && (
+{task.description && (
               <p className="text-sm text-muted-foreground line-clamp-2" title={task.description}>
                 {task.description}
               </p>
-            )}
-
-            {task.subtasks && task.subtasks.length > 0 && (
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground flex items-center gap-1.5">
-                    <CheckSquare className="h-3 w-3" />
-                    Subtasks
-                  </span>
-                  <span className="font-medium">
-                    {task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}
-                  </span>
-                </div>
-                <div className="h-1.5 bg-muted rounded overflow-hidden">
-                  <div 
-                    className="h-full bg-primary transition-all"
-                    style={{ width: `${(task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {task.actualTime && task.actualTime > 0 && (
-              <div className="flex items-center gap-2 text-xs">
-                <Timer className="h-3 w-3 text-green-500" />
-                <span className="text-green-600 font-medium">{formatTimeHHMM(task.actualTime)}</span>
-                {task.estimate && typeof task.estimate === 'number' && (
-                  <span className="text-muted-foreground">({Math.round((task.actualTime / task.estimate) * 100)}%)</span>
-                )}
-              </div>
             )}
 
             {task.labels.length > 0 && (
