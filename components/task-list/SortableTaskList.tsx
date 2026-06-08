@@ -41,6 +41,7 @@ import {
   Bell,
   Link,
   Paperclip,
+  Timer,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
@@ -84,9 +85,13 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
   }).length;
   const overdue = taskList.filter(t => !t.completed && t.deadline && new Date(t.deadline) < new Date()).length;
   const withSubtasks = taskList.filter(t => t.subtasks && t.subtasks.length > 0).length;
+  
+  const totalEstimate = taskList.reduce((sum, t) => sum + (typeof t.estimate === 'number' ? t.estimate : 0), 0);
+  const totalActual = taskList.reduce((sum, t) => sum + (t.actualTime || 0), 0);
+  const timeEfficiency = totalEstimate > 0 ? Math.round((totalActual / totalEstimate) * 100) : 0;
 
   return (
-    <div className="task-stats grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+    <div className="task-stats grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
       <div className="bg-card rounded-lg p-3 border">
         <div className="flex items-center gap-2">
           <Award className="h-4 w-4 text-primary" />
@@ -119,13 +124,21 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
         <p className="text-2xl font-bold mt-1 text-red-500">{overdue}</p>
         <p className="text-xs text-muted-foreground">tasks</p>
       </div>
-      <div className="bg-card rounded-lg p-3 border hidden md:block">
+      <div className="bg-card rounded-lg p-3 border hidden sm:block">
         <div className="flex items-center gap-2">
           <CheckSquare className="h-4 w-4 text-purple-500" />
           <span className="text-xs text-muted-foreground">Subtasks</span>
         </div>
         <p className="text-2xl font-bold mt-1">{withSubtasks}</p>
         <p className="text-xs text-muted-foreground">with tasks</p>
+      </div>
+      <div className="bg-card rounded-lg p-3 border hidden md:block">
+        <div className="flex items-center gap-2">
+          <Timer className="h-4 w-4 text-green-500" />
+          <span className="text-xs text-muted-foreground">Time Eff.</span>
+        </div>
+        <p className="text-2xl font-bold mt-1">{timeEfficiency}%</p>
+        <p className="text-xs text-muted-foreground">efficiency</p>
       </div>
     </div>
   );
