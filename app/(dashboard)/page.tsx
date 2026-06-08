@@ -106,11 +106,53 @@ export default function DashboardPage() {
       if (e.ctrlKey && e.key === 'Enter') {
         e.preventDefault();
       }
+      
+      if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+        e.preventDefault();
+        const data = {
+          tasks: tasksList.map(t => ({
+            ...t,
+            date: t.date?.toISOString() || null,
+            deadline: t.deadline?.toISOString() || null,
+            createdAt: t.createdAt.toISOString(),
+            updatedAt: t.updatedAt.toISOString(),
+          })),
+          lists,
+          labels,
+          exportedAt: new Date().toISOString(),
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tasks-export-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      
+      if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+        e.preventDefault();
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = async (ev) => {
+          const file = (ev.target as HTMLInputElement).files?.[0];
+          if (!file) return;
+          const text = await file.text();
+          try {
+            const data = JSON.parse(text);
+            alert(`Import ${data.tasks?.length || 0} tasks, ${data.lists?.length || 0} lists`);
+          } catch {
+            alert('Invalid JSON file');
+          }
+        };
+        input.click();
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [closeAllModals, handleAddList, handleAddLabel]);
+  }, [closeAllModals, handleAddList, handleAddLabel, tasksList, lists, labels]);
 
   const fetchTasks = useCallback(async () => {
     setTasksLoading(true);
