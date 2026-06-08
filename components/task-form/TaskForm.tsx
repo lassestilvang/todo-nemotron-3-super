@@ -223,37 +223,59 @@ export default function TaskForm({
                </select>
             </div>
 <div className="space-y-2">
-                <Label htmlFor="task-priority">Priority</Label>
-                <div className="flex items-center gap-2">
-                  {(['none', 'low', 'medium', 'high'] as const).map((priority) => (
-                    <button
-                      key={priority}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, priority })}
-                      className={`flex-1 py-2 px-3 rounded-md border-2 transition-all ${
-                        formData.priority === priority
-                          ? 'border-solid'
-                          : 'border-dashed border-gray-200 dark:border-gray-700'
-                      } ${
-                        priority === 'high'
-                          ? formData.priority === priority
-                            ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-200'
-                            : 'hover:border-red-200'
-                          : priority === 'medium'
-                          ? formData.priority === priority
-                            ? 'border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200'
-                            : 'hover:border-yellow-200'
-                          : priority === 'low'
-                          ? formData.priority === priority
-                            ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-200'
-                            : 'hover:border-green-200'
-                          : 'hover:border-gray-200'
-                      }`}
-                    >
-                      <span className="text-sm font-medium capitalize">{priority}</span>
-                    </button>
-                  ))}
-                </div>
+              <Label htmlFor="task-list">List</Label>
+              <select
+                id="task-list"
+                value={formData.listId}
+                onChange={(e) => setFormData({ ...formData, listId: e.target.value })}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option value="">Select a list</option>
+                {listsList.length === 0 ? (
+                  <option value="" disabled>No lists available</option>
+                ) : (
+                  listsList.map((list) => (
+                    <option key={list.id} value={list.id}>
+                      {list.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="task-priority">Priority</Label>
+              <div className="flex items-center gap-2">
+                {(['none', 'low', 'medium', 'high'] as const).map((priority) => (
+                  <button
+                    key={priority}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, priority })}
+                    className={`flex-1 py-2 px-3 rounded-md border-2 transition-all ${
+                      formData.priority === priority
+                        ? 'border-solid'
+                        : 'border-dashed border-gray-200 dark:border-gray-700'
+                    } ${
+                      priority === 'high'
+                        ? formData.priority === priority
+                          ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-200'
+                          : 'hover:border-red-200'
+                        : priority === 'medium'
+                        ? formData.priority === priority
+                          ? 'border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200'
+                          : 'hover:border-yellow-200'
+                        : priority === 'low'
+                        ? formData.priority === priority
+                          ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-200'
+                          : 'hover:border-green-200'
+                        : 'hover:border-gray-200'
+                    }`}
+                  >
+                    <span className="text-sm font-medium capitalize">{priority}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
               </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
