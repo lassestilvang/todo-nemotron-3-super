@@ -26,14 +26,15 @@ const shortcuts: Shortcut[] = [
   { keys: 'Ctrl + C', description: 'Toggle task completion', category: 'tasks' },
   { keys: 'Ctrl + Enter', description: 'Save task (in forms)', category: 'forms' },
   { keys: 'Ctrl + Shift + C', description: 'Copy markdown export', category: 'forms' },
+  { keys: 'Ctrl + Shift + E', description: 'Export backup', category: 'forms' },
+  { keys: 'Ctrl + Shift + I', description: 'Import backup', category: 'forms' },
+  { keys: 'Ctrl + Shift + R', description: 'Reset to default lists/labels', category: 'tasks' },
+  { keys: 'T', description: 'Start/stop timer (in task details)', category: 'tasks' },
   { keys: 'Tab', description: 'Navigate between elements', category: 'navigation' },
   { keys: 'Shift + Tab', description: 'Navigate backwards', category: 'navigation' },
   { keys: '↑ / ↓', description: 'Navigate task list', category: 'navigation' },
   { keys: 'Enter', description: 'Open task details / submit forms', category: 'forms' },
   { keys: 'Space', description: 'Toggle checkbox / activate buttons', category: 'navigation' },
-  { keys: 'Ctrl + Shift + R', description: 'Reset to default lists/labels', category: 'tasks' },
-  { keys: 'Ctrl + Shift + E', description: 'Export backup', category: 'forms' },
-  { keys: 'Ctrl + Shift + I', description: 'Import backup', category: 'forms' },
 ];
 
 const categoryLabels: Record<string, string> = {
