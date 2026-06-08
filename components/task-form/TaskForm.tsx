@@ -31,6 +31,8 @@ interface TaskFormProps {
     priority: string;
     recurrence: string;
     labelIds: string[];
+    estimate?: string;
+    actualTime?: string;
   };
   onSubmit: (data: {
     name: string;
@@ -41,6 +43,8 @@ interface TaskFormProps {
     priority: string;
     recurrence: string;
     labelIds: string[];
+    estimate?: string;
+    actualTime?: string;
   }) => Promise<void>;
   submitLabel: string;
   title: string;
@@ -56,6 +60,8 @@ interface FormState {
   priority: string;
   recurrence: string;
   labelIds: string[];
+  estimate: string;
+  actualTime: string;
 }
 
 export default function TaskForm({
@@ -78,6 +84,8 @@ export default function TaskForm({
     priority: initialData?.priority ?? 'none',
     recurrence: initialData?.recurrence ?? 'none',
     labelIds: initialData?.labelIds ?? [],
+    estimate: initialData?.estimate ?? '',
+    actualTime: initialData?.actualTime ?? '',
   }));
 
   useEffect(() => {
@@ -97,6 +105,8 @@ export default function TaskForm({
         priority: initialData.priority ?? 'none',
         recurrence: initialData.recurrence ?? 'none',
         labelIds: initialData.labelIds ?? [],
+        estimate: initialData.estimate ?? '',
+        actualTime: initialData.actualTime ?? '',
       });
     }
   }, [initialData]);
@@ -326,9 +336,31 @@ export default function TaskForm({
                      </option>
                    ))
                  )}
-               </select>
-            </div>
-          </div>
+</select>
+             </div>
+             <div>
+               <Label htmlFor="task-estimate">Estimate (HH:MM)</Label>
+               <input
+                 id="task-estimate"
+                 type="text"
+                 placeholder="00:00"
+                 value={formData.estimate || ''}
+                 onChange={(e) => setFormData({ ...formData, estimate: e.target.value })}
+                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+               />
+             </div>
+             <div>
+               <Label htmlFor="task-actualTime">Actual Time (HH:MM)</Label>
+               <input
+                 id="task-actualTime"
+                 type="text"
+                 placeholder="00:00"
+                 value={formData.actualTime || ''}
+                 onChange={(e) => setFormData({ ...formData, actualTime: e.target.value })}
+                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+               />
+             </div>
+           </div>
           <DialogFooter>
             <Button
               variant="ghost"

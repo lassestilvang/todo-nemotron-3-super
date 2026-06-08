@@ -37,9 +37,8 @@ export interface TaskFormData {
   priority: Priority;
   recurrence: Recurrence;
   labelIds: string[];
-  estimate: number | null;
-  actualTime: number | null;
-  reminders: string[];
+  estimate: string;
+  actualTime: string;
 }
 
 export const PRIORITY_OPTIONS: Priority[] = ['low', 'medium', 'high'];
