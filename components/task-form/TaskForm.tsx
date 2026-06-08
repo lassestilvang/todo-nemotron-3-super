@@ -222,27 +222,6 @@ export default function TaskForm({
                  )}
                </select>
             </div>
-<div className="space-y-2">
-              <Label htmlFor="task-list">List</Label>
-              <select
-                id="task-list"
-                value={formData.listId}
-                onChange={(e) => setFormData({ ...formData, listId: e.target.value })}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              >
-                <option value="">Select a list</option>
-                {listsList.length === 0 ? (
-                  <option value="" disabled>No lists available</option>
-                ) : (
-                  listsList.map((list) => (
-                    <option key={list.id} value={list.id}>
-                      {list.name}
-                    </option>
-                  ))
-                )}
-              </select>
-            </div>
             <div className="space-y-2">
               <Label htmlFor="task-priority">Priority</Label>
               <div className="flex items-center gap-2">
