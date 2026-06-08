@@ -502,18 +502,30 @@ export default function Sidebar() {
             <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-              onClick={() => {
-                setFilterListId(null);
-                setFilterLabelId(null);
-              }}
-            >
-              Clear Filters
-            </Button>
 <Button
+               variant="outline"
+               size="sm"
+               className="w-full justify-start"
+               onClick={() => {
+                 setFilterListId(null);
+                 setFilterLabelId(null);
+               }}
+             >
+               Clear Filters
+             </Button>
+             <Button
+               variant="outline"
+               size="sm"
+               className="w-full justify-start"
+               onClick={() => {
+                 setFilterListId(null);
+                 setFilterLabelId(null);
+                 setShowCompleted(false);
+               }}
+             >
+               Clear All Filters
+             </Button>
+             <Button
                variant="outline"
                size="sm"
                className="w-full justify-start"
