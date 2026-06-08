@@ -17,6 +17,7 @@ import {
   PieChart,
   Download,
   Printer,
+  Upload,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -451,7 +452,7 @@ export default function Sidebar() {
               Export
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-2">
             <Button
               variant="outline"
               size="sm"
@@ -472,6 +473,35 @@ export default function Sidebar() {
               }}
             >
               Export Backup
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json,application/json';
+                input.onchange = (e) => {
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      try {
+                        const data = JSON.parse(event.target?.result as string);
+                        alert(`Import ${data.tasks?.length || 0} tasks, ${data.lists?.length || 0} lists, ${data.labels?.length || 0} labels`);
+                      } catch {
+                        alert('Invalid JSON file');
+                      }
+                    };
+                    reader.readAsText(file);
+                  }
+                };
+                input.click();
+              }}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Import Backup
             </Button>
           </CardContent>
         </Card>
