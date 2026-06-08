@@ -347,16 +347,41 @@ export default function Sidebar() {
               size="sm"
               className="w-full"
               onClick={async () => {
-                for (const list of DEFAULT_LISTS) {
-                  await addList(list.name, list.color, list.emoji);
+                if (!window.confirm('Reset all lists and labels to defaults?')) return;
+                try {
+                  for (const list of DEFAULT_LISTS) {
+                    await addList(list.name, list.color, list.emoji);
+                  }
+                  for (const label of DEFAULT_LABELS) {
+                    await addLabel(label.name, label.color, label.emoji);
+                  }
+                  toast.success('Quick setup complete!');
+                } catch (error) {
+                  console.error('Failed to add defaults:', error);
+                  toast.error('Failed to add defaults');
                 }
-                for (const label of DEFAULT_LABELS) {
-                  await addLabel(label.name, label.color, label.emoji);
-                }
-                toast.success('Quick setup complete!');
               }}
             >
               Quick Setup
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="w-full"
+              onClick={async () => {
+                if (!window.confirm('Reset ALL lists and labels? This cannot be undone.')) return;
+                try {
+                  await fetch('/api/reset', { method: 'POST' });
+                  refreshLists();
+                  refreshLabels();
+                  toast.success('Reset complete. Refresh the page.');
+                } catch (error) {
+                  console.error('Failed to reset:', error);
+                  toast.error('Failed to reset');
+                }
+              }}
+            >
+              Reset All
             </Button>
           </CardContent>
         </Card>
