@@ -27,6 +27,8 @@ export async function GET(request: Request) {
         listId: tasks.listId,
         createdAt: tasks.createdAt,
         updatedAt: tasks.updatedAt,
+        estimate: tasks.estimate,
+        actualTime: tasks.actualTime,
         list: {
           id: lists.id,
           name: lists.name,
@@ -123,6 +125,8 @@ export async function GET(request: Request) {
       date: Date | null; deadline: Date | null; priority: string;
       completed: boolean; recurrence: string | null; listId: string;
       createdAt: Date; updatedAt: Date;
+      estimate: number | null;
+      actualTime: number | null;
       list: { id: string; name: string; color: string; emoji: string } | null;
     }>;
 
@@ -186,5 +190,39 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Failed to fetch tasks:', error);
     return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { name, description, listId, priority, date, deadline, recurrence, labelIds, estimate, actualTime } = body;
+    
+    const task = await db.insert(tasks).values({
+      name,
+      description,
+      listId,
+      priority,
+      date: date ? new Date(date) : null,
+      deadline: deadline ? new Date(deadline) : null,
+      recurrence: recurrence || 'none',
+      estimate,
+      actualTime,
+    }).returning();
+    
+    if (labelIds && labelIds.length > 0) {
+      await db.insert(taskLabels).values(
+        labelIds.map((labelId: string) => ({
+          id: crypto.randomUUID(),
+          taskId: task[0].id,
+          labelId,
+        }))
+      );
+    }
+    
+    return NextResponse.json(task[0]);
+  } catch (error) {
+    console.error('Failed to create task:', error);
+    return NextResponse.json({ error: 'Failed to create task' }, { status: 500 });
   }
 }
