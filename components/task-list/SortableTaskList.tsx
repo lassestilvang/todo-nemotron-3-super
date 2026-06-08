@@ -410,7 +410,7 @@ function SortableTaskItem({
     }
   };
 
-  return (
+return (
     <div
       ref={setNodeRef}
       style={style}
@@ -423,7 +423,7 @@ function SortableTaskItem({
       aria-grabbed={isDragging}
       data-task-index={index}
     >
-      <Card className="p-4">
+      <Card className="p-4 transition-all duration-200">
         <div className="flex items-start gap-4">
           <button
             {...attributes}
@@ -448,7 +448,7 @@ function SortableTaskItem({
           />
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
-              <h3 className={`flex-1 font-semibold ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+              <h3 className={`flex-1 font-semibold ${task.completed ? 'line-through text-muted-foreground' : ''} ${isFocused ? 'text-primary' : ''}`}>
                 {task.name}
               </h3>
               <div className="flex items-center gap-2 text-xs">
@@ -471,7 +471,7 @@ function SortableTaskItem({
               </div>
             </div>
 
-{task.description && (
+            {task.description && (
               <p className="text-sm text-muted-foreground line-clamp-2" title={task.description}>
                 {task.description}
               </p>
