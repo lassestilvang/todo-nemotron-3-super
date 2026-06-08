@@ -46,6 +46,28 @@ class Cache {
     return this.cache.has(key);
   }
 
+  keys(): string[] {
+    return Array.from(this.cache.keys());
+  }
+
+  deleteMatching(pattern: string): number {
+    let count = 0;
+    for (const key of this.cache.keys()) {
+      if (key.includes(pattern)) {
+        this.cache.delete(key);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  getStats(): { size: number; keys: string[] } {
+    return {
+      size: this.cache.size,
+      keys: Array.from(this.cache.keys()),
+    };
+  }
+
   createCachedFetch<T>(
     fetchFn: () => Promise<T>,
     key: string,
