@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/app/lib/db/index';
-import { tasks, lists, labels, taskLabels } from '@/app/lib/db/schema';
+import { tasks, lists, labels, taskLabels, subtasks } from '@/app/lib/db/schema';
 import { eq, desc, and, isNotNull, sql, inArray } from 'drizzle-orm';
 
 export async function GET(request: Request) {
@@ -119,6 +119,13 @@ export async function GET(request: Request) {
           .where(inArray(taskLabels.taskId, taskIds))
       : [];
 
+    const allSubtasks = taskIds.length > 0
+      ? await db
+          .select()
+          .from(subtasks)
+          .where(inArray(subtasks.taskId, taskIds))
+      : [];
+
     const labelsByTaskId: Record<string, Array<{ id: string; name: string; color: string; emoji: string }>> = {};
     allTaskLabels.forEach((tl: { taskId: string; id: string; name: string; color: string; emoji: string }) => {
       if (!labelsByTaskId[tl.taskId]) {
@@ -132,6 +139,14 @@ export async function GET(request: Request) {
       });
     });
 
+    const subtasksByTaskId: Record<string, typeof subtasks.$inferSelect[]> = {};
+    (allSubtasks as Array<{taskId: string}>).forEach((st) => {
+      if (!subtasksByTaskId[st.taskId]) {
+        subtasksByTaskId[st.taskId] = [];
+      }
+      subtasksByTaskId[st.taskId]!.push(st as any);
+    });
+
     const tasksWithLabels = results.map(task => ({
       ...task,
       list: task.list || {
@@ -141,6 +156,7 @@ export async function GET(request: Request) {
         emoji: '🔲',
       },
       labels: labelsByTaskId[task.id] || [],
+      subtasks: subtasksByTaskId[task.id] || [],
     }));
 
     return NextResponse.json(tasksWithLabels);
