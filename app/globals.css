@@ -166,3 +166,43 @@
     @apply p-4;
   }
 }
+
+.task-card:hover {
+  transform: translateY(-2px);
+}
+
+.task-card-completed {
+  opacity: 0.7;
+}
+
+.drag-ghost {
+  opacity: 0.5;
+}
+
+.focus-mode {
+  filter: grayscale(100%);
+}
+
+.focus-mode .task-card {
+  opacity: 0.5;
+}
+
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/30;
+}
