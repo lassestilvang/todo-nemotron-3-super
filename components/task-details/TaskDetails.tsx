@@ -38,6 +38,7 @@ import {
     History,
     ExternalLink,
     BookOpen,
+    X,
   } from 'lucide-react';
 import { createId } from '@paralleldrive/cuid2';
 import { formatTimeHHMM, parseHHMMtoMinutes } from '@/lib/utils';
@@ -541,10 +542,19 @@ setIsSaving(true);
 
     return (
       <Dialog open={!!taskId} onOpenChange={(open) => { if (!open) onClose(); }}>
-        <DialogContent className="w-[600px] p-6 space-y-6">
+        <DialogContent className="w-[95vw] max-w-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{task.name}</DialogTitle>
-            <p className="text-muted-foreground">{task.description}</p>
+            <div className="flex items-start justify-between">
+              <div>
+                <DialogTitle className="text-2xl">{task.name}</DialogTitle>
+                {task.description && (
+                  <p className="text-muted-foreground mt-2">{task.description}</p>
+                )}
+              </div>
+              <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </DialogHeader>
 
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -631,19 +641,19 @@ setIsSaving(true);
 
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="grid w-full grid-cols-5 border-b">
-            <TabsTrigger value="details" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
+            <TabsTrigger value="details" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
               Details
             </TabsTrigger>
-            <TabsTrigger value="subtasks" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
+            <TabsTrigger value="subtasks" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
               Subtasks
             </TabsTrigger>
-            <TabsTrigger value="notes" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
+            <TabsTrigger value="notes" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
               Notes
             </TabsTrigger>
-            <TabsTrigger value="activity" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
+            <TabsTrigger value="activity" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
               Activity
             </TabsTrigger>
-            <TabsTrigger value="history" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
+            <TabsTrigger value="history" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
               History
             </TabsTrigger>
           </TabsList>
