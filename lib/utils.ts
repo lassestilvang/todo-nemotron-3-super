@@ -95,3 +95,26 @@ export function isThisWeek(date: Date | null | undefined): boolean {
   weekAgo.setDate(weekAgo.getDate() - 7);
   return d >= weekAgo && d <= now;
 }
+
+export function formatDuration(minutes: number): string {
+  if (minutes < 60) {
+    return `${minutes}m`;
+  }
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours < 24) {
+    return `${hours}h ${mins > 0 ? `${mins}m` : ''}`.trim();
+  }
+  const days = Math.floor(hours / 24);
+  const remainingHours = hours % 24;
+  return `${days}d ${remainingHours}h`.trim();
+}
+
+export function getTaskProgress(subtasks: Array<{ completed: boolean }> | undefined, completed: boolean): { completed: number; total: number; percentage: number } {
+  if (!subtasks || subtasks.length === 0) {
+    return { completed: completed ? 1 : 0, total: 1, percentage: completed ? 100 : 0 };
+  }
+  const completedCount = subtasks.filter(s => s.completed).length;
+  const total = subtasks.length;
+  return { completed: completedCount, total, percentage: Math.round((completedCount / total) * 100) };
+}
