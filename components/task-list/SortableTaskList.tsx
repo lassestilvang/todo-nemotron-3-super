@@ -478,6 +478,26 @@ function SortableTaskItem({
               </p>
             )}
 
+            {task.subtasks && task.subtasks.length > 0 && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    <CheckSquare className="h-3 w-3" />
+                    Subtasks
+                  </span>
+                  <span className="font-medium">
+                    {task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}
+                  </span>
+                </div>
+                <div className="h-1.5 bg-muted rounded overflow-hidden">
+                  <div 
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${(task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             {task.labels.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {task.labels.map((label) => (
