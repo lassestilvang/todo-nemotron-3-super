@@ -807,8 +807,8 @@ setIsSaving(true);
                           ×
                         </Button>
                       </div>
-                    </div>
 </div>
+                    </div>
                   ))}
                 </div>
               </>
