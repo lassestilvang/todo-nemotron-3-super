@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import type { Task } from '@/types/task';
 
@@ -19,6 +19,7 @@ export function useTaskOperations({
   setOperatingOnTaskId,
   fetchTasks,
 }: UseTaskOperationsProps) {
+
   const handleToggleComplete = useCallback(async (taskId: string, completed: boolean) => {
     const previousTasks = [...tasksList];
     setOperatingOnTaskId(taskId);
@@ -103,10 +104,8 @@ export function useTaskOperations({
   const handleBulkDelete = useCallback(async () => {
     if (selectedTaskIds.size === 0) return;
 
-    if (!window.confirm(`Delete ${selectedTaskIds.size} task${selectedTaskIds.size > 1 ? 's' : ''}?`)) return;
-
-    const previousTasks = [...tasksList];
     const taskIds = Array.from(selectedTaskIds);
+    const deletedTasks = tasksList.filter(t => taskIds.includes(t.id));
 
     setTasksList(prev => prev.filter(task => !taskIds.includes(task.id)));
     setSelectedTaskIds(new Set());
@@ -118,14 +117,40 @@ export function useTaskOperations({
         body: JSON.stringify({ action: 'delete', taskIds }),
       });
       if (!res.ok) throw new Error('Failed to bulk delete');
-      toast.success(`${taskIds.length} task${taskIds.length > 1 ? 's' : ''} deleted`);
+
+      toast(`${taskIds.length} task${taskIds.length > 1 ? 's' : ''} deleted`, {
+        action: {
+          label: 'Undo',
+          onClick: async () => {
+            try {
+              for (const task of deletedTasks) {
+                await fetch('/api/tasks', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    name: task.name,
+                    description: task.description,
+                    listId: task.listId,
+                    priority: task.priority,
+                    recurrence: task.recurrence || 'none',
+                  }),
+                });
+              }
+              await fetchTasks();
+              toast.success('Delete undone');
+            } catch {
+              toast.error('Failed to undo delete');
+            }
+          },
+        },
+      });
     } catch (error) {
-      setTasksList(previousTasks);
+      setTasksList(prev => [...deletedTasks, ...prev]);
       setSelectedTaskIds(new Set(taskIds));
       console.error('Failed to delete tasks:', error);
       toast.error('Failed to delete tasks');
     }
-  }, [selectedTaskIds, tasksList, setTasksList, setSelectedTaskIds]);
+  }, [selectedTaskIds, tasksList, setTasksList, setSelectedTaskIds, fetchTasks]);
 
   const handleReorderTasks = useCallback(async (taskIds: string[]) => {
     try {
