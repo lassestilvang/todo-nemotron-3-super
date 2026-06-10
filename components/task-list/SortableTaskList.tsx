@@ -143,31 +143,40 @@ export function TaskStats({ tasks: taskList }: { tasks: Task[] }) {
   );
 }
 
-export function EmptyTaskList({ onAddTask }: { onAddTask: () => void }) {
+const EMPTY_STATE_MESSAGES: Record<string, { title: string; desc: string }> = {
+  today: { title: 'Your day is clear', desc: 'Enjoy your free time, or add a task to get started!' },
+  next7: { title: 'Nothing due this week', desc: 'Plan ahead by scheduling some tasks for the coming days.' },
+  upcoming: { title: 'No upcoming tasks', desc: 'Set a future date on a task to see it here.' },
+  all: { title: 'No tasks yet', desc: 'Start by adding a new task to get organized!' },
+};
+
+export function EmptyTaskList({ onAddTask, activeView }: { onAddTask: () => void; activeView?: string }) {
+  const msg = (EMPTY_STATE_MESSAGES[activeView || 'all'] || EMPTY_STATE_MESSAGES.all) as { title: string; desc: string };
   return (
     <div className="text-center py-16 px-4">
-      <div className="flex h-64 w-64 mx-auto items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-secondary/10">
+      <div className="flex h-48 w-48 mx-auto items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-secondary/10">
         <div className="relative">
           <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-          <div className="relative flex h-64 w-64 items-center justify-center">
-            <svg className="h-24 w-24 text-primary/50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V7h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z" fill="currentColor"/>
-            </svg>
+          <div className="relative flex h-48 w-48 items-center justify-center">
+            {activeView === 'today' ? (
+              <svg className="h-20 w-20 text-primary/50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 11l3 3L22 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            ) : (
+              <svg className="h-20 w-20 text-primary/50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V7h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z" fill="currentColor"/>
+              </svg>
+            )}
           </div>
         </div>
       </div>
-      <p className="mt-6 text-xl font-semibold text-foreground">Your day is clear</p>
-      <p className="mt-2 text-sm text-muted-foreground/60">
-        Start by adding a new task to get organized!
-      </p>
+      <p className="mt-6 text-xl font-semibold text-foreground">{msg.title}</p>
+      <p className="mt-2 text-sm text-muted-foreground/60">{msg.desc}</p>
       <div className="mt-6 flex items-center justify-center gap-2">
         <Button variant="outline" size="sm" onClick={onAddTask}>
           <Calendar className="h-4 w-4 mr-2" />
           Add Task
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => {}}>
-          <BarChart3 className="h-4 w-4 mr-2" />
-          View Stats
         </Button>
       </div>
     </div>
@@ -414,7 +423,7 @@ return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow hover:shadow-lg cursor-grab active:cursor-grabbing ${isSelected ? 'ring-2 ring-primary bg-primary/5' : ''} ${isDragging ? 'shadow-xl ring-2 ring-primary' : ''} ${isFocused ? 'ring-2 ring-secondary' : ''}`}
+      className={`group border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 cursor-grab active:cursor-grabbing ${isSelected ? 'ring-2 ring-primary bg-primary/5 shadow-md' : ''} ${isDragging ? 'shadow-xl ring-2 ring-primary scale-[1.02]' : ''} ${isFocused ? 'ring-2 ring-secondary/50' : ''} ${task.completed ? 'opacity-75' : ''}`}
       onMouseDown={handleDragStart}
       role="listitem"
       aria-posinset={index + 1}
@@ -423,11 +432,11 @@ return (
       aria-grabbed={isDragging}
       data-task-index={index}
     >
-      <Card className="p-4 transition-all duration-200">
+      <Card className="p-4 transition-all duration-200 border-0 shadow-none">
         <div className="flex items-start gap-4">
           <button
             {...attributes}
-            className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground p-1 rounded transition-colors"
+            className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-muted-foreground p-1 rounded transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
             aria-label="Drag to reorder"
             tabIndex={-1}
           >
@@ -436,19 +445,19 @@ return (
           <Checkbox
             checked={isSelected}
             onCheckedChange={(checked) => onSelectTask(task.id)}
-            className="flex-shrink-0"
+            className="flex-shrink-0 mt-0.5"
             aria-label="Select task"
           />
           <Checkbox
             checked={Boolean(task.completed)}
             onCheckedChange={(checked) => onToggleComplete(task.id, checked === true)}
-            className="flex-shrink-0"
+            className="flex-shrink-0 mt-0.5"
             aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
             disabled={isOperatingOnTask}
           />
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
-              <h3 className={`flex-1 font-semibold ${task.completed ? 'line-through text-muted-foreground' : ''} ${isFocused ? 'text-primary' : ''}`}>
+              <h3 className={`flex-1 font-semibold transition-all duration-300 ${task.completed ? 'line-through text-muted-foreground/60 decoration-muted-foreground/30' : ''} ${isFocused ? 'text-primary' : ''}`}>
                 {task.name}
               </h3>
               <div className="flex items-center gap-2 text-xs">

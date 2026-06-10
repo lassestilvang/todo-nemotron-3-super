@@ -7,14 +7,13 @@ import { Input } from '@/components/ui/input';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
 import { useTaskOperations } from '@/hooks/task-operations';
-import { TaskSkeleton } from '@/components/task-list/SortableTaskList';
+import { apiCache } from '@/lib/cache';
 import { toast, Toaster } from 'sonner';
-import { Plus, Calendar, Edit, Search, X, Clock, Folder, BarChart2, PieChart, Zap, Target, Download, Upload } from 'lucide-react';
+import { Plus, Calendar, Edit, Search, X, BarChart2, PieChart, Zap, Target, Download, Upload } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import KeyboardShortcutsHelp from '@/components/keyboard-shortcuts';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { createId } from '@paralleldrive/cuid2';
 import { useApp } from '@/lib/app-context';
 import { SortableTaskList, EmptyTaskList, TaskListLoading, TaskStats } from '@/components/task-list/SortableTaskList';
 import type { Task, ViewType } from '@/types/task';
@@ -136,21 +135,6 @@ export default function DashboardPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const {
-    handleToggleComplete,
-    handleSelectTask,
-    handleSelectAll,
-    handleBulkComplete,
-    handleBulkDelete,
-    handleReorderTasks,
-  } = useTaskOperations({
-    tasksList,
-    setTasksList,
-    setSelectedTaskIds,
-    setOperatingOnTaskId,
-    fetchTasks,
-  });
-
   const fetchTasks = useCallback(async () => {
     setTasksLoading(true);
     try {
@@ -199,6 +183,22 @@ export default function DashboardPage() {
     }
   }, [activeView, showCompleted, debouncedSearchQuery, filterListId, filterLabelId]);
 
+  const {
+    handleToggleComplete,
+    handleSelectTask,
+    handleSelectAll,
+    handleBulkComplete,
+    handleBulkDelete,
+    handleReorderTasks,
+  } = useTaskOperations({
+    tasksList,
+    setTasksList,
+    selectedTaskIds,
+    setSelectedTaskIds,
+    setOperatingOnTaskId,
+    fetchTasks,
+  });
+
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
@@ -221,7 +221,7 @@ export default function DashboardPage() {
     <>
       <Toaster />
       <ErrorBoundary>
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className={`flex-1 overflow-hidden flex flex-col transition-all duration-500 ${focusMode ? 'grayscale brightness-95' : ''}`}>
           <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-4">
               <h1 className="text-xl sm:text-2xl font-bold">Daily Planner</h1>
@@ -382,7 +382,7 @@ export default function DashboardPage() {
             ) : tasksList.length === 0 ? (
               <>
                 <TaskStats tasks={tasksList} />
-                <EmptyTaskList onAddTask={() => setIsAddingTask(true)} />
+                <EmptyTaskList onAddTask={() => setIsAddingTask(true)} activeView={activeView} />
               </>
             ) : (
               <>

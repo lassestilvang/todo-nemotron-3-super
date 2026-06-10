@@ -11,7 +11,7 @@ export interface ExportData {
 }
 
 export function exportTasks(tasks: Task[], lists: List[], labels: Label[]): void {
-  const data: ExportData = {
+  const data: Omit<ExportData, 'tasks'> & { tasks: any[] } = {
     tasks: tasks.map(t => ({
       ...t,
       date: t.date?.toISOString() || null,

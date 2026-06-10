@@ -7,6 +7,7 @@ import type { Task } from '@/types/task';
 interface UseTaskOperationsProps {
   tasksList: Task[];
   setTasksList: React.Dispatch<React.SetStateAction<Task[]>>;
+  selectedTaskIds: Set<string>;
   setSelectedTaskIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   setOperatingOnTaskId: React.Dispatch<React.SetStateAction<string | null>>;
   fetchTasks: () => Promise<void>;
@@ -15,6 +16,7 @@ interface UseTaskOperationsProps {
 export function useTaskOperations({
   tasksList,
   setTasksList,
+  selectedTaskIds,
   setSelectedTaskIds,
   setOperatingOnTaskId,
   fetchTasks,
