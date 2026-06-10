@@ -1,9 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { db } from '@/app/lib/db/index';
-import { lists, labels } from '@/app/lib/db/schema';
 import { apiCache } from '@/lib/cache';
+import { createId } from '@paralleldrive/cuid2';
 
 type ViewType = 'today' | 'next7' | 'upcoming' | 'all';
 
@@ -42,6 +41,7 @@ interface AppContextType {
   refreshLabels: () => Promise<void>;
   addList: (name: string, color: string, emoji: string) => Promise<void>;
   addLabel: (name: string, color: string, emoji: string) => Promise<void>;
+  taskCounts: { total: number; completed: number };
 }
 
 const STORAGE_KEYS = {
@@ -50,7 +50,7 @@ const STORAGE_KEYS = {
   SORT_BY: 'todo_sortBy',
 };
 
-export function loadFromStorage<T>(key: string, defaultValue: T): T {
+function loadFromStorage<T>(key: string, defaultValue: T): T {
   if (typeof window === 'undefined') return defaultValue;
   try {
     const stored = localStorage.getItem(key);
@@ -60,7 +60,7 @@ export function loadFromStorage<T>(key: string, defaultValue: T): T {
   }
 }
 
-export function saveToStorage<T>(key: string, value: T): void {
+function saveToStorage<T>(key: string, value: T): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(key, JSON.stringify(value));
@@ -72,7 +72,7 @@ export function saveToStorage<T>(key: string, value: T): void {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [activeView, setActiveView] = useState<ViewType>(() => 
+  const [activeView, setActiveView] = useState<ViewType>(() =>
     loadFromStorage<ViewType>(STORAGE_KEYS.ACTIVE_VIEW, 'today')
   );
   const [showCompleted, setShowCompleted] = useState<boolean>(() =>
@@ -87,6 +87,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [labels, setLabels] = useState<Label[]>([]);
   const [listsLoading, setListsLoading] = useState(true);
   const [labelsLoading, setLabelsLoading] = useState(true);
+  const [taskCounts, setTaskCounts] = useState({ total: 0, completed: 0 });
 
   const fetchLists = async () => {
     setListsLoading(true);
@@ -98,8 +99,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setListsLoading(false);
         return;
       }
-      const result = await db.select().from(lists) as unknown as List[];
-      const formatted = result.map((list) => ({
+      const res = await fetch('/api/lists');
+      if (!res.ok) throw new Error('Failed to fetch lists');
+      const result = await res.json();
+      const formatted = (result as any[]).map((list: any) => ({
         id: list.id,
         name: list.name,
         color: list.color,
@@ -124,8 +127,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setLabelsLoading(false);
         return;
       }
-      const result = await db.select().from(labels) as unknown as Label[];
-      const formatted = result.map((label) => ({
+      const res = await fetch('/api/labels');
+      if (!res.ok) throw new Error('Failed to fetch labels');
+      const result = await res.json();
+      const formatted = (result as any[]).map((label: any) => ({
         id: label.id,
         name: label.name,
         color: label.color,
@@ -140,16 +145,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const fetchTaskCounts = async () => {
+    try {
+      const res = await fetch('/api/tasks?activeTab=all&showCompleted=true');
+      if (res.ok) {
+        const tasks = await res.json();
+        setTaskCounts({
+          total: tasks.length,
+          completed: tasks.filter((t: any) => t.completed).length,
+        });
+      }
+    } catch {
+      // Silently fail - counts are non-critical
+    }
+  };
+
   useEffect(() => {
     fetchLists();
     fetchLabels();
+    fetchTaskCounts();
   }, []);
 
   const addList = async (name: string, color: string, emoji: string) => {
     try {
-      const { createId } = await import('@paralleldrive/cuid2');
       const id = createId();
-      await db.insert(lists).values({ id, name, color, emoji });
+      const res = await fetch('/api/lists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name, color, emoji }),
+      });
+      if (!res.ok) throw new Error('Failed to add list');
       apiCache.delete('app_lists');
       await fetchLists();
     } catch (error) {
@@ -160,9 +185,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addLabel = async (name: string, color: string, emoji: string) => {
     try {
-      const { createId } = await import('@paralleldrive/cuid2');
       const id = createId();
-      await db.insert(labels).values({ id, name, color, emoji });
+      const res = await fetch('/api/labels', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name, color, emoji }),
+      });
+      if (!res.ok) throw new Error('Failed to add label');
       apiCache.delete('app_labels');
       await fetchLabels();
     } catch (error) {
@@ -206,6 +235,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       refreshLabels: fetchLabels,
       addList,
       addLabel,
+      taskCounts,
     }}>
       {children}
     </AppContext.Provider>

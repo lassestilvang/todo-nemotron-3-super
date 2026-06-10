@@ -60,6 +60,7 @@ export default function Sidebar() {
     addLabel,
     refreshLists,
     refreshLabels,
+    taskCounts,
   } = useApp();
 
   const [newListName, setNewListName] = useState('');
@@ -364,25 +365,7 @@ export default function Sidebar() {
             >
               Quick Setup
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="w-full"
-              onClick={async () => {
-                if (!window.confirm('Reset ALL lists and labels? This cannot be undone.')) return;
-                try {
-                  await fetch('/api/reset', { method: 'POST' });
-                  refreshLists();
-                  refreshLabels();
-                  toast.success('Reset complete. Refresh the page.');
-                } catch (error) {
-                  console.error('Failed to reset:', error);
-                  toast.error('Failed to reset');
-                }
-              }}
-            >
-              Reset All
-            </Button>
+
           </CardContent>
         </Card>
 
@@ -397,21 +380,21 @@ export default function Sidebar() {
                 <BarChart3 className="h-4 w-4" />
                 Total
               </span>
-              <span className="font-semibold">{lists.length}</span>
+              <span className="font-semibold">{taskCounts.total}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-500" />
                 Completed
               </span>
-              <span className="font-semibold text-green-600">0</span>
+              <span className="font-semibold text-green-600">{taskCounts.completed}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground flex items-center gap-2">
                 <Circle className="h-4 w-4 text-blue-500" />
                 Pending
               </span>
-              <span className="font-semibold text-blue-600">0</span>
+              <span className="font-semibold text-blue-600">{taskCounts.total - taskCounts.completed}</span>
             </div>
           </CardContent>
         </Card>
@@ -432,17 +415,24 @@ export default function Sidebar() {
                   <circle 
                     cx="50" cy="50" r="45" fill="none" 
                     className="stroke-primary stroke-8" 
-                    strokeDasharray="141" 
-                    strokeDashoffset="35"
+                    strokeDasharray={Math.PI * 45 * 2}
+                    strokeDashoffset={taskCounts.total > 0 ? Math.PI * 45 * 2 * (1 - taskCounts.completed / taskCounts.total) : Math.PI * 45 * 2}
+                    strokeLinecap="round"
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold">0%</span>
+                  <span className="text-lg font-bold">
+                    {taskCounts.total > 0 ? Math.round((taskCounts.completed / taskCounts.total) * 100) : 0}%
+                  </span>
                 </div>
               </div>
             </div>
             <div className="text-center text-xs text-muted-foreground">
-              <p>No tasks to track</p>
+              {taskCounts.total > 0 ? (
+                <p>{taskCounts.completed} of {taskCounts.total} tasks done</p>
+              ) : (
+                <p>No tasks to track</p>
+              )}
             </div>
           </CardContent>
         </Card>

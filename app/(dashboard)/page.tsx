@@ -1,16 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { db } from '@/app/lib/db/index';
-import { tasks, lists, labels, taskLabels } from '@/app/lib/db/schema';
-import { eq } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
 import { useTaskOperations } from '@/hooks/task-operations';
-import { apiCache } from '@/lib/cache';
 import { TaskSkeleton } from '@/components/task-list/SortableTaskList';
 import { toast, Toaster } from 'sonner';
 import { Plus, Calendar, Edit, Search, X, Clock, Folder, BarChart2, PieChart, Zap, Target, Download, Upload } from 'lucide-react';
@@ -427,18 +423,21 @@ export default function DashboardPage() {
                       if (!proceed) return;
                     }
                     
-                    const [taskResult] = await db
-                      .insert(tasks)
-                      .values({
+                    const res = await fetch('/api/tasks', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
                         name: trimmedName,
                         listId: activeListId || lists[0]?.id || '',
-                      })
-                      .returning();
+                      }),
+                    });
                     
-                    if (taskResult) {
-                      setTasksList(prev => [taskResult as any, ...prev]);
+                    if (res.ok) {
+                      await fetchTasks();
                       setQuickAddText('');
                       toast.success('Task added');
+                    } else {
+                      throw new Error('Failed to add task');
                     }
                   } catch (error) {
                     console.error('Failed to add task:', error);
@@ -466,66 +465,24 @@ export default function DashboardPage() {
             onSubmit={async (data) => {
               setIsAddingTask(true);
               try {
-                const [taskResult] = await db
-                  .insert(tasks)
-                  .values({
+                const res = await fetch('/api/tasks', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
                     name: data.name,
                     description: data.description,
                     listId: data.listId,
-                    date: data.date ? data.date.getTime() : null,
-                    deadline: data.deadline ? data.deadline.getTime() : null,
+                    date: data.date ? data.date.toISOString() : null,
+                    deadline: data.deadline ? data.deadline.toISOString() : null,
                     priority: data.priority,
                     recurrence: data.recurrence,
-                  } as any)
-                  .returning();
+                    labelIds: data.labelIds || [],
+                  }),
+                });
 
-                // Save labels if any were selected
-                if (data.labelIds && data.labelIds.length > 0) {
-                  await db.insert(taskLabels).values(
-                    data.labelIds.map(labelId => ({
-                      id: createId(),
-                      taskId: taskResult.id,
-                      labelId: labelId,
-                    }))
-                  );
-                }
+                if (!res.ok) throw new Error('Failed to add task');
 
-                setTasksList(prev => [
-                  {
-                    id: taskResult.id,
-                    name: taskResult.name,
-                    description: taskResult.description,
-                    date: taskResult.date == null ? null : taskResult.date instanceof Date ? taskResult.date : new Date(taskResult.date),
-                    deadline: taskResult.deadline == null ? null : taskResult.deadline instanceof Date ? taskResult.deadline : new Date(taskResult.deadline),
-                    priority: taskResult.priority,
-                    completed: !!taskResult.completed,
-                    recurrence: taskResult.recurrence,
-                    estimate: taskResult.estimate,
-                    actualTime: taskResult.actualTime,
-                    reminders: taskResult.reminders,
-                    createdAt: taskResult.createdAt instanceof Date ? taskResult.createdAt : new Date(taskResult.createdAt),
-                    updatedAt: taskResult.updatedAt instanceof Date ? taskResult.updatedAt : new Date(taskResult.updatedAt),
-                    sortOrder: taskResult.sortOrder ?? 0,
-                    listId: taskResult.listId,
-                    list: lists.find((l) => l.id === data.listId) || {
-                      id: '',
-                      name: 'No List',
-                      color: 'bg-gray-500',
-                      emoji: '🔲',
-                    },
-                    labels: data.labelIds.map(labelId => {
-                      const label = labels.find(l => l.id === labelId);
-                      return label || {
-                        id: labelId,
-                        name: 'Unknown',
-                        color: 'bg-gray-500',
-                        emoji: '❓',
-                      };
-                    }),
-                  },
-                  ...prev,
-                ]);
-
+                await fetchTasks();
                 toast.success('Task added successfully');
               } catch (error) {
                 console.error('Failed to add task:', error);
@@ -589,30 +546,22 @@ export default function DashboardPage() {
               if (!editTaskId) return;
               
               try {
-                await db
-                  .update(tasks)
-                  .set({
+                const res = await fetch(`/api/tasks/${editTaskId}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
                     name: data.name,
                     description: data.description,
                     listId: data.listId,
-                    date: data.date ? data.date.getTime() : null,
-                    deadline: data.deadline ? data.deadline.getTime() : null,
+                    date: data.date ? data.date.toISOString() : null,
+                    deadline: data.deadline ? data.deadline.toISOString() : null,
                     priority: data.priority,
                     recurrence: data.recurrence,
-                    updatedAt: Date.now(),
-                  } as any)
-                  .where(eq(tasks.id, editTaskId));
+                    labelIds: data.labelIds || [],
+                  }),
+                });
 
-                await db.delete(taskLabels).where(eq(taskLabels.taskId, editTaskId));
-                if (data.labelIds && data.labelIds.length > 0) {
-                  await db.insert(taskLabels).values(
-                    data.labelIds.map(labelId => ({
-                      id: createId(),
-                      taskId: editTaskId,
-                      labelId: labelId,
-                    }))
-                  );
-                }
+                if (!res.ok) throw new Error('Failed to update task');
 
                 await fetchTasks();
                 setEditTaskId(null);
