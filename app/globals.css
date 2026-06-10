@@ -4,60 +4,43 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 84% 4.9%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 84% 4.9%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.4 3.2% 91.2%;
     --input: 214.4 3.2% 91.2%;
     --ring: 221.2 83.2% 53.3%;
-
     --radius: 0.5rem;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 84% 4.9%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 39.4% 37.6%;
@@ -69,10 +52,6 @@
   body {
     @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
   }
-}
-
-.task-card {
-  @apply transition-all duration-200;
 }
 
 .priority-high {
@@ -91,115 +70,12 @@
   @apply bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.animate-fade-out {
-  animation: fadeOut 0.3s ease-in-out;
-}
-
 .status-completed {
   @apply text-[hsl(var(--muted-foreground))] line-through opacity-70;
 }
 
 .status-overdue {
   @apply animate-pulse;
-}
-
-.focus-mode {
-  @apply grayscale;
-}
-
-.focus-mode .task-card {
-  @apply opacity-50;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-4px); }
-}
-
-@media print {
-  .no-print {
-    display: none !important;
-  }
-  
-  .task-card {
-    @apply border border-gray-300 shadow-none;
-  }
-  
-  body {
-    @apply bg-white;
-  }
-}
-
-@media (max-width: 768px) {
-  .task-card {
-    @apply p-3;
-  }
-  
-  .task-card h3 {
-    @apply text-base;
-  }
-  
-  .task-stats {
-    @apply grid-cols-2;
-  }
-}
-
-@media (max-width: 480px) {
-  .task-stats {
-    @apply grid-cols-1;
-  }
-  
-  header {
-    @apply px-4 py-2;
-  }
-  
-  main {
-    @apply p-4;
-  }
-}
-
-.task-card-hover:hover {
-  transform: translateY(-2px);
-}
-
-.task-card-completed {
-  opacity: 0.7;
-}
-
-.drag-ghost {
-  opacity: 0.5;
-}
-
-.focus-mode {
-  filter: grayscale(100%);
-}
-
-.focus-mode .task-card {
-  opacity: 0.5;
-}
-
-.scroll-smooth {
-  scroll-behavior: smooth;
-}
-
-.shimmer {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
 }
 
 .shimmer {
@@ -213,20 +89,22 @@
   100% { background-position: -200% 0; }
 }
 
-.loading-skeleton {
-  @apply bg-gray-200 dark:bg-gray-700 rounded;
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .task-card {
+    @apply border border-gray-300 shadow-none;
+  }
+  body {
+    @apply bg-white;
+  }
 }
 
-.task-card-transition {
-  transition: all 0.2s ease-in-out;
-}
-
-.task-card-hover:hover {
-  @apply shadow-md;
-}
-
-.drag-item {
-  transition: transform 0.2s ease;
+@media (max-width: 768px) {
+  .task-card h3 {
+    @apply text-base;
+  }
 }
 
 .drag-item.dragging {
