@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import TaskDetails from '@/components/task-details/TaskDetails';
 import useDebounce from '@/hooks/use-debounce';
+import { useTaskOperations } from '@/hooks/task-operations';
 import { apiCache } from '@/lib/cache';
 import { TaskSkeleton } from '@/components/task-list/SortableTaskList';
 import { toast, Toaster } from 'sonner';
@@ -21,6 +22,7 @@ import { createId } from '@paralleldrive/cuid2';
 import { useApp } from '@/lib/app-context';
 import { SortableTaskList, EmptyTaskList, TaskListLoading, TaskStats } from '@/components/task-list/SortableTaskList';
 import type { Task, ViewType } from '@/types/task';
+import { setupExportImportHandlers } from '@/lib/export-import';
 
 export default function DashboardPage() {
   const {
@@ -52,6 +54,8 @@ export default function DashboardPage() {
   const [quickAddText, setQuickAddText] = useState('');
   const [focusMode, setFocusMode] = useState(false);
   const activeListId = filterListId || lists[0]?.id;
+  
+  const exportHandlers = setupExportImportHandlers(tasksList, lists, labels);
 
   const handleAddList = async () => {
     const name = prompt('Enter list name:');
@@ -60,6 +64,7 @@ export default function DashboardPage() {
         await addList(name.trim(), 'bg-blue-500', '📋');
       } catch (error) {
         console.error('Failed to add list:', error);
+        toast.error('Failed to add list');
       }
     }
   };
@@ -71,6 +76,7 @@ export default function DashboardPage() {
         await addLabel(name.trim(), 'bg-purple-500', '🏷️');
       } catch (error) {
         console.error('Failed to add label:', error);
+        toast.error('Failed to add label');
       }
     }
   };
@@ -82,77 +88,72 @@ export default function DashboardPage() {
     setSelectedTaskId(null);
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        e.preventDefault();
-        setIsAddingTask(true);
-      }
-      
-      if (e.ctrlKey && e.shiftKey && e.key === 'L') {
-        e.preventDefault();
-        handleAddList();
-      }
-      
-      if (e.ctrlKey && e.shiftKey && e.key === 'K') {
-        e.preventDefault();
-        handleAddLabel();
-      }
-      
-      if (e.key === 'Escape') {
-        closeAllModals();
-      }
-      
-      if (e.ctrlKey && e.key === 'Enter') {
-        e.preventDefault();
-      }
-      
-      if (e.ctrlKey && e.shiftKey && e.key === 'E') {
-        e.preventDefault();
-        const data = {
-          tasks: tasksList.map(t => ({
-            ...t,
-            date: t.date?.toISOString() || null,
-            deadline: t.deadline?.toISOString() || null,
-            createdAt: t.createdAt.toISOString(),
-            updatedAt: t.updatedAt.toISOString(),
-          })),
-          lists,
-          labels,
-          exportedAt: new Date().toISOString(),
-        };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `tasks-export-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-      
-      if (e.ctrlKey && e.shiftKey && e.key === 'I') {
-        e.preventDefault();
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.onchange = async (ev) => {
-          const file = (ev.target as HTMLInputElement).files?.[0];
-          if (!file) return;
-          const text = await file.text();
-          try {
-            const data = JSON.parse(text);
-            alert(`Import ${data.tasks?.length || 0} tasks, ${data.lists?.length || 0} lists`);
-          } catch {
-            alert('Invalid JSON file');
-          }
-        };
-        input.click();
-      }
-    };
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+      e.preventDefault();
+      setIsAddingTask(true);
+    }
+    
+    if (e.ctrlKey && e.shiftKey && e.key === 'L') {
+      e.preventDefault();
+      handleAddList();
+    }
+    
+    if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+      e.preventDefault();
+      handleAddLabel();
+    }
+    
+    if (e.key === 'Escape') {
+      closeAllModals();
+    }
+    
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault();
+    }
+    
+    if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+      e.preventDefault();
+      exportHandlers.handleExport();
+    }
+    
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+      e.preventDefault();
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = async (ev) => {
+        const file = (ev.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+        try {
+          await exportHandlers.handleImport(file);
+        } catch (error) {
+          // Error already handled in export-import.ts
+        }
+      };
+      input.click();
+    }
+  }, [closeAllModals, handleAddList, handleAddLabel, exportHandlers]);
 
+  useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [closeAllModals, handleAddList, handleAddLabel, tasksList, lists, labels]);
+  }, [handleKeyDown]);
+
+  const {
+    handleToggleComplete,
+    handleSelectTask,
+    handleSelectAll,
+    handleBulkComplete,
+    handleBulkDelete,
+    handleReorderTasks,
+  } = useTaskOperations({
+    tasksList,
+    setTasksList,
+    setSelectedTaskIds,
+    setOperatingOnTaskId,
+    fetchTasks,
+  });
 
   const fetchTasks = useCallback(async () => {
     setTasksLoading(true);
@@ -213,102 +214,10 @@ export default function DashboardPage() {
     }
   }, [editTaskId, tasksList]);
 
-  const handleToggleComplete = async (taskId: string, completed: boolean) => {
-    const previousTasks = tasksList;
-    setOperatingOnTaskId(taskId);
-    setTasksList(prev => 
-      prev.map(task => 
-        task.id === taskId ? { ...task, completed } : task
-      )
-    );
-
-    try {
-      await db.update(tasks).set({ completed }).where(eq(tasks.id, taskId));
-      toast.success(`Task marked as ${completed ? 'complete' : 'incomplete'}`);
-    } catch (error) {
-      setTasksList(previousTasks);
-      console.error('Failed to toggle task completion:', error);
-      toast.error('Failed to update task');
-    } finally {
-      setOperatingOnTaskId(null);
-    }
-  };
-
-  const handleSelectTask = (taskId: string) => {
-    if (selectedTaskIds.has(taskId)) {
-      setSelectedTaskIds(prev => {
-        const next = new Set(prev);
-        next.delete(taskId);
-        return next;
-      });
-    } else {
-      setSelectedTaskIds(prev => new Set(prev).add(taskId));
-    }
-    // Also set selectedTaskId for details view (single click)
+  const handleSelectTaskWithDetails = (taskId: string) => {
+    handleSelectTask(taskId);
     if (!selectedTaskIds.has(taskId)) {
       setSelectedTaskId(taskId);
-    }
-  };
-
-  const handleSelectAll = () => {
-    if (selectedTaskIds.size === tasksList.length) {
-      setSelectedTaskIds(new Set());
-    } else {
-      setSelectedTaskIds(new Set(tasksList.map(t => t.id)));
-    }
-  };
-
-  const handleBulkComplete = async (completed: boolean) => {
-    if (selectedTaskIds.size === 0) return;
-    
-    const previousTasks = tasksList;
-    const taskIds = Array.from(selectedTaskIds);
-    
-    // Optimistic update
-    setTasksList(prev => 
-      prev.map(task => 
-        taskIds.includes(task.id) ? { ...task, completed } : task
-      )
-    );
-    setSelectedTaskIds(new Set());
-
-    try {
-      for (const taskId of taskIds) {
-        await db.update(tasks).set({ completed }).where(eq(tasks.id, taskId));
-      }
-      toast.success(`${taskIds.length} task${taskIds.length > 1 ? 's' : ''} marked as ${completed ? 'complete' : 'incomplete'}`);
-    } catch (error) {
-      // Rollback on error
-      setTasksList(previousTasks);
-      setSelectedTaskIds(new Set(taskIds));
-      console.error('Failed to bulk update tasks:', error);
-      toast.error('Failed to update tasks');
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedTaskIds.size === 0) return;
-    
-    if (!window.confirm(`Delete ${selectedTaskIds.size} task${selectedTaskIds.size > 1 ? 's' : ''}?`)) return;
-    
-    const previousTasks = tasksList;
-    const taskIds = Array.from(selectedTaskIds);
-    
-    // Optimistic update - remove tasks immediately
-    setTasksList(prev => prev.filter(task => !taskIds.includes(task.id)));
-    setSelectedTaskIds(new Set());
-
-    try {
-      for (const taskId of taskIds) {
-        await db.delete(tasks).where(eq(tasks.id, taskId));
-      }
-      toast.success(`${taskIds.length} task${taskIds.length > 1 ? 's' : ''} deleted`);
-    } catch (error) {
-      // Rollback on error
-      setTasksList(previousTasks);
-      setSelectedTaskIds(new Set(taskIds));
-      console.error('Failed to delete tasks:', error);
-      toast.error('Failed to delete tasks');
     }
   };
 
@@ -372,28 +281,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => {
-                  const data = {
-                    tasks: tasksList.map(t => ({
-                      ...t,
-                      date: t.date?.toISOString() || null,
-                      deadline: t.deadline?.toISOString() || null,
-                      createdAt: t.createdAt.toISOString(),
-                      updatedAt: t.updatedAt.toISOString(),
-                    })),
-                    lists,
-                    labels,
-                    exportedAt: new Date().toISOString(),
-                  };
-                  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `tasks-export-${new Date().toISOString().split('T')[0]}.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                  toast.success('Tasks exported');
-                }}
+                onClick={() => exportHandlers.handleExport()}
                 aria-label="Export tasks"
               >
                 <Download className="h-4 w-4" />
@@ -409,11 +297,9 @@ export default function DashboardPage() {
                     const file = (e.target as HTMLInputElement).files?.[0];
                     if (!file) return;
                     try {
-                      const text = await file.text();
-                      const data = JSON.parse(text);
-                      toast.success(`Found ${data.tasks?.length || 0} tasks in file. Import from API.`);
-                    } catch {
-                      toast.error('Invalid file format');
+                      await exportHandlers.handleImport(file);
+                    } catch (error) {
+                      // Error already handled in export-import.ts
                     }
                   };
                   input.click();
@@ -508,17 +394,9 @@ export default function DashboardPage() {
                 <SortableTaskList
                   tasks={tasksList}
                   selectedTaskIds={selectedTaskIds}
-                  onSelectTask={handleSelectTask}
+                  onSelectTask={handleSelectTaskWithDetails}
                   onToggleComplete={handleToggleComplete}
-                  onReorderTasks={async (taskIds) => {
-                    for (let i = 0; i < taskIds.length; i++) {
-                      const taskId = taskIds[i];
-                      if (taskId) {
-                        await db.update(tasks).set({ sortOrder: i }).where(eq(tasks.id, taskId));
-                      }
-                    }
-                    await fetchTasks();
-                  }}
+                  onReorderTasks={handleReorderTasks}
                   isLoading={tasksLoading}
                   operatingOnTaskId={operatingOnTaskId}
                 />
