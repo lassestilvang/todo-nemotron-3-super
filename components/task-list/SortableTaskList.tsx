@@ -219,8 +219,17 @@ export function SortableTaskList({
 }: SortableTaskListProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
-  const dragOverlayRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Grouping logic
+  const priorityGroups = tasks.reduce((acc, task) => {
+    const p = task.priority || 'none';
+    if (!acc[p]) acc[p] = [];
+    acc[p].push(task);
+    return acc;
+  }, {} as Record<string, Task[]>);
+
+  const groupOrder = ['high', 'medium', 'low', 'none'];
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -326,56 +335,75 @@ export function SortableTaskList({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-        <div
-          ref={listRef}
-          className="space-y-4"
-          role="list"
-          aria-label="Tasks"
-          onKeyDown={handleKeyDown}
-          tabIndex={0}
-        >
-          <AnimatePresence initial={false}>
-            {tasks.map((task, index) => (
-              <motion.div
-                key={task.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ 
-                  duration: 0.2, 
-                  delay: index * 0.05,
-                  layout: { type: 'spring', stiffness: 300, damping: 30 } 
-                }}
-              >
-                <SortableTaskItem
-                  task={task}
-                  index={index}
-                  tasksLength={tasks.length}
-                  onToggleComplete={onToggleComplete}
-                  onSelectTask={onSelectTask}
-                  onDuplicateTask={() => {}}
-                  onShareTask={(t) => {
-                    navigator.share?.({
-                      title: t.name,
-                      text: t.description || undefined,
-                      url: window.location.href,
-                    }).catch(() => {
-                      navigator.clipboard.writeText(`${window.location.href}#task-${t.id}`);
-                    });
-                  }}
-                  isSelected={selectedTaskIds.has(task.id)}
-                  isDragging={activeId === task.id}
-                  isFocused={focusedIndex === index}
-                  isOperatingOnTask={task.id === operatingOnTaskId}
-                  searchQuery={searchQuery}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </SortableContext>
+      <div className="space-y-8" ref={listRef} onKeyDown={handleKeyDown} tabIndex={0}>
+        {groupOrder.map(priority => {
+          const groupTasks = priorityGroups[priority];
+          if (!groupTasks || groupTasks.length === 0) return null;
+
+          return (
+            <div key={priority} className="space-y-4">
+              <div className="flex items-center gap-4 px-2">
+                <div className={`h-1.5 w-1.5 rounded-full ${
+                  priority === 'high' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' :
+                  priority === 'medium' ? 'bg-amber-500' :
+                  priority === 'low' ? 'bg-blue-500' : 'bg-slate-400'
+                }`} />
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                  {priority} Priority
+                </h2>
+                <div className="h-[1px] flex-1 bg-slate-100 dark:bg-slate-800/50" />
+                <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600">{groupTasks.length} tasks</span>
+              </div>
+
+              <SortableContext items={groupTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-4" role="list" aria-label={`${priority} Tasks`}>
+                  <AnimatePresence initial={false}>
+                    {groupTasks.map((task, index) => {
+                      const globalIndex = tasks.findIndex(t => t.id === task.id);
+                      return (
+                        <motion.div
+                          key={task.id}
+                          layout
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ 
+                            duration: 0.2, 
+                            layout: { type: 'spring', stiffness: 300, damping: 30 } 
+                          }}
+                        >
+                          <SortableTaskItem
+                            task={task}
+                            index={globalIndex}
+                            tasksLength={tasks.length}
+                            onToggleComplete={onToggleComplete}
+                            onSelectTask={onSelectTask}
+                            onDuplicateTask={() => {}}
+                            onShareTask={(t) => {
+                              navigator.share?.({
+                                title: t.name,
+                                text: t.description || undefined,
+                                url: window.location.href,
+                              }).catch(() => {
+                                navigator.clipboard.writeText(`${window.location.href}#task-${t.id}`);
+                              });
+                            }}
+                            isSelected={selectedTaskIds.has(task.id)}
+                            isDragging={activeId === task.id}
+                            isFocused={focusedIndex === globalIndex}
+                            isOperatingOnTask={task.id === operatingOnTaskId}
+                            searchQuery={searchQuery}
+                          />
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+              </SortableContext>
+            </div>
+          );
+        })}
+      </div>
     </DndContext>
   );
 }
