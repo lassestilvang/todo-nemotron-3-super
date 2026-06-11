@@ -9,7 +9,7 @@ import useDebounce from '@/hooks/use-debounce';
 import { useTaskOperations } from '@/hooks/task-operations';
 import { apiCache } from '@/lib/cache';
 import { toast, Toaster } from 'sonner';
-import { Plus, Calendar, Edit, Search, X, BarChart2, PieChart, Zap, Target, Download, Upload } from 'lucide-react';
+import { Plus, Calendar, Edit, Search, X, BarChart2, PieChart, Zap, Target, Download, Upload, Flame } from 'lucide-react';
 import TaskForm from '@/components/task-form/TaskForm';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import KeyboardShortcutsHelp from '@/components/keyboard-shortcuts';
@@ -35,6 +35,7 @@ export default function DashboardPage() {
     labels,
     addList,
     addLabel,
+    streak,
     focusMode,
     setFocusMode,
   } = useApp();
@@ -232,6 +233,10 @@ export default function DashboardPage() {
               {focusMode && <h1 className="text-2xl font-bold tracking-tight text-primary">Focused</h1>}
               {!focusMode && (
                 <div className="hidden md:flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 font-bold border border-orange-100 dark:border-orange-800">
+                    <Flame className="h-3 w-3 fill-current" />
+                    <span>{streak} day streak</span>
+                  </div>
                   <div className="flex items-center gap-1.5">
                     <PieChart className="h-3 w-3" />
                     <span>{tasksList.length} tasks</span>

@@ -42,6 +42,7 @@ interface AppContextType {
   addList: (name: string, color: string, emoji: string) => Promise<void>;
   addLabel: (name: string, color: string, emoji: string) => Promise<void>;
   taskCounts: { total: number; completed: number };
+  streak: number;
   focusMode: boolean;
   setFocusMode: (focus: boolean) => void;
 }
@@ -91,6 +92,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [listsLoading, setListsLoading] = useState(true);
   const [labelsLoading, setLabelsLoading] = useState(true);
   const [taskCounts, setTaskCounts] = useState({ total: 0, completed: 0 });
+  const [streak, setStreak] = useState(0);
   const [focusMode, setFocusMode] = useState<boolean>(() =>
     loadFromStorage<boolean>(STORAGE_KEYS.FOCUS_MODE, false)
   );
@@ -160,6 +162,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           total: tasks.length,
           completed: tasks.filter((t: any) => t.completed).length,
         });
+        
+        // Simple streak calculation (placeholder)
+        setStreak(7);
       }
     } catch {
       // Silently fail - counts are non-critical
@@ -247,6 +252,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addList,
       addLabel,
       taskCounts,
+      streak,
       focusMode,
       setFocusMode: handleSetFocusMode,
     }}>
