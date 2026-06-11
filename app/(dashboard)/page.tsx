@@ -226,7 +226,7 @@ export default function DashboardPage() {
         <div className={`flex-1 overflow-hidden flex flex-col transition-all duration-500 bg-white dark:bg-gray-900 ${focusMode ? 'max-w-3xl mx-auto shadow-2xl ring-1 ring-black/5 dark:ring-white/5 my-8 rounded-2xl' : ''}`}>
           <header className={`flex items-center justify-between transition-all duration-300 ${focusMode ? 'px-8 py-6 border-none' : 'px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}`}>
             <div className="flex items-center gap-4">
-              {!focusMode && <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Daily Planner</h1>}
+              {!focusMode && <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Nemotron</h1>}
               {focusMode && <h1 className="text-2xl font-bold tracking-tight text-primary">Focused</h1>}
               {!focusMode && (
                 <div className="hidden md:flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
