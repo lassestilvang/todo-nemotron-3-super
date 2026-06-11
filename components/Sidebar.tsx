@@ -18,26 +18,28 @@ import {
   Download,
   Printer,
   Upload,
+  Settings,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { DEFAULT_LISTS, DEFAULT_LABELS } from '@/lib/constants';
 import { useApp } from '@/lib/app-context';
+import CreateItemDialog from '@/components/dialogs/CreateItemDialog';
 
 const viewOptions = [
   { name: 'Today', value: 'today', icon: Calendar },
   { name: 'Next 7 Days', value: 'next7', icon: CalendarCheck },
   { name: 'Upcoming', value: 'upcoming', icon: CalendarPlus },
-  { name: 'All', value: 'all', icon: List },
+  { name: 'All Tasks', value: 'all', icon: List },
 ];
 
 export default function Sidebar() {
@@ -58,531 +60,268 @@ export default function Sidebar() {
     setSortBy,
     addList,
     addLabel,
-    refreshLists,
-    refreshLabels,
     taskCounts,
   } = useApp();
 
-  const [newListName, setNewListName] = useState('');
-  const [newLabelName, setNewLabelName] = useState('');
-  const [newListColor, setNewListColor] = useState('bg-gray-500');
-  const [newListEmoji, setNewListEmoji] = useState('🔲');
-  const [newLabelColor, setNewLabelColor] = useState('bg-gray-500');
-  const [newLabelEmoji, setNewLabelEmoji] = useState('🏷️');
+  const [isAddingList, setIsAddingList] = useState(false);
+  const [isAddingLabel, setIsAddingLabel] = useState(false);
+  const [isViewsExpanded, setIsViewsExpanded] = useState(true);
+  const [isListsExpanded, setIsListsExpanded] = useState(true);
+  const [isLabelsExpanded, setIsLabelsExpanded] = useState(true);
 
-  const colors = [
-    'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
-    'bg-lime-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
-    'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-indigo-500',
-    'bg-violet-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-pink-500',
-    'bg-rose-500', 'bg-slate-500', 'bg-gray-500', 'bg-zinc-500',
-  ];
-
-  const emojis = ['📥', '📋', '📝', '✅', '📌', '🏷️', '💼', '🏠', '🎯', '📚', '🛒', '💡', '⚡', '🎨', '🎮', '🎵'];
-
-  const handleAddList = async () => {
-    if (newListName.trim()) {
-      try {
-        await addList(newListName.trim(), newListColor, newListEmoji);
-        setNewListName('');
-        setNewListColor('bg-gray-500');
-        setNewListEmoji('🔲');
-      } catch (error) {
-        console.error('Failed to add list:', error);
-      }
+  const handleAddList = async (name: string, color: string, emoji: string) => {
+    try {
+      await addList(name, color, emoji);
+      toast.success('List added');
+    } catch (error) {
+      console.error('Failed to add list:', error);
+      toast.error('Failed to add list');
     }
   };
 
-  const handleAddLabel = async () => {
-    if (newLabelName.trim()) {
-      try {
-        await addLabel(newLabelName.trim(), newLabelColor, newLabelEmoji);
-        setNewLabelName('');
-        setNewLabelColor('bg-gray-500');
-        setNewLabelEmoji('🏷️');
-      } catch (error) {
-        console.error('Failed to add label:', error);
-      }
+  const handleAddLabel = async (name: string, color: string, emoji: string) => {
+    try {
+      await addLabel(name, color, emoji);
+      toast.success('Label added');
+    } catch (error) {
+      console.error('Failed to add label:', error);
+      toast.error('Failed to add label');
     }
   };
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-screen">
-      <div className="flex-1 overflow-y-auto p-4">
-        {/* Views */}
-        <Card className="mb-4">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">Views</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {viewOptions.map((view) => (
-              <Button
-                key={view.value}
-                variant={activeView === view.value ? 'outline' : 'default'}
-                className="w-full text-left justify-start px-3 py-2"
-                onClick={() => setActiveView(view.value as 'today' | 'next7' | 'upcoming' | 'all')}
+    <div className="w-64 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col h-screen overflow-hidden">
+      <div className="p-6">
+        <div className="flex items-center gap-2 px-2 mb-8">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg shadow-primary/20">
+            T
+          </div>
+          <span className="font-bold text-lg tracking-tight">Nemotron</span>
+        </div>
+
+        <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-140px)] pr-2 -mr-2 scrollbar-none">
+          {/* Views Section */}
+          <div>
+            <button 
+              onClick={() => setIsViewsExpanded(!isViewsExpanded)}
+              className="flex items-center justify-between w-full px-2 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+            >
+              <span>Views</span>
+              {isViewsExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+            </button>
+            {isViewsExpanded && (
+              <div className="space-y-1">
+                {viewOptions.map((view) => (
+                  <Button
+                    key={view.value}
+                    variant="ghost"
+                    className={`w-full justify-start px-2 py-1.5 h-9 rounded-md transition-all ${
+                      activeView === view.value 
+                        ? 'bg-white dark:bg-slate-900 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 font-medium' 
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                    }`}
+                    onClick={() => setActiveView(view.value as any)}
+                  >
+                    <view.icon className={`h-4 w-4 mr-3 ${activeView === view.value ? 'text-primary' : ''}`} />
+                    <span className="flex-1 text-sm">{view.name}</span>
+                    {activeView === view.value && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    )}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Lists Section */}
+          <div>
+            <div className="flex items-center justify-between px-2 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <button 
+                onClick={() => setIsListsExpanded(!isListsExpanded)}
+                className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
               >
-                <span className="flex items-center gap-3">
-                  <view.icon className="h-5 w-5" />
-                  <span>{view.name}</span>
-                </span>
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Lists */}
-        <Card className="mb-4">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold flex items-center justify-between">
-              <span>Lists</span>
-              <span className="text-xs text-muted-foreground">({lists.length})</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {/* Inbox (always first) */}
-            <Button
-              variant={filterListId === null || filterListId === 'inbox' ? 'outline' : 'default'}
-              className="w-full text-left justify-start px-3 py-2"
-              onClick={() => setFilterListId(filterListId === 'inbox' ? null : 'inbox')}
-            >
-              <span className="flex items-center gap-3">
-                <Inbox className="h-4 w-4" />
-                <span className="font-medium">Inbox</span>
-              </span>
-            </Button>
-            {listsLoading ? (
-              <>
-                <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse mb-2" />
-                <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse mb-2" />
-                <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse" />
-              </>
-            ) : lists.length === 0 ? (
-              <div className="text-center py-4 text-sm text-muted-foreground">
-                No lists yet. Create one to get started!
-              </div>
-            ) : (
-              <>
-                {lists.map((list) => (
-                  <Button
-                    key={list.id}
-                    variant={filterListId === list.id ? 'outline' : 'default'}
-                    className="w-full text-left justify-start px-3 py-2"
-                    onClick={() => setFilterListId(filterListId === list.id ? null : list.id)}
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className={`h-4 w-4 flex items-center justify-center rounded ${list.color}`}>
-                        {list.emoji}
-                      </span>
-                      <span className="flex-1">{list.name}</span>
-                    </span>
-                  </Button>
-                ))}
-              </>
-            )}
-            <div className="flex space-x-2">
-              <Input
-                placeholder="List name"
-                value={newListName}
-                onChange={(e) => setNewListName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddList();
-                }}
-              />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Select color">
-                    <div className={`h-4 w-4 rounded ${newListColor}`} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={4} className="p-2">
-                  <div className="grid grid-cols-5 gap-1">
-                    {colors.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setNewListColor(color)}
-                        className={`h-6 w-6 rounded ${color} ${newListColor === color ? 'ring-2 ring-offset-2 ring-offset-background' : ''}`}
-                        aria-label={color}
-                      />
-                    ))}
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Select emoji">
-                    <span className="h-4 w-4 text-lg">{newListEmoji}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={4} className="p-2">
-                  <div className="grid grid-cols-5 gap-1">
-                    {emojis.map((emoji) => (
-                      <button
-                        key={emoji}
-                        onClick={() => setNewListEmoji(emoji)}
-                        className={`h-8 w-8 text-xl rounded ${newListEmoji === emoji ? 'ring-2 ring-offset-2 ring-offset-background bg-accent' : 'hover:bg-accent'}`}
-                        aria-label={emoji}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button onClick={handleAddList} size="icon" aria-label="Add list">
-                <Plus className="h-4 w-4" />
-              </Button>
+                <span>Lists</span>
+                {isListsExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              </button>
+              <button 
+                onClick={() => setIsAddingList(true)}
+                className="hover:text-primary transition-colors p-0.5"
+                aria-label="Add List"
+              >
+                <Plus className="h-3 w-3" />
+              </button>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Labels */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold flex items-center justify-between">
-              <span>Labels</span>
-              <span className="text-xs text-muted-foreground">({labels.length})</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {labelsLoading ? (
-              <>
-                <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse mb-2" />
-                <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse mb-2" />
-                <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-600 animate-pulse" />
-              </>
-            ) : labels.length === 0 ? (
-              <div className="text-center py-4 text-sm text-muted-foreground">
-                No labels yet. Create one to organize tasks!
+            {isListsExpanded && (
+              <div className="space-y-1">
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start px-2 py-1.5 h-9 rounded-md ${
+                    filterListId === 'inbox' 
+                      ? 'bg-white dark:bg-slate-900 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 font-medium' 
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                  }`}
+                  onClick={() => setFilterListId(filterListId === 'inbox' ? null : 'inbox')}
+                >
+                  <Inbox className="h-4 w-4 mr-3" />
+                  <span className="flex-1 text-sm text-left">Inbox</span>
+                </Button>
+                {listsLoading ? (
+                  <div className="px-2 space-y-2 py-2">
+                    <div className="h-4 w-full bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+                    <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+                  </div>
+                ) : (
+                  lists.map((list) => (
+                    <Button
+                      key={list.id}
+                      variant="ghost"
+                      className={`w-full justify-start px-2 py-1.5 h-9 rounded-md ${
+                        filterListId === list.id 
+                          ? 'bg-white dark:bg-slate-900 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 font-medium' 
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                      }`}
+                      onClick={() => setFilterListId(filterListId === list.id ? null : list.id)}
+                    >
+                      <span className={`h-2.5 w-2.5 rounded-full ${list.color} mr-4`} />
+                      <span className="flex-1 text-sm text-left truncate">{list.name}</span>
+                    </Button>
+                  ))
+                )}
               </div>
-            ) : (
-              <>
-                {labels.map((label) => (
-                  <Button
-                    key={label.id}
-                    variant={filterLabelId === label.id ? 'outline' : 'default'}
-                    className="w-full text-left justify-start px-3 py-2"
-                    onClick={() => setFilterLabelId(filterLabelId === label.id ? null : label.id)}
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className={`h-5 w-5 flex items-center justify-center rounded ${label.color}`}>
-                        {label.emoji}
-                      </span>
+            )}
+          </div>
+
+          {/* Labels Section */}
+          <div>
+            <div className="flex items-center justify-between px-2 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <button 
+                onClick={() => setIsLabelsExpanded(!isLabelsExpanded)}
+                className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+              >
+                <span>Labels</span>
+                {isLabelsExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              </button>
+              <button 
+                onClick={() => setIsAddingLabel(true)}
+                className="hover:text-primary transition-colors p-0.5"
+                aria-label="Add Label"
+              >
+                <Plus className="h-3 w-3" />
+              </button>
+            </div>
+            {isLabelsExpanded && (
+              <div className="flex flex-wrap gap-1 px-2">
+                {labelsLoading ? (
+                  <div className="h-4 w-full bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+                ) : (
+                  labels.map((label) => (
+                    <button
+                      key={label.id}
+                      onClick={() => setFilterLabelId(filterLabelId === label.id ? null : label.id)}
+                      className={`px-2 py-1 rounded text-xs transition-all flex items-center gap-1.5 ${
+                        filterLabelId === label.id
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary/50'
+                      }`}
+                    >
+                      <span>{label.emoji}</span>
                       <span>{label.name}</span>
-                    </span>
-                  </Button>
-                ))}
-              </>
-            )}
-            <div className="flex space-x-2">
-              <Input
-                placeholder="Label name"
-                value={newLabelName}
-                onChange={(e) => setNewLabelName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddLabel();
-                }}
-              />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Select color">
-                    <div className={`h-4 w-4 rounded ${newLabelColor}`} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={4} className="p-2">
-                  <div className="grid grid-cols-5 gap-1">
-                    {colors.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setNewLabelColor(color)}
-                        className={`h-6 w-6 rounded ${color} ${newLabelColor === color ? 'ring-2 ring-offset-2 ring-offset-background' : ''}`}
-                        aria-label={color}
-                      />
-                    ))}
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Select emoji">
-                    <span className="h-4 w-4 text-lg">{newLabelEmoji}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={4} className="p-2">
-                  <div className="grid grid-cols-5 gap-1">
-                    {emojis.map((emoji) => (
-                      <button
-                        key={emoji}
-                        onClick={() => setNewLabelEmoji(emoji)}
-                        className={`h-8 w-8 text-xl rounded ${newLabelEmoji === emoji ? 'ring-2 ring-offset-2 ring-offset-background bg-accent' : 'hover:bg-accent'}`}
-                        aria-label={emoji}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button onClick={handleAddLabel} size="icon" aria-label="Add label">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Filters & Sort */}
-        <Card className="mb-4">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              Filters
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Show completed</span>
-              <Checkbox checked={showCompleted} onCheckedChange={setShowCompleted} />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={async () => {
-                if (!window.confirm('Reset all lists and labels to defaults?')) return;
-                try {
-                  for (const list of DEFAULT_LISTS) {
-                    await addList(list.name, list.color, list.emoji);
-                  }
-                  for (const label of DEFAULT_LABELS) {
-                    await addLabel(label.name, label.color, label.emoji);
-                  }
-                  toast.success('Quick setup complete!');
-                } catch (error) {
-                  console.error('Failed to add defaults:', error);
-                  toast.error('Failed to add defaults');
-                }
-              }}
-            >
-              Quick Setup
-            </Button>
-
-          </CardContent>
-        </Card>
-
-        {/* Task Stats */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">Statistics</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Total
-              </span>
-              <span className="font-semibold">{taskCounts.total}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                Completed
-              </span>
-              <span className="font-semibold text-green-600">{taskCounts.completed}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground flex items-center gap-2">
-                <Circle className="h-4 w-4 text-blue-500" />
-                Pending
-              </span>
-              <span className="font-semibold text-blue-600">{taskCounts.total - taskCounts.completed}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Progress Visualization */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <PieChart className="h-4 w-4" />
-              Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-center justify-center">
-              <div className="relative w-20 h-20">
-                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="45" fill="none" className="stroke-muted/30 stroke-8" />
-                  <circle 
-                    cx="50" cy="50" r="45" fill="none" 
-                    className="stroke-primary stroke-8" 
-                    strokeDasharray={Math.PI * 45 * 2}
-                    strokeDashoffset={taskCounts.total > 0 ? Math.PI * 45 * 2 * (1 - taskCounts.completed / taskCounts.total) : Math.PI * 45 * 2}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold">
-                    {taskCounts.total > 0 ? Math.round((taskCounts.completed / taskCounts.total) * 100) : 0}%
-                  </span>
-                </div>
+                    </button>
+                  ))
+                )}
               </div>
-            </div>
-            <div className="text-center text-xs text-muted-foreground">
-              {taskCounts.total > 0 ? (
-                <p>{taskCounts.completed} of {taskCounts.total} tasks done</p>
-              ) : (
-                <p>No tasks to track</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            )}
+          </div>
 
-        {/* Sort Options */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <SortAsc className="h-4 w-4" />
-              Sort By
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="due-date">Due Date</option>
-              <option value="priority">Priority</option>
-            </select>
-          </CardContent>
-        </Card>
-
-        {/* Export */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              Export
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => {
-                const data = {
-                  lists,
-                  labels,
-                  tasks: [],
-                };
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `todo-backup-${new Date().toISOString().split('T')[0]}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
-            >
-              Export Backup
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = '.json,application/json';
-                input.onchange = (e) => {
-                  const file = (e.target as HTMLInputElement).files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      try {
-                        const data = JSON.parse(event.target?.result as string);
-                        alert(`Import ${data.tasks?.length || 0} tasks, ${data.lists?.length || 0} lists, ${data.labels?.length || 0} labels`);
-                      } catch {
-                        alert('Invalid JSON file');
-                      }
-                    };
-                    reader.readAsText(file);
-                  }
-                };
-                input.click();
-              }}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Import Backup
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Print */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Printer className="h-4 w-4" />
-              Print
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => window.print()}
-            >
-              Print Tasks
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-<Button
-               variant="outline"
-               size="sm"
-               className="w-full justify-start"
-               onClick={() => {
-                 setFilterListId(null);
-                 setFilterLabelId(null);
-               }}
-             >
-               Clear Filters
-             </Button>
-             <Button
-               variant="outline"
-               size="sm"
-               className="w-full justify-start"
-               onClick={() => {
-                 setFilterListId(null);
-                 setFilterLabelId(null);
-                 setShowCompleted(false);
-               }}
-             >
-               Clear All Filters
-             </Button>
-             <Button
-               variant="outline"
-               size="sm"
-               className="w-full justify-start"
-               onClick={() => {
-                 navigator.clipboard.writeText('Todo Planner - Task Management');
-               }}
-             >
-               Copy Markdown
-             </Button>
-          </CardContent>
-        </Card>
+          {/* Stats Section */}
+          <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800">
+             <div className="px-2 mb-4">
+               <div className="flex items-center justify-between mb-2">
+                 <span className="text-xs font-semibold text-slate-500 uppercase">Progress</span>
+                 <span className="text-xs font-bold text-primary">
+                   {taskCounts.total > 0 ? Math.round((taskCounts.completed / taskCounts.total) * 100) : 0}%
+                 </span>
+               </div>
+               <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                 <div 
+                   className="h-full bg-primary transition-all duration-500 ease-out"
+                   style={{ width: `${taskCounts.total > 0 ? (taskCounts.completed / taskCounts.total) * 100 : 0}%` }}
+                 />
+               </div>
+             </div>
+             
+             <div className="grid grid-cols-2 gap-2 px-2">
+               <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                 <div className="text-[10px] text-slate-500 uppercase mb-1">Done</div>
+                 <div className="text-lg font-bold">{taskCounts.completed}</div>
+               </div>
+               <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                 <div className="text-[10px] text-slate-500 uppercase mb-1">Total</div>
+                 <div className="text-lg font-bold">{taskCounts.total}</div>
+               </div>
+             </div>
+          </div>
+        </div>
       </div>
+
+      <div className="mt-auto p-4 border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="w-full justify-start px-2 hover:bg-slate-200 dark:hover:bg-slate-800">
+              <Settings className="h-4 w-4 mr-3 text-slate-500" />
+              <span className="text-sm font-medium">Settings</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem onClick={() => window.print()}>
+              <Printer className="h-4 w-4 mr-2" />
+              Print Tasks
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              const data = { lists, labels, tasks: [] };
+              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `todo-backup-${new Date().toISOString().split('T')[0]}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}>
+              <Download className="h-4 w-4 mr-2" />
+              Export Data
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = '.json';
+              input.onchange = (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (file) toast.success('Import started...');
+              };
+              input.click();
+            }}>
+              <Upload className="h-4 w-4 mr-2" />
+              Import Data
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <CreateItemDialog
+        isOpen={isAddingList}
+        onOpenChange={setIsAddingList}
+        title="Create New List"
+        type="list"
+        onSubmit={handleAddList}
+      />
+
+      <CreateItemDialog
+        isOpen={isAddingLabel}
+        onOpenChange={setIsAddingLabel}
+        title="Create New Label"
+        type="label"
+        onSubmit={handleAddLabel}
+      />
     </div>
   );
 }
