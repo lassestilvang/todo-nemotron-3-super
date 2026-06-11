@@ -18,7 +18,7 @@ import {
   ArrowDownRight,
   Activity
 } from 'lucide-react';
-import { Task } from '@/types/task';
+import type { Task } from '@/types/task';
 
 interface InsightsDialogProps {
   isOpen: boolean;
