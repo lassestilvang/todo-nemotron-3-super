@@ -37,6 +37,7 @@ import {
   Award,
   Flame,
   Sparkles,
+  LayoutDashboard,
   Bell,
   Link,
   Paperclip,
@@ -48,6 +49,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { formatTimeHHMM } from '@/lib/utils';
 import type { Task } from '@/types/task';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function getLabelColorClass(color: string): string {
   const colorMap: Record<string, string> = {
@@ -258,11 +260,6 @@ export function SortableTaskList({
           }
         }
         break;
-      case 'Delete':
-        if (focusedIndex >= 0 && focusedIndex < tasks.length) {
-          // Could add delete handler here
-        }
-        break;
       case 'Escape':
         setFocusedIndex(-1);
         break;
@@ -336,33 +333,46 @@ export function SortableTaskList({
           onKeyDown={handleKeyDown}
           tabIndex={0}
         >
-          {tasks.map((task, index) => (
-            <SortableTaskItem
-              key={task.id}
-              task={task}
-              index={index}
-              tasksLength={tasks.length}
-              onToggleComplete={onToggleComplete}
-              onSelectTask={onSelectTask}
-              onDuplicateTask={(t) => {
-                const duplicated = { ...t, id: crypto.randomUUID(), name: `${t.name} (copy)` };
-                onReorderTasks([...tasks.map((x) => x.id), duplicated.id]);
-              }}
-              onShareTask={(t) => {
-                navigator.share?.({
-                  title: t.name,
-                  text: t.description || undefined,
-                  url: window.location.href,
-                }).catch(() => {
-                  navigator.clipboard.writeText(`${window.location.href}#task-${t.id}`);
-                });
-              }}
-              isSelected={selectedTaskIds.has(task.id)}
-              isDragging={activeId === task.id}
-              isFocused={focusedIndex === index}
-              isOperatingOnTask={task.id === operatingOnTaskId}
-            />
-          ))}
+          <AnimatePresence initial={false}>
+            {tasks.map((task, index) => (
+              <motion.div
+                key={task.id}
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ 
+                  duration: 0.2, 
+                  delay: index * 0.05,
+                  layout: { type: 'spring', stiffness: 300, damping: 30 } 
+                }}
+              >
+                <SortableTaskItem
+                  task={task}
+                  index={index}
+                  tasksLength={tasks.length}
+                  onToggleComplete={onToggleComplete}
+                  onSelectTask={onSelectTask}
+                  onDuplicateTask={(t) => {
+                    // This will be handled by the parent
+                  }}
+                  onShareTask={(t) => {
+                    navigator.share?.({
+                      title: t.name,
+                      text: t.description || undefined,
+                      url: window.location.href,
+                    }).catch(() => {
+                      navigator.clipboard.writeText(`${window.location.href}#task-${t.id}`);
+                    });
+                  }}
+                  isSelected={selectedTaskIds.has(task.id)}
+                  isDragging={activeId === task.id}
+                  isFocused={focusedIndex === index}
+                  isOperatingOnTask={task.id === operatingOnTaskId}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       </SortableContext>
     </DndContext>
