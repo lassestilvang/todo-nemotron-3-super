@@ -18,6 +18,7 @@ import { useApp } from '@/lib/app-context';
 import { SortableTaskList, EmptyTaskList, TaskListLoading, TaskStats } from '@/components/task-list/SortableTaskList';
 import type { Task, ViewType } from '@/types/task';
 import { setupExportImportHandlers } from '@/lib/export-import';
+import CreateItemDialog from '@/components/dialogs/CreateItemDialog';
 
 export default function DashboardPage() {
   const {
@@ -39,6 +40,8 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [isAddingTask, setIsAddingTask] = useState(false);
+  const [isAddingList, setIsAddingList] = useState(false);
+  const [isAddingLabel, setIsAddingLabel] = useState(false);
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
   const [editTaskData, setEditTaskData] = useState<Task | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -52,32 +55,30 @@ export default function DashboardPage() {
   
   const exportHandlers = setupExportImportHandlers(tasksList, lists, labels);
 
-  const handleAddList = async () => {
-    const name = prompt('Enter list name:');
-    if (name?.trim()) {
-      try {
-        await addList(name.trim(), 'bg-blue-500', '📋');
-      } catch (error) {
-        console.error('Failed to add list:', error);
-        toast.error('Failed to add list');
-      }
+  const handleAddList = async (name: string, color: string, emoji: string) => {
+    try {
+      await addList(name, color, emoji);
+      toast.success('List added successfully');
+    } catch (error) {
+      console.error('Failed to add list:', error);
+      toast.error('Failed to add list');
     }
   };
 
-  const handleAddLabel = async () => {
-    const name = prompt('Enter label name:');
-    if (name?.trim()) {
-      try {
-        await addLabel(name.trim(), 'bg-purple-500', '🏷️');
-      } catch (error) {
-        console.error('Failed to add label:', error);
-        toast.error('Failed to add label');
-      }
+  const handleAddLabel = async (name: string, color: string, emoji: string) => {
+    try {
+      await addLabel(name, color, emoji);
+      toast.success('Label added successfully');
+    } catch (error) {
+      console.error('Failed to add label:', error);
+      toast.error('Failed to add label');
     }
   };
 
   const closeAllModals = useCallback(() => {
     setIsAddingTask(false);
+    setIsAddingList(false);
+    setIsAddingLabel(false);
     setEditTaskId(null);
     setEditTaskData(null);
     setSelectedTaskId(null);
@@ -91,12 +92,12 @@ export default function DashboardPage() {
     
     if (e.ctrlKey && e.shiftKey && e.key === 'L') {
       e.preventDefault();
-      handleAddList();
+      setIsAddingList(true);
     }
     
     if (e.ctrlKey && e.shiftKey && e.key === 'K') {
       e.preventDefault();
-      handleAddLabel();
+      setIsAddingLabel(true);
     }
     
     if (e.key === 'Escape') {
@@ -573,6 +574,22 @@ export default function DashboardPage() {
                 toast.error('Failed to update task');
               }
             }}
+          />
+
+          <CreateItemDialog
+            isOpen={isAddingList}
+            onOpenChange={setIsAddingList}
+            title="Create New List"
+            type="list"
+            onSubmit={handleAddList}
+          />
+
+          <CreateItemDialog
+            isOpen={isAddingLabel}
+            onOpenChange={setIsAddingLabel}
+            title="Create New Label"
+            type="label"
+            onSubmit={handleAddLabel}
           />
         </div>
       </ErrorBoundary>
