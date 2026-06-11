@@ -333,6 +333,7 @@ export default function DashboardPage() {
                   onReorderTasks={handleReorderTasks}
                   isLoading={tasksLoading}
                   operatingOnTaskId={operatingOnTaskId}
+                  searchQuery={searchQuery}
                 />
               </>
             )}

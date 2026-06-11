@@ -204,6 +204,7 @@ interface SortableTaskListProps {
   selectedTaskIds: Set<string>;
   isLoading?: boolean;
   operatingOnTaskId?: string | null;
+  searchQuery?: string;
 }
 
 export function SortableTaskList({
@@ -214,6 +215,7 @@ export function SortableTaskList({
   selectedTaskIds,
   isLoading = false,
   operatingOnTaskId,
+  searchQuery = '',
 }: SortableTaskListProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
@@ -353,9 +355,7 @@ export function SortableTaskList({
                   tasksLength={tasks.length}
                   onToggleComplete={onToggleComplete}
                   onSelectTask={onSelectTask}
-                  onDuplicateTask={(t) => {
-                    // This will be handled by the parent
-                  }}
+                  onDuplicateTask={() => {}}
                   onShareTask={(t) => {
                     navigator.share?.({
                       title: t.name,
@@ -369,6 +369,7 @@ export function SortableTaskList({
                   isDragging={activeId === task.id}
                   isFocused={focusedIndex === index}
                   isOperatingOnTask={task.id === operatingOnTaskId}
+                  searchQuery={searchQuery}
                 />
               </motion.div>
             ))}
@@ -376,6 +377,25 @@ export function SortableTaskList({
         </div>
       </SortableContext>
     </DndContext>
+  );
+}
+
+function SearchHighlight({ text, query }: { text: string; query: string }) {
+  if (!query.trim()) return <>{text}</>;
+  
+  const parts = text.split(new RegExp(`(${query})`, 'gi'));
+  return (
+    <>
+      {parts.map((part, i) => 
+        part.toLowerCase() === query.toLowerCase() ? (
+          <mark key={i} className="bg-primary/20 text-primary dark:text-primary rounded-sm px-0.5 font-bold">
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </>
   );
 }
 
@@ -391,6 +411,7 @@ interface SortableTaskItemProps {
   isDragging: boolean;
   isFocused: boolean;
   isOperatingOnTask: boolean;
+  searchQuery?: string;
 }
 
 function SortableTaskItem({
@@ -405,6 +426,7 @@ function SortableTaskItem({
   isDragging,
   isFocused,
   isOperatingOnTask,
+  searchQuery = '',
 }: SortableTaskItemProps) {
   const {
     attributes,
@@ -459,7 +481,7 @@ function SortableTaskItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-1">
             <h3 className={`font-semibold truncate transition-all ${task.completed ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-900 dark:text-slate-100'}`}>
-              {task.name}
+              <SearchHighlight text={task.name} query={searchQuery} />
             </h3>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {task.priority && task.priority !== 'none' && (
