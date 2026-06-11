@@ -42,12 +42,15 @@ interface AppContextType {
   addList: (name: string, color: string, emoji: string) => Promise<void>;
   addLabel: (name: string, color: string, emoji: string) => Promise<void>;
   taskCounts: { total: number; completed: number };
+  focusMode: boolean;
+  setFocusMode: (focus: boolean) => void;
 }
 
 const STORAGE_KEYS = {
   SHOW_COMPLETED: 'todo_showCompleted',
   ACTIVE_VIEW: 'todo_activeView',
   SORT_BY: 'todo_sortBy',
+  FOCUS_MODE: 'todo_focusMode',
 };
 
 function loadFromStorage<T>(key: string, defaultValue: T): T {
@@ -88,6 +91,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [listsLoading, setListsLoading] = useState(true);
   const [labelsLoading, setLabelsLoading] = useState(true);
   const [taskCounts, setTaskCounts] = useState({ total: 0, completed: 0 });
+  const [focusMode, setFocusMode] = useState<boolean>(() =>
+    loadFromStorage<boolean>(STORAGE_KEYS.FOCUS_MODE, false)
+  );
 
   const fetchLists = async () => {
     setListsLoading(true);
@@ -215,6 +221,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     saveToStorage(STORAGE_KEYS.SORT_BY, sort);
   };
 
+  const handleSetFocusMode = (focus: boolean) => {
+    setFocusMode(focus);
+    saveToStorage(STORAGE_KEYS.FOCUS_MODE, focus);
+  };
+
   return (
     <AppContext.Provider value={{
       activeView,
@@ -236,6 +247,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addList,
       addLabel,
       taskCounts,
+      focusMode,
+      setFocusMode: handleSetFocusMode,
     }}>
       {children}
     </AppContext.Provider>

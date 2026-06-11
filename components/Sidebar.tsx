@@ -61,6 +61,7 @@ export default function Sidebar() {
     addList,
     addLabel,
     taskCounts,
+    focusMode,
   } = useApp();
 
   const [isAddingList, setIsAddingList] = useState(false);
@@ -88,6 +89,8 @@ export default function Sidebar() {
       toast.error('Failed to add label');
     }
   };
+
+  if (focusMode) return null;
 
   return (
     <div className="w-64 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col h-screen overflow-hidden">

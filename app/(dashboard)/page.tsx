@@ -34,6 +34,8 @@ export default function DashboardPage() {
     labels,
     addList,
     addLabel,
+    focusMode,
+    setFocusMode,
   } = useApp();
 
   const [tasksList, setTasksList] = useState<Task[]>([]);
@@ -50,7 +52,6 @@ export default function DashboardPage() {
   const [showSearch, setShowSearch] = useState(false);
   const [operatingOnTaskId, setOperatingOnTaskId] = useState<string | null>(null);
   const [quickAddText, setQuickAddText] = useState('');
-  const [focusMode, setFocusMode] = useState(false);
   const activeListId = filterListId || lists[0]?.id;
   
   const exportHandlers = setupExportImportHandlers(tasksList, lists, labels);
@@ -222,99 +223,59 @@ export default function DashboardPage() {
     <>
       <Toaster />
       <ErrorBoundary>
-        <div className={`flex-1 overflow-hidden flex flex-col transition-all duration-500 ${focusMode ? 'grayscale brightness-95' : ''}`}>
-          <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className={`flex-1 overflow-hidden flex flex-col transition-all duration-500 bg-white dark:bg-gray-900 ${focusMode ? 'max-w-3xl mx-auto shadow-2xl ring-1 ring-black/5 dark:ring-white/5 my-8 rounded-2xl' : ''}`}>
+          <header className={`flex items-center justify-between transition-all duration-300 ${focusMode ? 'px-8 py-6 border-none' : 'px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}`}>
             <div className="flex items-center gap-4">
-              <h1 className="text-xl sm:text-2xl font-bold">Daily Planner</h1>
-              <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <PieChart className="h-3 w-3" />
-                  <span>{tasksList.length} tasks</span>
+              {!focusMode && <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Daily Planner</h1>}
+              {focusMode && <h1 className="text-2xl font-bold tracking-tight text-primary">Focused</h1>}
+              {!focusMode && (
+                <div className="hidden md:flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5">
+                    <PieChart className="h-3 w-3" />
+                    <span>{tasksList.length} tasks</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <BarChart2 className="h-3 w-3 text-green-500" />
+                    <span>{tasksList.filter(t => t.completed).length} done</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <BarChart2 className="h-3 w-3" />
-                  <span>{tasksList.filter(t => t.completed).length} done</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Zap className="h-3 w-3" />
-                  <span>{tasksList.filter(t => !t.completed && t.priority === 'high').length} high</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="h-3 w-3" />
-                  <span>{tasksList.filter(t => t.deadline && new Date(t.deadline).toDateString() === new Date().toDateString()).length} today</span>
-                </div>
-              </div>
+              )}
             </div>
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Button
-                variant={focusMode ? 'default' : 'outline'}
+                variant={focusMode ? 'secondary' : 'outline'}
                 size="sm"
                 onClick={() => setFocusMode(!focusMode)}
                 aria-label="Toggle focus mode"
-                className="hidden sm:flex"
+                className={`h-9 px-4 rounded-full transition-all ${focusMode ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'hover:bg-primary/5'}`}
               >
                 <Target className="h-4 w-4 mr-2" />
-                <span className="hidden md:inline">Focus Mode</span>
+                <span>{focusMode ? 'Exit Focus' : 'Focus Mode'}</span>
               </Button>
-              <ThemeToggle />
-              <KeyboardShortcutsHelp />
-<Button
-                variant="outline"
-                size="icon"
-                onClick={() => setShowSearch(!showSearch)}
-                aria-label="Toggle search"
-                className={showSearch ? 'bg-primary/10' : ''}
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsAddingTask(true)}
-                aria-label="Add new task"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => exportHandlers.handleExport()}
-                aria-label="Export tasks"
-              >
-                <Download className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = '.json';
-                  input.onchange = async (e) => {
-                    const file = (e.target as HTMLInputElement).files?.[0];
-                    if (!file) return;
-                    try {
-                      await exportHandlers.handleImport(file);
-                    } catch (error) {
-                      // Error already handled in export-import.ts
-                    }
-                  };
-                  input.click();
-                }}
-                aria-label="Import tasks"
-              >
-                <Upload className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  // TODO: Implement filters modal
-                }}
-                aria-label="Filter tasks"
-              >
-                <Calendar className="h-4 w-4" />
-              </Button>
+              {!focusMode && (
+                <>
+                  <ThemeToggle />
+                  <KeyboardShortcutsHelp />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowSearch(!showSearch)}
+                    aria-label="Toggle search"
+                    className={`h-9 w-9 rounded-full ${showSearch ? 'bg-primary/10 text-primary border-primary/20' : ''}`}
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsAddingTask(true)}
+                    aria-label="Add new task"
+                    className="h-9 w-9 rounded-full hover:bg-primary/5"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
             </div>
           </header>
           {showSearch && (
@@ -402,54 +363,56 @@ export default function DashboardPage() {
           </div>
         </main>
         
-        <footer className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
-          <div className="max-w-4xl mx-auto flex items-center gap-2">
-            <Input
-              placeholder="Quick add task... (Ctrl+Shift+A)"
-              value={quickAddText}
-              onChange={(e) => setQuickAddText(e.target.value)}
-              onKeyDown={async (e) => {
-                if (e.key === 'Enter' && quickAddText.trim()) {
-                  e.preventDefault();
-                  try {
-                    const trimmedName = quickAddText.trim();
-                    const existingCount = tasksList.filter(
-                      t => t.name.toLowerCase() === trimmedName.toLowerCase()
-                    ).length;
-                    
-                    if (existingCount > 0) {
-                      const proceed = window.confirm(
-                        `Task "${trimmedName}" already exists ${existingCount > 0 ? `${existingCount} time(s)` : ''}. Add anyway?`
-                      );
-                      if (!proceed) return;
+        {!focusMode && (
+          <footer className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+            <div className="max-w-4xl mx-auto flex items-center gap-2">
+              <Input
+                placeholder="Quick add task... (Ctrl+Shift+A)"
+                value={quickAddText}
+                onChange={(e) => setQuickAddText(e.target.value)}
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter' && quickAddText.trim()) {
+                    e.preventDefault();
+                    try {
+                      const trimmedName = quickAddText.trim();
+                      const existingCount = tasksList.filter(
+                        t => t.name.toLowerCase() === trimmedName.toLowerCase()
+                      ).length;
+                      
+                      if (existingCount > 0) {
+                        const proceed = window.confirm(
+                          `Task "${trimmedName}" already exists ${existingCount > 0 ? `${existingCount} time(s)` : ''}. Add anyway?`
+                        );
+                        if (!proceed) return;
+                      }
+                      
+                      const res = await fetch('/api/tasks', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          name: trimmedName,
+                          listId: activeListId || lists[0]?.id || '',
+                        }),
+                      });
+                      
+                      if (res.ok) {
+                        await fetchTasks();
+                        setQuickAddText('');
+                        toast.success('Task added');
+                      } else {
+                        throw new Error('Failed to add task');
+                      }
+                    } catch (error) {
+                      console.error('Failed to add task:', error);
+                      toast.error('Failed to add task');
                     }
-                    
-                    const res = await fetch('/api/tasks', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        name: trimmedName,
-                        listId: activeListId || lists[0]?.id || '',
-                      }),
-                    });
-                    
-                    if (res.ok) {
-                      await fetchTasks();
-                      setQuickAddText('');
-                      toast.success('Task added');
-                    } else {
-                      throw new Error('Failed to add task');
-                    }
-                  } catch (error) {
-                    console.error('Failed to add task:', error);
-                    toast.error('Failed to add task');
                   }
-                }
-              }}
-              className="flex-1"
-            />
-          </div>
-        </footer>
+                }}
+                className="flex-1"
+              />
+            </div>
+          </footer>
+        )}
           <TaskForm
             isOpen={isAddingTask}
             onOpenChange={(open) => setIsAddingTask(open)}
