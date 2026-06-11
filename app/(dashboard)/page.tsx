@@ -20,6 +20,7 @@ import type { Task, ViewType } from '@/types/task';
 import { setupExportImportHandlers } from '@/lib/export-import';
 import CreateItemDialog from '@/components/dialogs/CreateItemDialog';
 import InsightsDialog from '@/components/dialogs/InsightsDialog';
+import * as chrono from 'chrono-node';
 
 export default function DashboardPage() {
   const {
@@ -390,14 +391,36 @@ export default function DashboardPage() {
                   if (e.key === 'Enter' && quickAddText.trim()) {
                     e.preventDefault();
                     try {
-                      const trimmedName = quickAddText.trim();
+                      let name = quickAddText.trim();
+                      let deadline: Date | null = null;
+                      let priority: 'high' | 'medium' | 'low' | 'none' = 'none';
+
+                      // Parse priority
+                      if (name.toLowerCase().includes('!high') || name.toLowerCase().includes('!hp')) {
+                        priority = 'high';
+                        name = name.replace(/!high|!hp/gi, '').trim();
+                      } else if (name.toLowerCase().includes('!medium') || name.toLowerCase().includes('!mp')) {
+                        priority = 'medium';
+                        name = name.replace(/!medium|!mp/gi, '').trim();
+                      } else if (name.toLowerCase().includes('!low') || name.toLowerCase().includes('!lp')) {
+                        priority = 'low';
+                        name = name.replace(/!low|!lp/gi, '').trim();
+                      }
+
+                      // Parse date
+                      const parsedDates = chrono.parse(name);
+                      if (parsedDates.length > 0) {
+                        deadline = parsedDates[0].start.date();
+                        name = name.replace(parsedDates[0].text, '').trim();
+                      }
+
                       const existingCount = tasksList.filter(
-                        t => t.name.toLowerCase() === trimmedName.toLowerCase()
+                        t => t.name.toLowerCase() === name.toLowerCase()
                       ).length;
                       
                       if (existingCount > 0) {
                         const proceed = window.confirm(
-                          `Task "${trimmedName}" already exists ${existingCount > 0 ? `${existingCount} time(s)` : ''}. Add anyway?`
+                          `Task "${name}" already exists ${existingCount > 0 ? `${existingCount} time(s)` : ''}. Add anyway?`
                         );
                         if (!proceed) return;
                       }
@@ -406,15 +429,17 @@ export default function DashboardPage() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                          name: trimmedName,
+                          name,
                           listId: activeListId || lists[0]?.id || '',
+                          deadline: deadline ? deadline.toISOString() : null,
+                          priority,
                         }),
                       });
                       
                       if (res.ok) {
                         await fetchTasks();
                         setQuickAddText('');
-                        toast.success('Task added');
+                        toast.success(`Task added${deadline ? ` for ${deadline.toLocaleDateString()}` : ''}${priority !== 'none' ? ` with ${priority} priority` : ''}`);
                       } else {
                         throw new Error('Failed to add task');
                       }
