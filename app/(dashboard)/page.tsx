@@ -19,6 +19,7 @@ import { SortableTaskList, EmptyTaskList, TaskListLoading, TaskStats } from '@/c
 import type { Task, ViewType } from '@/types/task';
 import { setupExportImportHandlers } from '@/lib/export-import';
 import CreateItemDialog from '@/components/dialogs/CreateItemDialog';
+import InsightsDialog from '@/components/dialogs/InsightsDialog';
 
 export default function DashboardPage() {
   const {
@@ -44,6 +45,7 @@ export default function DashboardPage() {
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [isAddingList, setIsAddingList] = useState(false);
   const [isAddingLabel, setIsAddingLabel] = useState(false);
+  const [isShowingInsights, setIsShowingInsights] = useState(false);
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
   const [editTaskData, setEditTaskData] = useState<Task | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -130,7 +132,7 @@ export default function DashboardPage() {
       };
       input.click();
     }
-  }, [closeAllModals, handleAddList, handleAddLabel, exportHandlers]);
+  }, [closeAllModals, exportHandlers]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -256,6 +258,15 @@ export default function DashboardPage() {
                 <>
                   <ThemeToggle />
                   <KeyboardShortcutsHelp />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsShowingInsights(true)}
+                    aria-label="View insights"
+                    className="h-9 w-9 rounded-full hover:bg-primary/5"
+                  >
+                    <BarChart2 className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant="outline"
                     size="icon"
@@ -553,6 +564,12 @@ export default function DashboardPage() {
             title="Create New Label"
             type="label"
             onSubmit={handleAddLabel}
+          />
+
+          <InsightsDialog
+            isOpen={isShowingInsights}
+            onOpenChange={setIsShowingInsights}
+            tasks={tasksList}
           />
         </div>
       </ErrorBoundary>
