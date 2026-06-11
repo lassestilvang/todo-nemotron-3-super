@@ -369,9 +369,10 @@ export default function DashboardPage() {
 
                       // Parse date
                       const parsedDates = chrono.parse(name);
-                      if (parsedDates.length > 0) {
-                        deadline = parsedDates[0].start.date();
-                        name = name.replace(parsedDates[0].text, '').trim();
+                      const firstMatch = parsedDates[0];
+                      if (firstMatch) {
+                        deadline = firstMatch.start.date();
+                        name = name.replace(firstMatch.text, '').trim();
                       }
 
                       const existingCount = tasksList.filter(
