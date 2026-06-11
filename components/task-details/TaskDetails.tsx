@@ -542,380 +542,274 @@ setIsSaving(true);
 
     return (
       <Dialog open={!!taskId} onOpenChange={(open) => { if (!open) onClose(); }}>
-        <DialogContent className="w-[95vw] max-w-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <DialogTitle className="text-2xl">{task.name}</DialogTitle>
-                {task.description && (
-                  <p className="text-muted-foreground mt-2">{task.description}</p>
-                )}
-              </div>
-              <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </DialogHeader>
-
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            {task.list && (
-              <div className="flex items-center gap-1.5">
-                <div className={`h-5 w-5 flex items-center justify-center rounded ${task.list.color}`}>
-                  {task.list.emoji}
-                </div>
-                <span>{task.list.name}</span>
-              </div>
-            )}
-            {task.date && (
-              <div className="flex items-center gap-1.5">
-                <Calendar className="h-3 w-3" />
-                <span>{task.date.toLocaleDateString()}</span>
-              </div>
-            )}
-            {task.deadline && (
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-3 w-3" />
-                <span className={new Date(task.deadline).toDateString() === new Date().toDateString() ? 'font-bold text-red-500' : new Date(task.deadline) < new Date(Date.now()) ? 'text-red-500' : ''}>
-                  {new Date(task.deadline).toDateString() === new Date().toDateString() ? 'Due Today' : task.deadline.toLocaleString()}
-                </span>
-              </div>
-            )}
-            {task.estimate && (
-              <div className="flex items-center gap-1.5">
-                <Timer className="h-3 w-3" />
-                <span>Est: {formatTimeHHMM(task.estimate)}</span>
-              </div>
-            )}
-            {task.actualTime !== null && task.actualTime > 0 && (
-              <div className="flex items-center gap-1.5">
-                <TrendingUp className="h-3 w-3" />
-                <span>Actual: {formatTimeHHMM(task.actualTime)}</span>
-                {task.estimate && (
-                  <span className="text-xs text-muted-foreground">
-                    ({Math.round((task.actualTime / (typeof task.estimate === 'string' ? parseHHMMtoMinutes(task.estimate) : task.estimate)) * 100)}%)
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant={isTimerRunning ? 'destructive' : 'outline'}
-              size="sm"
-              onClick={isTimerRunning ? handleStopTimer : handleStartTimer}
-            >
-              {isTimerRunning ? (
-                <>
-                  <Pause className="h-3 w-3 mr-1" />
-                  Stop
-                </>
-              ) : (
-                <>
-                  <Play className="h-3 w-3 mr-1" />
-                  Start Timer
-                </>
-              )}
-            </Button>
-            {isTimerRunning && timerStart && (
-              <span className="text-xs text-muted-foreground">
-                Running: {formatTimeHHMM(Math.floor((Date.now() - timerStart.getTime()) / 60000))}
-              </span>
-            )}
-          </div>
-
-          {task.subtasks.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Subtasks
-                </span>
-                <span className="font-medium">
-                  {task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}
-                </span>
-              </div>
-              <div className="h-2 bg-muted rounded overflow-hidden">
-                <div 
-                  className="h-full bg-primary transition-all"
-                  style={{ width: `${(task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-        <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 border-b">
-            <TabsTrigger value="details" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
-              Details
-            </TabsTrigger>
-            <TabsTrigger value="subtasks" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
-              Subtasks
-            </TabsTrigger>
-            <TabsTrigger value="notes" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
-              Notes
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
-              Activity
-            </TabsTrigger>
-            <TabsTrigger value="history" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-muted-foreground/80 data-[state=active]:border-b-2 data-[state=active]:text-foreground">
-              History
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="details" className="mt-2 space-y-4">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-task-name">Task Name</Label>
-                <Input
-                  id="edit-task-name"
-                  value={editData.name}
-                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-task-description">Description</Label>
-                <Textarea
-                  id="edit-task-description"
-                  value={editData.description}
-                  onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                  className="min-h-[80px]"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-task-date">Date</Label>
-                  <input
-                    id="edit-task-date"
-                    type="date"
-                    value={editData.date ? editData.date.toISOString().split('T')[0] : ''}
-                    onChange={(e) => {
-                      const date = e.target.value ? new Date(e.target.value) : null;
-                      setEditData({ ...editData, date });
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-task-deadline">Deadline</Label>
-                  <input
-                    id="edit-task-deadline"
-                    type="datetime-local"
-                    value={editData.deadline ? editData.deadline.toISOString().slice(0, 16) : ''}
-                    onChange={(e) => {
-                      const date = e.target.value ? new Date(e.target.value) : null;
-                      setEditData({ ...editData, deadline: date });
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-task-priority">Priority</Label>
-                <select
-                  id="edit-task-priority"
-                  value={editData.priority}
-                  onChange={(e) => setEditData({ ...editData, priority: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  <option value="none">None</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-task-recurrence">Recurrence</Label>
-                <select
-                  id="edit-task-recurrence"
-                  value={editData.recurrence}
-                  onChange={(e) => setEditData({ ...editData, recurrence: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  {RECURRENCE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-task-estimate">Estimated Time</Label>
-                  <input
-                    id="edit-task-estimate"
-                    type="text"
-                    value={editData.estimate}
-                    onChange={(e) => setEditData({ ...editData, estimate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    placeholder="HH:MM"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-task-actualTime">Actual Time</Label>
-                  <input
-                    id="edit-task-actualTime"
-                    type="text"
-                    value={editData.actualTime}
-                    onChange={(e) => setEditData({ ...editData, actualTime: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    placeholder="HH:MM"
-                  />
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="subtasks" className="mt-2">
-            <div className="flex gap-2 mb-4">
-              <Input
-                placeholder="Add subtask..."
-                value={newSubtaskName}
-                onChange={(e) => setNewSubtaskName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleQuickAddSubtask(); }}
-              />
-              <Button onClick={handleQuickAddSubtask} disabled={!newSubtaskName.trim() || isSaving} size="sm">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            {task.subtasks.length > 0 ? (
-              <>
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Subtasks ({task.subtasks.filter(s => s.completed).length}/{task.subtasks.length})</span>
-                  <span>{Math.round((task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100)}%</span>
-                </div>
-                <div className="h-2 bg-muted rounded overflow-hidden mb-2">
-                  <div 
-                    className="h-full bg-primary transition-all"
-                    style={{ width: `${(task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100}%` }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  {task.subtasks.map((subtask) => (
-                  <div key={subtask.id} className="flex items-start gap-3">
-                    <Checkbox
-                      checked={Boolean(subtask.completed)}
-                      onCheckedChange={(checked) => handleSubtaskToggle(subtask.id, checked === true)}
-                      className="flex-shrink-0"
-                    />
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className={subtask.completed ? 'line-through text-muted-foreground' : ''}>
-                          {subtask.name}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteSubtask(subtask.id)}
-                          disabled={isSaving}
-                          className="h-6 px-2"
-                        >
-                          ×
-                        </Button>
-                      </div>
-</div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="text-center py-8 text-muted-foreground">No subtasks</p>
-            )}
-          </TabsContent>
-          <TabsContent value="activity" className="mt-2">
-            {task.changes.length > 0 ? (
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {task.changes.map((change) => (
-                  <div key={change.id} className="border p-3 rounded text-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
-                        <Tag className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <p className="font-medium">{change.fieldChanged}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(change.changedAt).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
+        <DialogContent className="max-w-3xl p-0 overflow-hidden border-none bg-white dark:bg-slate-950 shadow-2xl rounded-2xl">
+          <div className="flex flex-col h-[85vh]">
+            {/* Header Area */}
+            <div className="px-8 pt-8 pb-6 border-b border-slate-100 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="flex items-start justify-between mb-4">
+                <div className="space-y-1 flex-1 pr-8">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${task.list.color} text-white`}>
+                      {task.list.emoji} {task.list.name}
+                    </span>
+                    {task.priority && task.priority !== 'none' && (
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                        task.priority === 'high' ? 'bg-red-500 text-white' :
+                        task.priority === 'medium' ? 'bg-amber-500 text-white' :
+                        'bg-blue-500 text-white'
+                      }`}>
+                        {task.priority}
+                      </span>
+                    )}
                   </div>
-                ))}
+                  <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 leading-tight">
+                    {task.name}
+                  </h2>
+                </div>
+                <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-slate-200 dark:hover:bg-slate-800">
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
-            ) : (
-              <p className="text-center py-8 text-muted-foreground">No activity</p>
-            )}
-          </TabsContent>
-          <TabsContent value="notes" className="mt-2">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <BookOpen className="h-4 w-4" />
-                <span>Notes</span>
+
+              <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                {task.date && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>{task.date.toLocaleDateString()}</span>
+                  </div>
+                )}
+                {task.deadline && (
+                  <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${
+                    new Date(task.deadline) < new Date() && !task.completed
+                      ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800'
+                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                  }`}>
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>{task.deadline.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 ml-auto">
+                  <Button
+                    variant={isTimerRunning ? 'destructive' : 'outline'}
+                    size="sm"
+                    onClick={isTimerRunning ? handleStopTimer : handleStartTimer}
+                    className="h-8 rounded-full"
+                  >
+                    {isTimerRunning ? <Pause className="h-3.5 w-3.5 mr-1.5" /> : <Play className="h-3.5 w-3.5 mr-1.5" />}
+                    {isTimerRunning ? 'Stop Timer' : 'Start Timer'}
+                  </Button>
+                  {isTimerRunning && (
+                    <span className="text-xs font-mono font-bold text-red-500 animate-pulse">
+                      {formatTimeHHMM(Math.floor((Date.now() - (timerStart?.getTime() || Date.now())) / 60000))}
+                    </span>
+                  )}
+                </div>
               </div>
-              <Textarea
-                placeholder="Add notes about this task..."
-                className="min-h-[150px] resize-none"
-                value={editData.description}
-                onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                onBlur={handleSave}
-              />
-              <p className="text-xs text-muted-foreground">
-                Edit notes directly. Press Tab + Enter to save.
-              </p>
             </div>
-          </TabsContent>
-          <TabsContent value="history" className="mt-2">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <History className="h-4 w-4" />
-                <span>Task History</span>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                <p>Created: {task.createdAt.toLocaleDateString()}</p>
-                <p>Last updated: {task.updatedAt.toLocaleDateString()}</p>
-              </div>
-              {task.createdAt && (
-                <div className="pt-2 border-t border-muted/30">
-                  <p className="text-xs text-muted-foreground mb-1">Streak</p>
-                  <div className="flex items-center gap-2">
-                    <div className="flex -space-x-2">
-                      {[...Array(Math.min(7, Math.floor(Math.random() * 7) + 1))].map((_, i) => (
-                        <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xs">
-                          {i + 1}
+
+            {/* Content Tabs */}
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <Tabs defaultValue="details" className="flex flex-col h-full">
+                <div className="px-8 border-b border-slate-100 dark:border-slate-900">
+                  <TabsList className="bg-transparent h-12 gap-6 p-0">
+                    <TabsTrigger value="details" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 text-sm font-semibold h-full transition-none">
+                      Details
+                    </TabsTrigger>
+                    <TabsTrigger value="subtasks" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 text-sm font-semibold h-full transition-none">
+                      Subtasks ({task.subtasks.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="notes" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 text-sm font-semibold h-full transition-none">
+                      Notes
+                    </TabsTrigger>
+                    <TabsTrigger value="activity" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 text-sm font-semibold h-full transition-none">
+                      Activity
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-8 py-6">
+                  <TabsContent value="details" className="mt-0 space-y-6">
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Task Name</Label>
+                        <Input
+                          value={editData.name}
+                          onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                          className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:ring-primary/20"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Priority</Label>
+                        <select
+                          value={editData.priority}
+                          onChange={(e) => setEditData({ ...editData, priority: e.target.value })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-sm"
+                        >
+                          <option value="none">None</option>
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Schedule Date</Label>
+                        <input
+                          type="date"
+                          value={editData.date ? editData.date.toISOString().split('T')[0] : ''}
+                          onChange={(e) => setEditData({ ...editData, date: e.target.value ? new Date(e.target.value) : null })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-sm"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Deadline</Label>
+                        <input
+                          type="datetime-local"
+                          value={editData.deadline ? editData.deadline.toISOString().slice(0, 16) : ''}
+                          onChange={(e) => setEditData({ ...editData, deadline: e.target.value ? new Date(e.target.value) : null })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Recurrence</Label>
+                        <select
+                          value={editData.recurrence}
+                          onChange={(e) => setEditData({ ...editData, recurrence: e.target.value })}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-sm"
+                        >
+                          {RECURRENCE_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>{o.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Estimate</Label>
+                          <Input
+                            value={editData.estimate}
+                            onChange={(e) => setEditData({ ...editData, estimate: e.target.value })}
+                            placeholder="HH:MM"
+                            className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Spent</Label>
+                          <Input
+                            value={editData.actualTime}
+                            onChange={(e) => setEditData({ ...editData, actualTime: e.target.value })}
+                            placeholder="HH:MM"
+                            className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="subtasks" className="mt-0 space-y-4">
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10 mb-6">
+                      <Plus className="h-4 w-4 text-primary" />
+                      <Input
+                        placeholder="Add a new subtask..."
+                        value={newSubtaskName}
+                        onChange={(e) => setNewSubtaskName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleQuickAddSubtask()}
+                        className="border-none bg-transparent shadow-none focus-visible:ring-0 px-0 h-auto text-sm"
+                      />
+                      <Button size="sm" onClick={handleQuickAddSubtask} disabled={!newSubtaskName.trim()} className="rounded-full h-7 px-3 text-[10px] font-bold uppercase tracking-wider">
+                        Add
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {task.subtasks.map((subtask) => (
+                        <div key={subtask.id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-900 hover:border-primary/20 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all group">
+                          <Checkbox
+                            checked={Boolean(subtask.completed)}
+                            onCheckedChange={(c) => handleSubtaskToggle(subtask.id, c === true)}
+                            className="h-5 w-5 rounded-full"
+                          />
+                          <span className={`flex-1 text-sm ${subtask.completed ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                            {subtask.name}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteSubtask(subtask.id)}
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-500"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
                         </div>
                       ))}
+                      {task.subtasks.length === 0 && (
+                        <div className="text-center py-12 text-slate-400 flex flex-col items-center gap-3">
+                          <CheckCircle2 className="h-10 w-10 opacity-20" />
+                          <p className="text-sm font-medium">Break down your task into smaller steps</p>
+                        </div>
+                      )}
                     </div>
-                    <span className="text-xs font-medium">7 day streak!</span>
-                  </div>
+                  </TabsContent>
+
+                  <TabsContent value="notes" className="mt-0 h-full">
+                    <Textarea
+                      placeholder="Start writing notes, ideas, or reminders..."
+                      className="min-h-[300px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-4 leading-relaxed focus:ring-primary/20 text-base"
+                      value={editData.description}
+                      onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="activity" className="mt-0 space-y-4">
+                    <div className="space-y-4">
+                      {task.changes.map((change) => (
+                        <div key={change.id} className="flex gap-4 p-3 rounded-lg border border-slate-100 dark:border-slate-900">
+                          <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
+                            <Tag className="h-4 w-4" />
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{change.fieldChanged}</span>
+                              <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
+                                {new Date(change.changedAt).toLocaleString()}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500">
+                              Changed from <span className="font-mono">{change.oldValue || 'none'}</span> to <span className="font-mono font-bold text-primary">{change.newValue || 'none'}</span>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                      {task.changes.length === 0 && (
+                        <p className="text-center py-12 text-slate-400 text-sm">No activity recorded yet</p>
+                      )}
+                    </div>
+                  </TabsContent>
                 </div>
-              )}
+              </Tabs>
             </div>
-          </TabsContent>
-          </Tabs>
-          <DialogFooter className="flex justify-end space-x-3">
-            <Button variant="ghost" onClick={onClose}>
-              Close
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.open(`/task/${task.id}`, '_blank')}
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Open in App
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isSaving}
-            >
-              {isSaving ? 'Deleting...' : 'Delete'}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleSave}
-              disabled={isSaving}
-            >
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </DialogFooter>
+
+            {/* Footer Area */}
+            <div className="px-8 py-6 border-t border-slate-100 dark:border-slate-900 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full px-4">
+                  Delete Task
+                </Button>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="sm" onClick={onClose} className="rounded-full px-6">
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleSave} disabled={isSaving} className="rounded-full px-8 shadow-lg shadow-primary/20">
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
    );
