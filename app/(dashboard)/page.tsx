@@ -21,6 +21,7 @@ import { setupExportImportHandlers } from '@/lib/export-import';
 import CreateItemDialog from '@/components/dialogs/CreateItemDialog';
 import InsightsDialog from '@/components/dialogs/InsightsDialog';
 import * as chrono from 'chrono-node';
+import { FloatingActionBar } from '@/components/FloatingActionBar';
 
 export default function DashboardPage() {
   const {
@@ -312,49 +313,7 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-          {selectedTaskIds.size > 0 && (
-            <div className="px-6 py-2 bg-primary/5 border-b border-primary/20 flex items-center justify-between">
-              <span className="text-sm font-medium text-primary">
-                {selectedTaskIds.size} task{selectedTaskIds.size > 1 ? 's' : ''} selected
-              </span>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={selectedTaskIds.size === tasksList.length && tasksList.length > 0}
-                  onCheckedChange={() => handleSelectAll()}
-                  aria-label="Select all"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleBulkComplete(true)}
-                >
-                  Mark Complete
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleBulkComplete(false)}
-                >
-                  Mark Incomplete
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                >
-                  Delete
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedTaskIds(new Set())}
-                >
-                  Clear
-                </Button>
-              </div>
-</div>
-          )}
-          <main className="flex-1 overflow-y-auto p-6">
+          <main className="flex-1 overflow-y-auto p-6 pb-32">
             <div className="max-w-4xl mx-auto">
             {tasksLoading ? (
               <TaskListLoading />
@@ -600,6 +559,15 @@ export default function DashboardPage() {
             isOpen={isShowingInsights}
             onOpenChange={setIsShowingInsights}
             tasks={tasksList}
+          />
+
+          <FloatingActionBar
+            selectedCount={selectedTaskIds.size}
+            onClear={() => setSelectedTaskIds(new Set())}
+            onMarkComplete={handleBulkComplete}
+            onDelete={handleBulkDelete}
+            isAllSelected={selectedTaskIds.size === tasksList.length && tasksList.length > 0}
+            onToggleSelectAll={handleSelectAll}
           />
         </div>
       </ErrorBoundary>
