@@ -410,138 +410,113 @@ function SortableTaskItem({
     opacity: isSortableDragging ? 0.5 : 1,
   };
 
-  const handleDragStart = (e: React.MouseEvent) => {
-    if (e.target instanceof HTMLButtonElement || e.target instanceof HTMLInputElement) {
-      return;
-    }
-    if (listeners?.onMouseDown) {
-      listeners.onMouseDown(e);
-    }
-  };
+  const completedSubtasks = task.subtasks?.filter(s => s.completed).length || 0;
+  const totalSubtasks = task.subtasks?.length || 0;
 
-return (
+  return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`group border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 cursor-grab active:cursor-grabbing ${isSelected ? 'ring-2 ring-primary bg-primary/5 shadow-md' : ''} ${isDragging ? 'shadow-xl ring-2 ring-primary scale-[1.02]' : ''} ${isFocused ? 'ring-2 ring-secondary/50' : ''} ${task.completed ? 'opacity-75' : ''}`}
-      onMouseDown={handleDragStart}
+      className={`group border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/20 bg-white dark:bg-slate-900 ${isSelected ? 'ring-2 ring-primary/50 bg-primary/5 shadow-md' : ''} ${isDragging ? 'shadow-2xl ring-2 ring-primary scale-[1.02] z-50' : ''} ${isFocused ? 'ring-2 ring-secondary/50' : ''} ${task.completed ? 'opacity-80' : ''}`}
       role="listitem"
       aria-posinset={index + 1}
       aria-setsize={tasksLength}
       aria-selected={isSelected}
       aria-grabbed={isDragging}
       data-task-index={index}
+      onClick={() => onSelectTask(task.id)}
     >
-      <Card className="p-4 transition-all duration-200 border-0 shadow-none">
-        <div className="flex items-start gap-4">
-          <button
-            {...attributes}
-            className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-muted-foreground p-1 rounded transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-            aria-label="Drag to reorder"
-            tabIndex={-1}
-          >
-            <GripVertical className="h-5 w-5" />
-          </button>
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={(checked) => onSelectTask(task.id)}
-            className="flex-shrink-0 mt-0.5"
-            aria-label="Select task"
-          />
+      <div className="p-4 flex items-start gap-4">
+        <div 
+          {...attributes} 
+          {...listeners}
+          className="mt-1 text-slate-300 dark:text-slate-700 hover:text-slate-900 dark:hover:text-slate-100 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="h-4 w-4" />
+        </div>
+        
+        <div className="flex flex-col items-center gap-2 mt-0.5" onClick={(e) => e.stopPropagation()}>
           <Checkbox
             checked={Boolean(task.completed)}
             onCheckedChange={(checked) => onToggleComplete(task.id, checked === true)}
-            className="flex-shrink-0 mt-0.5"
-            aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
+            className={`h-5 w-5 rounded-full transition-all ${task.completed ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300 dark:border-slate-700'}`}
             disabled={isOperatingOnTask}
           />
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-2">
-              <h3 className={`flex-1 font-semibold transition-all duration-300 ${task.completed ? 'line-through text-muted-foreground/60 decoration-muted-foreground/30' : ''} ${isFocused ? 'text-primary' : ''}`}>
-                {task.name}
-              </h3>
-              <div className="flex items-center gap-2 text-xs">
-                {task.completed && (
-                  <CheckSquare className="h-4 w-4 text-green-500" />
-                )}
-                {!task.completed && task.deadline && new Date(task.deadline) < new Date(Date.now()) && (
-                  <AlertCircle className="h-4 w-4 text-red-500 animate-pulse" />
-                )}
-                {task.priority && task.priority !== 'none' && (
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium priority-${task.priority}`}>
-                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                  </span>
-                )}
-                {task.estimate && !task.completed && (
-                  <span className="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    {formatTimeHHMM(task.estimate)}
-                  </span>
-                )}
-              </div>
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <h3 className={`font-semibold truncate transition-all ${task.completed ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-900 dark:text-slate-100'}`}>
+              {task.name}
+            </h3>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {task.priority && task.priority !== 'none' && (
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                  task.priority === 'high' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' :
+                  task.priority === 'medium' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' :
+                  'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                }`}>
+                  {task.priority}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {task.description && (
+            <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 mb-2">
+              {task.description}
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-500">
+            <div className="flex items-center gap-1">
+              <span className={`h-2 w-2 rounded-full ${task.list.color}`} />
+              <span>{task.list.name}</span>
             </div>
 
-            {task.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2" title={task.description}>
-                {task.description}
-              </p>
-            )}
-
-            {task.labels.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {task.labels.map((label) => (
-                  <span
-                    key={label.id}
-                    className={`px-2 py-0.5 rounded text-xs font-medium ${getLabelColorClass(label.color)}`}
-                  >
-                    {label.emoji} {label.name}
-                  </span>
-                ))}
+            {task.deadline && (
+              <div className={`flex items-center gap-1 ${new Date(task.deadline) < new Date() && !task.completed ? 'text-red-500 font-medium' : ''}`}>
+                <Calendar className="h-3 w-3" />
+                <span>{new Date(task.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
               </div>
             )}
 
-            <div className="flex items-center gap-4 text-xs">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span>{task.date ? new Date(task.date).toLocaleDateString() : 'No date'}</span>
+            {totalSubtasks > 0 && (
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium">
+                <CheckSquare className="h-3 w-3" />
+                <span>{completedSubtasks}/{totalSubtasks}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>{task.deadline ? new Date(task.deadline).toLocaleString() : 'No deadline'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Folder className="h-4 w-4" />
-                <span>{task.list.name}</span>
-              </div>
+            )}
+
+            {task.estimate && (
               <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDuplicateTask(task);
-                  }}
-                  className="h-6 w-6 p-0"
-                  aria-label="Duplicate task"
-                >
-                  <Copy className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onShareTask(task);
-                  }}
-                  className="h-6 w-6 p-0"
-                  aria-label="Share task"
-                >
-                  <Share2 className="h-3 w-3" />
-                </Button>
+                <Clock className="h-3 w-3" />
+                <span>{formatTimeHHMM(task.estimate)}</span>
               </div>
+            )}
+
+            <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                onClick={(e) => { e.stopPropagation(); onDuplicateTask(task); }}
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                onClick={(e) => { e.stopPropagation(); onShareTask(task); }}
+              >
+                <Share2 className="h-3.5 w-3.5" />
+              </Button>
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
