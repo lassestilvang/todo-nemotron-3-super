@@ -3,6 +3,7 @@
 import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import type { Task } from '@/types/task';
+import confetti from 'canvas-confetti';
 
 interface UseTaskOperationsProps {
   tasksList: Task[];
@@ -25,6 +26,16 @@ export function useTaskOperations({
   const handleToggleComplete = useCallback(async (taskId: string, completed: boolean) => {
     const previousTasks = [...tasksList];
     setOperatingOnTaskId(taskId);
+
+    if (completed) {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        zIndex: 999,
+        colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+      });
+    }
 
     setTasksList(prev =>
       prev.map(task =>
@@ -93,6 +104,17 @@ export function useTaskOperations({
         }),
       });
       if (!res.ok) throw new Error('Failed to bulk update');
+
+      if (completed) {
+        confetti({
+          particleCount: 200,
+          spread: 100,
+          origin: { y: 0.6 },
+          zIndex: 999,
+          colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+        });
+      }
+
       toast.success(`${taskIds.length} task${taskIds.length > 1 ? 's' : ''} marked as ${completed ? 'complete' : 'incomplete'}`);
       await fetchTasks();
     } catch (error) {

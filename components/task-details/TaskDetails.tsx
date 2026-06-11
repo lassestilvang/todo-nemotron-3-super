@@ -43,6 +43,7 @@ import {
 import { createId } from '@paralleldrive/cuid2';
 import { formatTimeHHMM, parseHHMMtoMinutes } from '@/lib/utils';
 import type { Task } from '@/types/task';
+import confetti from 'canvas-confetti';
 
 const TaskDetails = ({ 
   taskId, 
@@ -489,6 +490,16 @@ setIsSaving(true);
 
     setIsSaving(true);
     try {
+      if (!task.completed) {
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          zIndex: 999,
+          colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+        });
+      }
+
       await db
         .update(tasks)
         .set({ completed: !task.completed })
