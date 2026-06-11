@@ -153,32 +153,33 @@ const EMPTY_STATE_MESSAGES: Record<string, { title: string; desc: string }> = {
 export function EmptyTaskList({ onAddTask, activeView }: { onAddTask: () => void; activeView?: string }) {
   const msg = (EMPTY_STATE_MESSAGES[activeView || 'all'] || EMPTY_STATE_MESSAGES.all) as { title: string; desc: string };
   return (
-    <div className="text-center py-16 px-4">
-      <div className="flex h-48 w-48 mx-auto items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-secondary/10">
-        <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-          <div className="relative flex h-48 w-48 items-center justify-center">
-            {activeView === 'today' ? (
-              <svg className="h-20 w-20 text-primary/50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 11l3 3L22 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            ) : (
-              <svg className="h-20 w-20 text-primary/50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V7h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z" fill="currentColor"/>
-              </svg>
-            )}
-          </div>
+    <div className="flex flex-col items-center justify-center py-20 px-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="relative w-48 h-48 mb-8">
+        <div className="absolute inset-0 bg-primary/5 dark:bg-primary/10 rounded-full animate-pulse" />
+        <div className="absolute inset-4 bg-primary/10 dark:bg-primary/20 rounded-full animate-pulse delay-75" />
+        <div className="relative flex items-center justify-center h-full">
+          {activeView === 'today' ? (
+            <Sparkles className="h-20 w-20 text-primary opacity-50" />
+          ) : activeView === 'all' ? (
+            <LayoutDashboard className="h-20 w-20 text-primary opacity-50" />
+          ) : (
+            <Calendar className="h-20 w-20 text-primary opacity-50" />
+          )}
         </div>
       </div>
-      <p className="mt-6 text-xl font-semibold text-foreground">{msg.title}</p>
-      <p className="mt-2 text-sm text-muted-foreground/60">{msg.desc}</p>
-      <div className="mt-6 flex items-center justify-center gap-2">
-        <Button variant="outline" size="sm" onClick={onAddTask}>
-          <Calendar className="h-4 w-4 mr-2" />
-          Add Task
-        </Button>
-      </div>
+      <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mb-2">
+        {msg.title}
+      </h2>
+      <p className="text-slate-500 dark:text-slate-400 max-w-sm mb-8 leading-relaxed">
+        {msg.desc}
+      </p>
+      <Button 
+        onClick={onAddTask}
+        className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Create your first task
+      </Button>
     </div>
   );
 }
