@@ -246,6 +246,37 @@ class Cache {
       return fetchFn();
     });
   }
+
+  createCachedFetchWithRetry<T>(
+    fetchFn: () => Promise<T>,
+    key: string,
+    ttlSeconds?: number,
+    maxRetries: number = 3
+  ): Promise<T> {
+    const cached = this.get<T>(key);
+    if (cached !== null) {
+      return Promise.resolve(cached);
+    }
+
+    const tryFetch = (attempt: number): Promise<T> => {
+      return fetchFn()
+        .then(data => {
+          this.set(key, data, ttlSeconds);
+          return data;
+        })
+        .catch(error => {
+          if (attempt < maxRetries) {
+            return new Promise(resolve => {
+              setTimeout(() => resolve(tryFetch(attempt + 1)), 100 * Math.pow(2, attempt));
+            });
+          }
+          console.warn(`Cache fetch failed for key "${key}" after ${maxRetries} retries:`, error);
+          return fetchFn();
+        });
+    };
+
+    return tryFetch(0);
+  }
 }
 
 export const apiCache = new Cache({ defaultTTL: 30, maxSize: 100 });
