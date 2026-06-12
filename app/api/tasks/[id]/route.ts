@@ -3,6 +3,16 @@ import { db } from '@/app/lib/db/index';
 import { tasks, lists, labels, taskLabels, subtasks, taskChanges } from '@/app/lib/db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
+import {
+  validateEnum,
+  validatePositiveNumber,
+  validateBoolean,
+  validateDate,
+  sendError,
+} from '@/lib/validation';
+
+const PRIORITY_VALUES = ['high', 'medium', 'low', 'none'] as const;
+const RECURRENCE_VALUES = ['none', 'daily', 'weekly', 'weekday', 'monthly', 'yearly', 'custom'] as const;
 
 export async function GET(
   request: Request,
@@ -42,10 +52,9 @@ export async function GET(
 
     const taskData = taskResult[0];
     if (!taskData) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      return sendError('Task not found', 404);
     }
 
-    // Fetch labels
     const labelsResult = await db
       .select({
         id: labels.id,
@@ -57,7 +66,6 @@ export async function GET(
       .innerJoin(labels, eq(taskLabels.labelId, labels.id))
       .where(eq(taskLabels.taskId, id));
 
-    // Fetch subtasks
     const subtasksResult = await db
       .select()
       .from(subtasks)
@@ -83,7 +91,7 @@ export async function GET(
     return NextResponse.json(task);
   } catch (error) {
     console.error('Failed to fetch task:', error);
-    return NextResponse.json({ error: 'Failed to fetch task' }, { status: 500 });
+    return sendError('Failed to fetch task', 500);
   }
 }
 
@@ -95,53 +103,41 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    // Validate priority
-    if (body.priority !== undefined && body.priority !== null && !['high', 'medium', 'low', 'none'].includes(body.priority)) {
-      return NextResponse.json({ error: 'Invalid priority value' }, { status: 400 });
-    }
+    const priorityError = validateEnum(body.priority, 'priority', [...PRIORITY_VALUES]);
+    if (priorityError) return sendError(priorityError, 400);
 
-    // Validate recurrence
-    if (body.recurrence !== undefined && body.recurrence !== null && !['none', 'daily', 'weekly', 'weekday', 'monthly', 'yearly', 'custom'].includes(body.recurrence)) {
-      return NextResponse.json({ error: 'Invalid recurrence value' }, { status: 400 });
-    }
+    const recurrenceError = validateEnum(body.recurrence, 'recurrence', [...RECURRENCE_VALUES]);
+    if (recurrenceError) return sendError(recurrenceError, 400);
 
-    // Validate numeric fields
-    if (body.estimate !== undefined && body.estimate !== null && (typeof body.estimate !== 'number' || body.estimate < 0)) {
-      return NextResponse.json({ error: 'Estimate must be a positive number' }, { status: 400 });
-    }
-    if (body.actualTime !== undefined && body.actualTime !== null && (typeof body.actualTime !== 'number' || body.actualTime < 0)) {
-      return NextResponse.json({ error: 'Actual time must be a positive number' }, { status: 400 });
-    }
+    const estimateError = validatePositiveNumber(body.estimate, 'Estimate');
+    if (estimateError) return sendError(estimateError, 400);
 
-    // Validate listId if provided
-    if (body.listId !== undefined && (typeof body.listId !== 'string' || body.listId.trim() === '')) {
-      return NextResponse.json({ error: 'List ID must be a non-empty string' }, { status: 400 });
-    }
+    const actualTimeError = validatePositiveNumber(body.actualTime, 'Actual time');
+    if (actualTimeError) return sendError(actualTimeError, 400);
 
-    // Validate completed is boolean
-    if (body.completed !== undefined && typeof body.completed !== 'boolean') {
-      return NextResponse.json({ error: 'Completed must be a boolean' }, { status: 400 });
-    }
+    const listIdError = body.listId !== undefined && (typeof body.listId !== 'string' || body.listId.trim() === '');
+    if (listIdError) return sendError('List ID must be a non-empty string', 400);
+
+    const completedError = validateBoolean(body.completed, 'Completed');
+    if (completedError) return sendError(completedError, 400);
 
     const updateData: any = { ...body, updatedAt: Date.now() };
 
-    // Convert date strings to ISO format for consistency
     if (body.date !== undefined && body.date !== null) {
       const parsed = new Date(body.date);
       if (isNaN(parsed.getTime())) {
-        return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
+        return sendError('Invalid date format', 400);
       }
       updateData.date = parsed.toISOString();
     }
     if (body.deadline !== undefined && body.deadline !== null) {
       const parsed = new Date(body.deadline);
       if (isNaN(parsed.getTime())) {
-        return NextResponse.json({ error: 'Invalid deadline format' }, { status: 400 });
+        return sendError('Invalid deadline format', 400);
       }
       updateData.deadline = parsed.toISOString();
     }
 
-    // Log changes before updating
     const oldTask = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
     if (oldTask.length > 0) {
       const fieldsToLog: (keyof typeof tasks.$inferSelect)[] = ['name', 'description', 'priority', 'completed', 'date', 'deadline', 'listId', 'recurrence', 'estimate', 'actualTime'];
@@ -165,13 +161,12 @@ export async function PATCH(
       .returning();
 
     if (!updatedTask) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      return sendError('Task not found', 404);
     }
 
     if (body.labelIds !== undefined) {
       await db.delete(taskLabels).where(eq(taskLabels.taskId, id));
       if (Array.isArray(body.labelIds) && body.labelIds.length > 0) {
-        const { createId } = await import('@paralleldrive/cuid2');
         await db.insert(taskLabels).values(
           body.labelIds.map((labelId: string) => ({
             id: createId(),
@@ -185,7 +180,7 @@ export async function PATCH(
     return NextResponse.json(updatedTask);
   } catch (error) {
     console.error('Failed to update task:', error);
-    return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
+    return sendError('Failed to update task', 500);
   }
 }
 
@@ -200,6 +195,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to delete task:', error);
-    return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 });
+    return sendError('Failed to delete task', 500);
   }
 }
