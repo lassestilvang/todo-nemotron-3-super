@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Keyboard, X, Search, Copy, Command } from 'lucide-react';
+import { Keyboard, X, Search, Copy, Command as CommandIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -48,7 +48,7 @@ function KeyBadge({ keys }: { keys: string }) {
             key={i}
             className="px-2 py-1 text-xs font-mono bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded border border-gray-300 dark:border-gray-600 shadow-sm min-w-[24px] text-center"
           >
-            {key === 'Ctrl' && <Command className="h-3 w-3" />}
+            {key === 'Ctrl' && <CommandIcon className="h-3 w-3" />}
             {key === '?' && '?'}
             {key === 'Escape' && 'Esc'}
             {key === 'Tab' && 'Tab'}

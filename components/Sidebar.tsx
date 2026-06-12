@@ -252,13 +252,13 @@ export default function Sidebar() {
                  </span>
                </div>
                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                 <div 
+                 <div
                    className="h-full bg-primary transition-all duration-500 ease-out"
                    style={{ width: `${taskCounts.total > 0 ? (taskCounts.completed / taskCounts.total) * 100 : 0}%` }}
                  />
                </div>
              </div>
-             
+
              <div className="grid grid-cols-2 gap-2 px-2">
                <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                  <div className="text-[10px] text-slate-500 uppercase mb-1">Done</div>
