@@ -215,7 +215,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ id, name, color, emoji }),
       });
       if (!res.ok) throw new Error('Failed to add list');
-      apiCache.delete('app_lists');
+      apiCache.invalidateLists();
       await fetchLists();
     } catch (error) {
       console.error('Failed to add list:', error);
@@ -232,7 +232,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ id, name, color, emoji }),
       });
       if (!res.ok) throw new Error('Failed to add label');
-      apiCache.delete('app_labels');
+      apiCache.invalidateLabels();
       await fetchLabels();
     } catch (error) {
       console.error('Failed to add label:', error);

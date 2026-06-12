@@ -277,6 +277,24 @@ class Cache {
 
     return tryFetch(0);
   }
+
+  invalidateTasks(): void {
+    this.deleteMatching('tasks_');
+  }
+
+  invalidateLists(): void {
+    this.delete('app_lists');
+  }
+
+  invalidateLabels(): void {
+    this.delete('app_labels');
+  }
+
+  invalidateAllAppData(): void {
+    this.invalidateTasks();
+    this.invalidateLists();
+    this.invalidateLabels();
+  }
 }
 
 export const apiCache = new Cache({ defaultTTL: 30, maxSize: 100 });

@@ -4,6 +4,7 @@ import { useCallback, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import type { Task } from '@/types/task';
 import confetti from 'canvas-confetti';
+import { apiCache } from '@/lib/cache';
 
 const CONFETTI_OPTIONS = {
   particleCount: 150,
@@ -54,6 +55,7 @@ export function useTaskOperations({
       if (!res.ok) {
         throw new Error(`Failed to toggle task: ${res.status}`);
       }
+      apiCache.invalidateTasks();
       toast.success(`Task marked as ${completed ? 'complete' : 'incomplete'}`);
     } catch (error) {
       setTasksList(previousTasks);
@@ -109,6 +111,7 @@ export function useTaskOperations({
       });
       if (!res.ok) throw new Error('Failed to bulk update');
 
+      apiCache.invalidateTasks();
       if (completed) {
         confetti({ ...CONFETTI_OPTIONS, particleCount: 200, spread: 100 });
       }
@@ -140,6 +143,7 @@ export function useTaskOperations({
       });
       if (!res.ok) throw new Error('Failed to bulk delete');
 
+      apiCache.invalidateTasks();
       toast(`${taskIds.length} task${taskIds.length > 1 ? 's' : ''} deleted`, {
         action: {
           label: 'Undo',
@@ -159,6 +163,7 @@ export function useTaskOperations({
                 });
               }
               await fetchTasks();
+              apiCache.invalidateTasks();
               toast.success('Delete undone');
             } catch {
               toast.error('Failed to undo delete');
@@ -182,6 +187,7 @@ export function useTaskOperations({
         body: JSON.stringify({ taskIds }),
       });
       if (!res.ok) throw new Error('Failed to reorder');
+      apiCache.invalidateTasks();
       await fetchTasks();
     } catch (error) {
       console.error('Failed to reorder tasks:', error);
