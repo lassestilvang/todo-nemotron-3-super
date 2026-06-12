@@ -16,20 +16,7 @@ import { Button } from '@/components/ui/button';
 import { RECURRENCE_OPTIONS } from '@/lib/constants';
 import { HelpCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface List {
-  id: string;
-  name: string;
-  color: string;
-  emoji: string;
-}
-
-interface Label {
-  id: string;
-  name: string;
-  color: string;
-  emoji: string;
-}
+import { useApp } from '@/lib/app-context';
 
 interface TaskFormProps {
   isOpen: boolean;
@@ -86,11 +73,13 @@ export default function TaskForm({
   triggerContent,
 }: TaskFormProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
-  
+  const { lists: listsList, labels: labelsList, listsLoading, labelsLoading } = useApp();
+
+  const defaultListId = listsList[0]?.id || '';
   const [formData, setFormData] = useState<FormState>(() => ({
     name: initialData?.name ?? '',
     description: initialData?.description ?? '',
-    listId: initialData?.listId ?? '',
+    listId: initialData?.listId ?? defaultListId,
     date: initialData?.date ?? null,
     deadline: initialData?.deadline ?? null,
     priority: initialData?.priority ?? 'none',
@@ -111,7 +100,7 @@ export default function TaskForm({
       setFormData({
         name: initialData.name ?? '',
         description: initialData.description ?? '',
-        listId: initialData.listId ?? '',
+        listId: initialData.listId ?? defaultListId,
         date: initialData.date ?? null,
         deadline: initialData.deadline ?? null,
         priority: initialData.priority ?? 'none',
@@ -121,64 +110,9 @@ export default function TaskForm({
         actualTime: initialData.actualTime ?? '',
       });
     }
-  }, [initialData]);
-  
-  const [listsList, setListsList] = useState<Array<{id: string; name: string; color: string; emoji: string}>>([]);
-  const [labelsList, setLabelsList] = useState<Array<{id: string; name: string; color: string; emoji: string}>>([]);
+  }, [initialData, defaultListId]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [listsLoading, setListsLoading] = useState(false);
-  const [labelsLoading, setLabelsLoading] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchInitialData();
-    }
-  }, [isOpen]);
-
-  const fetchInitialData = async () => {
-    setListsLoading(true);
-    setLabelsLoading(true);
-
-    // Fetch lists
-    try {
-      const listsRes = await fetch('/api/lists');
-      if (listsRes.ok) {
-        const listsData = await listsRes.json();
-        const listItems = listsData.map((list: any) => ({
-          id: list.id,
-          name: list.name,
-          color: list.color,
-          emoji: list.emoji,
-        }));
-        setListsList(listItems);
-      }
-    } catch (error) {
-      console.error('Failed to fetch lists:', error);
-      toast.error('Failed to load lists');
-    } finally {
-      setListsLoading(false);
-    }
-
-    // Fetch labels
-    try {
-      const labelsRes = await fetch('/api/labels');
-      if (labelsRes.ok) {
-        const labelsData = await labelsRes.json();
-        const labelItems = labelsData.map((label: any) => ({
-          id: label.id,
-          name: label.name,
-          color: label.color,
-          emoji: label.emoji,
-        }));
-        setLabelsList(labelItems);
-      }
-    } catch (error) {
-      console.error('Failed to fetch labels:', error);
-      toast.error('Failed to load labels');
-    } finally {
-      setLabelsLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
