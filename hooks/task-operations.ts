@@ -51,7 +51,9 @@ export function useTaskOperations({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ completed }),
       });
-      if (!res.ok) throw new Error('Failed to toggle task');
+      if (!res.ok) {
+        throw new Error(`Failed to toggle task: ${res.status}`);
+      }
       toast.success(`Task marked as ${completed ? 'complete' : 'incomplete'}`);
     } catch (error) {
       setTasksList(previousTasks);

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { apiCache } from '@/lib/cache';
 import { createId } from '@paralleldrive/cuid2';
+import { toast } from 'sonner';
 
 type ViewType = 'today' | 'next7' | 'upcoming' | 'all';
 
@@ -109,11 +110,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const cached = apiCache.get<List[]>(cacheKey);
       if (cached) {
         setLists(cached);
-        setListsLoading(false);
         return;
       }
       const res = await fetch('/api/lists');
-      if (!res.ok) throw new Error('Failed to fetch lists');
+      if (!res.ok) throw new Error(`Failed to fetch lists: ${res.status}`);
       const result = await res.json();
       const formatted = (result as any[]).map((list: any) => ({
         id: list.id,
@@ -125,6 +125,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       apiCache.set(cacheKey, formatted, 300);
     } catch (error) {
       console.error('Failed to fetch lists:', error);
+      toast.error('Failed to load lists');
     } finally {
       setListsLoading(false);
     }
@@ -137,11 +138,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const cached = apiCache.get<Label[]>(cacheKey);
       if (cached) {
         setLabels(cached);
-        setLabelsLoading(false);
         return;
       }
       const res = await fetch('/api/labels');
-      if (!res.ok) throw new Error('Failed to fetch labels');
+      if (!res.ok) throw new Error(`Failed to fetch labels: ${res.status}`);
       const result = await res.json();
       const formatted = (result as any[]).map((label: any) => ({
         id: label.id,
@@ -153,6 +153,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       apiCache.set(cacheKey, formatted, 300);
     } catch (error) {
       console.error('Failed to fetch labels:', error);
+      toast.error('Failed to load labels');
     } finally {
       setLabelsLoading(false);
     }
