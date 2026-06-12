@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   ChevronUp,
   ChevronDown,
+  Clock,
 } from 'lucide-react';
 import { Command } from 'cmdk';
 import { useApp } from '@/lib/app-context';
@@ -95,10 +96,23 @@ export function CommandPalette() {
                 <span>{focusMode ? 'Exit Focus Mode' : 'Enter Focus Mode'}</span>
                 <CommandShortcut>⌘F</CommandShortcut>
               </CommandItem>
-              <CommandItem onSelect={() => runCommand(() => { /* Add Task Modal */ })}>
+              <CommandItem onSelect={() => runCommand(() => {
+                const taskName = prompt('Enter task name:');
+                if (taskName) {
+                  fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: taskName, listId: lists[0]?.id }),
+                  });
+                }
+              })}>
                 <Plus className="h-4 w-4 mr-3" />
                 <span>Create New Task</span>
                 <CommandShortcut>⌘N</CommandShortcut>
+              </CommandItem>
+              <CommandItem onSelect={() => runCommand(() => setOpen(false))}>
+                <Clock className="h-4 w-4 mr-3" />
+                <span>Close Command Palette</span>
               </CommandItem>
             </Command.Group>
 
