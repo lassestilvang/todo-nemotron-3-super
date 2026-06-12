@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -399,7 +399,7 @@ export function SortableTaskList({
                             layout: { type: 'spring', stiffness: 400, damping: 30 }
                           }}
                         >
-                          <SortableTaskItem
+                          <MemoizedSortableTaskItem
                             task={task}
                             index={globalIndex}
                             tasksLength={tasks.length}
@@ -438,13 +438,13 @@ export function SortableTaskList({
   );
 }
 
-function SearchHighlight({ text, query }: { text: string; query: string }) {
+const SearchHighlight = memo(({ text, query }: { text: string; query: string }) => {
   if (!query.trim()) return <>{text}</>;
-  
+
   const parts = text.split(new RegExp(`(${query})`, 'gi'));
   return (
     <>
-      {parts.map((part, i) => 
+      {parts.map((part, i) =>
         part.toLowerCase() === query.toLowerCase() ? (
           <mark key={i} className="bg-primary/20 text-primary dark:text-primary rounded-sm px-0.5 font-bold">
             {part}
@@ -455,7 +455,8 @@ function SearchHighlight({ text, query }: { text: string; query: string }) {
       )}
     </>
   );
-}
+});
+SearchHighlight.displayName = 'SearchHighlight';
 
 interface SortableTaskItemProps {
   task: Task;
@@ -613,6 +614,9 @@ function SortableTaskItem({
     </div>
   );
 }
+
+const MemoizedSortableTaskItem = memo(SortableTaskItem);
+MemoizedSortableTaskItem.displayName = 'SortableTaskItem';
 
 export function TaskSkeleton() {
   return (

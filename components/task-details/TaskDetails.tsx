@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -652,3 +652,5 @@ export default function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetai
     </Dialog>
   );
 }
+
+export default memo(TaskDetails);
