@@ -26,7 +26,7 @@ import {
   Pause,
   X,
 } from 'lucide-react';
-import { formatTimeHHMM, parseHHMMtoMinutes, isTaskOverdue, isTaskDueToday } from '@/lib/utils';
+import { formatTimeHHMM, parseHHMMtoMinutes } from '@/lib/utils';
 import type { Task } from '@/types/task';
 import confetti from 'canvas-confetti';
 
@@ -427,9 +427,9 @@ export default function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetai
               )}
               {task.deadline && (
                 <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${
-                  isTaskOverdue(task.deadline, task.completed)
+                  new Date(task.deadline) < new Date() && !task.completed
                     ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800'
-                    : isTaskDueToday(task.deadline)
+                    : new Date(task.deadline).toDateString() === new Date().toDateString()
                       ? 'bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-900/20 dark:border-blue-800'
                       : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                 }`}>

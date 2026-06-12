@@ -238,21 +238,21 @@ export function getPriorityValue(priority: Priority): number {
   }
 }
 
-export function isTaskCompleted(task: Task): boolean {
-  return task.completed === true;
+export function isTaskCompleted(completed: boolean | null | undefined): boolean {
+  return completed === true;
 }
 
-export function isTaskOverdue(task: Task): boolean {
-  if (!task.deadline || task.completed) return false;
-  return new Date(task.deadline) < new Date();
+export function isTaskOverdue(deadline: Date | null | undefined, completed: boolean): boolean {
+  if (!deadline || completed) return false;
+  return new Date(deadline) < new Date();
 }
 
-export function isTaskDueToday(task: Task): boolean {
-  if (!task.deadline) return false;
+export function isTaskDueToday(deadline: Date | null | undefined): boolean {
+  if (!deadline) return false;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const deadline = new Date(task.deadline);
-  return deadline >= today && deadline < tomorrow;
+  const d = new Date(deadline);
+  return d >= today && d < tomorrow;
 }

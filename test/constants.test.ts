@@ -14,7 +14,6 @@ import {
   getPriorityValue,
   isTaskDueToday,
 } from '@/lib/utils';
-import type { Task } from '@/types/task';
 
 describe('RECURRENCE_OPTIONS', () => {
   it('contains all recurrence types', () => {
@@ -128,12 +127,10 @@ describe('getPriorityValue', () => {
 describe('isTaskDueToday', () => {
   it('returns true for tasks due today', () => {
     const today = new Date();
-    const task: Partial<Task> = { deadline: today };
-    expect(isTaskDueToday(task as Task)).toBe(true);
+    expect(isTaskDueToday(today)).toBe(true);
   });
 
   it('returns false for tasks without deadline', () => {
-    const task: Partial<Task> = {};
-    expect(isTaskDueToday(task as Task)).toBe(false);
+    expect(isTaskDueToday(null)).toBe(false);
   });
 });
