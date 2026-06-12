@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { RECURRENCE_OPTIONS } from '@/lib/constants';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface List {
@@ -182,6 +182,10 @@ export default function TaskForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name.trim()) {
+      toast.error('Task name is required');
+      return;
+    }
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
@@ -190,6 +194,16 @@ export default function TaskForm({
       console.error('Failed to submit form:', error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && e.ctrlKey) {
+      e.preventDefault();
+      const form = (e.target as HTMLFormElement).closest('form');
+      if (form) {
+        form.requestSubmit();
+      }
     }
   };
 
@@ -207,7 +221,7 @@ export default function TaskForm({
             <HelpCircle className="h-4 w-4 text-muted-foreground" />
           </DialogTitle>
         </DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit} onKeyDown={handleKeyDown>
           <div>
             <Label htmlFor="task-name">Task Name</Label>
             <Input
@@ -391,14 +405,20 @@ export default function TaskForm({
             <Button
               variant="ghost"
               onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !formData.name.trim()}
             >
-              {isSubmitting ? 'Processing...' : submitLabel}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : submitLabel}
             </Button>
           </DialogFooter>
         </form>

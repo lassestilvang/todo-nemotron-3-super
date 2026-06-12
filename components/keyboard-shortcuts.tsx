@@ -25,7 +25,6 @@ const shortcuts: Shortcut[] = [
   { keys: 'Ctrl + Shift + K', description: 'Add new label', category: 'tasks' },
   { keys: 'Ctrl + C', description: 'Toggle task completion', category: 'tasks' },
   { keys: 'Ctrl + Enter', description: 'Save task (in forms)', category: 'forms' },
-  { keys: 'Ctrl + Shift + C', description: 'Copy markdown export', category: 'forms' },
   { keys: 'Ctrl + Shift + E', description: 'Export backup', category: 'forms' },
   { keys: 'Ctrl + Shift + I', description: 'Import backup', category: 'forms' },
   { keys: 'T', description: 'Start/stop timer (in task details)', category: 'tasks' },
