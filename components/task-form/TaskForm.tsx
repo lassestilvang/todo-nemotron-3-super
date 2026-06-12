@@ -1,23 +1,35 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { 
-   Dialog, 
-   DialogContent, 
-   DialogFooter, 
-   DialogHeader, 
-   DialogTitle, 
-   DialogTrigger 
+import {
+   Dialog,
+   DialogContent,
+   DialogFooter,
+   DialogHeader,
+   DialogTitle,
+   DialogTrigger
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { db } from '@/app/lib/db/index';
-import { lists, labels, type List, type Label as LabelType } from '@/app/lib/db/schema';
 import { RECURRENCE_OPTIONS } from '@/lib/constants';
-import { apiCache } from '@/lib/cache';
 import { HelpCircle } from 'lucide-react';
+import { toast } from 'sonner';
+
+interface List {
+  id: string;
+  name: string;
+  color: string;
+  emoji: string;
+}
+
+interface Label {
+  id: string;
+  name: string;
+  color: string;
+  emoji: string;
+}
 
 interface TaskFormProps {
   isOpen: boolean;
@@ -114,45 +126,57 @@ export default function TaskForm({
   const [listsList, setListsList] = useState<Array<{id: string; name: string; color: string; emoji: string}>>([]);
   const [labelsList, setLabelsList] = useState<Array<{id: string; name: string; color: string; emoji: string}>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [listsLoading, setListsLoading] = useState(false);
+  const [labelsLoading, setLabelsLoading] = useState(false);
 
   useEffect(() => {
-    // Fetch lists and labels when form opens
     if (isOpen) {
       fetchInitialData();
     }
   }, [isOpen]);
 
   const fetchInitialData = async () => {
-    const cacheKey = 'form_lists_labels';
-    const cached = apiCache.get<{ lists: Array<{id: string; name: string; color: string; emoji: string}>; labels: Array<{id: string; name: string; color: string; emoji: string}> }>(cacheKey);
-    if (cached) {
-      setListsList(cached.lists);
-      setLabelsList(cached.labels);
-      return;
-    }
+    setListsLoading(true);
+    setLabelsLoading(true);
+
+    // Fetch lists
     try {
-      const listsResult: List[] = await db.select().from(lists) as unknown as List[];
-      const labelsResult: LabelType[] = await db.select().from(labels) as unknown as LabelType[];
-      
-      const listItems = listsResult.map((list: List) => ({
-        id: list.id,
-        name: list.name,
-        color: list.color,
-        emoji: list.emoji,
-      }));
-      
-      const labelItems = labelsResult.map((label: LabelType) => ({
-        id: label.id,
-        name: label.name,
-        color: label.color,
-        emoji: label.emoji,
-      }));
-      
-      setListsList(listItems);
-      setLabelsList(labelItems);
-      apiCache.set(cacheKey, { lists: listItems, labels: labelItems }, 300); // 5 minutes
+      const listsRes = await fetch('/api/lists');
+      if (listsRes.ok) {
+        const listsData = await listsRes.json();
+        const listItems = listsData.map((list: any) => ({
+          id: list.id,
+          name: list.name,
+          color: list.color,
+          emoji: list.emoji,
+        }));
+        setListsList(listItems);
+      }
     } catch (error) {
-      console.error('Failed to fetch initial data:', error);
+      console.error('Failed to fetch lists:', error);
+      toast.error('Failed to load lists');
+    } finally {
+      setListsLoading(false);
+    }
+
+    // Fetch labels
+    try {
+      const labelsRes = await fetch('/api/labels');
+      if (labelsRes.ok) {
+        const labelsData = await labelsRes.json();
+        const labelItems = labelsData.map((label: any) => ({
+          id: label.id,
+          name: label.name,
+          color: label.color,
+          emoji: label.emoji,
+        }));
+        setLabelsList(labelItems);
+      }
+    } catch (error) {
+      console.error('Failed to fetch labels:', error);
+      toast.error('Failed to load labels');
+    } finally {
+      setLabelsLoading(false);
     }
   };
 
