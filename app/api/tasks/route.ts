@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/app/lib/db/index';
 import { tasks, lists, labels, taskLabels, subtasks } from '@/app/lib/db/schema';
 import { eq, desc, asc, and, isNotNull, sql, inArray } from 'drizzle-orm';
+import { labels } from '@/app/lib/db/schema';
 import type { SortOption } from '@/types/task';
 
 function parseHHMMtoMinutes(timeStr: string): number {
@@ -247,16 +248,22 @@ export async function POST(request: Request) {
     let estimateMinutes: number | null = null;
     let actualMinutes: number | null = null;
 
-    if (estimate !== undefined && estimate !== null) {
+    if (estimate !== undefined && estimate !== null && estimate !== '') {
+      if (typeof estimate !== 'string' || !/^\d{1,4}:\d{2}$/.test(estimate)) {
+        return NextResponse.json({ error: 'Estimate time must be in HH:MM format' }, { status: 400 });
+      }
       estimateMinutes = parseHHMMtoMinutes(estimate);
-      if (isNaN(estimateMinutes) || estimateMinutes < 0) {
-        return NextResponse.json({ error: 'Invalid estimate time format' }, { status: 400 });
+      if (isNaN(estimateMinutes) || estimateMinutes < 0 || estimateMinutes > 1439) {
+        return NextResponse.json({ error: 'Estimate time must be between 00:00 and 23:59' }, { status: 400 });
       }
     }
-    if (actualTime !== undefined && actualTime !== null) {
+    if (actualTime !== undefined && actualTime !== null && actualTime !== '') {
+      if (typeof actualTime !== 'string' || !/^\d{1,4}:\d{2}$/.test(actualTime)) {
+        return NextResponse.json({ error: 'Actual time must be in HH:MM format' }, { status: 400 });
+      }
       actualMinutes = parseHHMMtoMinutes(actualTime);
-      if (isNaN(actualMinutes) || actualMinutes < 0) {
-        return NextResponse.json({ error: 'Invalid actual time format' }, { status: 400 });
+      if (isNaN(actualMinutes) || actualMinutes < 0 || actualMinutes > 1439) {
+        return NextResponse.json({ error: 'Actual time must be between 00:00 and 23:59' }, { status: 400 });
       }
     }
 
@@ -290,6 +297,17 @@ export async function POST(request: Request) {
     }).returning();
 
     if (labelIds && Array.isArray(labelIds) && labelIds.length > 0) {
+      // Verify labels exist before associating
+      const existingLabels = await db
+        .select({ id: labels.id })
+        .from(labels)
+        .where(inArray(labels.id, labelIds))
+        .execute();
+
+      if (existingLabels.length !== labelIds.length) {
+        return NextResponse.json({ error: 'One or more labels not found' }, { status: 400 });
+      }
+
       await db.insert(taskLabels).values(
         labelIds.map((labelId: string) => ({
           id: crypto.randomUUID(),

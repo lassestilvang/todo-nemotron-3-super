@@ -185,3 +185,34 @@ export function generateColorFromId(id: string): string {
   const index = id.charCodeAt(0) % colors.length;
   return colors[index]!;
 }
+export function generateEmojiFromId(id: string): string {
+  const emojis = ['📥', '📋', '📝', '✅', '📌', '🏷️', '💼', '🏠', '🎯', '📚', '🛒', '💡', '⚡', '🎨', '🎮', '🎵', '🔔', '⭐', '🔒', '🔑'];
+  const index = id.charCodeAt(0) % emojis.length;
+  return emojis[index]!;
+}
+
+export function debounce<T extends (...args: any[]) => any>(fn: T, delay: number): T {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return ((...args: Parameters<T>) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  }) as T;
+}
+
+export function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+export function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+export function capitalizeFirst(str: string): string {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
