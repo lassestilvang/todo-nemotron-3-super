@@ -201,6 +201,7 @@ class Cache {
     return {
       ...stats,
       memoryUsage: JSON.stringify([...this.cache.entries()]).length,
+      hitRate: 0,
     };
   }
 

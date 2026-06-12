@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { db } from '@/app/lib/db/index';
 import { tasks, lists, labels, taskLabels, subtasks } from '@/app/lib/db/schema';
 import { eq, desc, asc, and, isNotNull, sql, inArray } from 'drizzle-orm';
-import { labels } from '@/app/lib/db/schema';
 import type { SortOption } from '@/types/task';
 
 function parseHHMMtoMinutes(timeStr: string): number {
