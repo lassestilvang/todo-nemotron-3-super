@@ -2,20 +2,56 @@ interface CacheItem<T> {
   data: T;
   timestamp: number;
   expiresAt: number;
+  lastAccessed: number;
+}
+
+interface CacheOptions {
+  defaultTTL?: number;
+  maxSize?: number;
+  persist?: boolean;
 }
 
 class Cache {
-  private cache: Map<string, CacheItem<any>> = new Map();
+  private cache: Map<string, CacheItem<any>>;
   private defaultTTL: number;
+  private maxSize: number;
+  private persist: boolean;
   private isClient: boolean;
 
-  constructor(defaultTTLSeconds: number = 30) {
-    this.defaultTTL = defaultTTLSeconds * 1000;
+  constructor(options: CacheOptions | number = {}) {
+    if (typeof options === 'number') {
+      this.defaultTTL = options * 1000;
+      this.maxSize = 100;
+      this.persist = false;
+    } else {
+      this.defaultTTL = (options.defaultTTL || 30) * 1000;
+      this.maxSize = options.maxSize || 100;
+      this.persist = options.persist || false;
+    }
+    this.cache = new Map();
     this.isClient = typeof window !== 'undefined';
   }
 
   private generateKey(key: string): string {
     return `cache_${key}`;
+  }
+
+  private evictIfNeeded(): void {
+    if (this.cache.size < this.maxSize) return;
+
+    let oldestKey = '';
+    let oldestTime = Date.now();
+
+    for (const [key, item] of this.cache.entries()) {
+      if (item.lastAccessed < oldestTime) {
+        oldestTime = item.lastAccessed;
+        oldestKey = key;
+      }
+    }
+
+    if (oldestKey) {
+      this.cache.delete(oldestKey);
+    }
   }
 
   get<T>(key: string): T | null {
@@ -30,25 +66,54 @@ class Cache {
       return null;
     }
 
+    item.lastAccessed = now;
     return item.data as T;
   }
 
   set(key: string, data: any, ttlSeconds?: number): void {
+    this.evictIfNeeded();
+
     const ttl = ttlSeconds ? ttlSeconds * 1000 : this.defaultTTL;
     const now = Date.now();
-    this.cache.set(key, {
+    const item: CacheItem<any> = {
       data,
       timestamp: now,
       expiresAt: now + ttl,
-    });
+      lastAccessed: now,
+    };
+
+    this.cache.set(key, item);
+
+    if (this.persist && this.isClient) {
+      try {
+        sessionStorage.setItem(`cache_persist_${key}`, JSON.stringify(item));
+      } catch {
+        // Storage disabled or full
+      }
+    }
   }
 
   delete(key: string): boolean {
-    return this.cache.delete(key);
+    const deleted = this.cache.delete(key);
+    if (this.persist && this.isClient) {
+      try {
+        sessionStorage.removeItem(`cache_persist_${key}`);
+      } catch {}
+    }
+    return deleted;
   }
 
   clear(): void {
     this.cache.clear();
+    if (this.persist && this.isClient) {
+      try {
+        Object.keys(sessionStorage).forEach(k => {
+          if (k.startsWith('cache_persist_')) {
+            sessionStorage.removeItem(k);
+          }
+        });
+      } catch {}
+    }
   }
 
   has(key: string): boolean {
@@ -74,11 +139,11 @@ class Cache {
     return count;
   }
 
-  getStats(): { size: number; keys: string[]; expired: number } {
+  getStats(): { size: number; keys: string[]; expired: number; maxSize: number } {
     const now = Date.now();
     let expired = 0;
     const validKeys: string[] = [];
-    
+
     for (const [key, item] of this.cache.entries()) {
       if (now > item.expiresAt) {
         expired++;
@@ -86,11 +151,12 @@ class Cache {
         validKeys.push(key);
       }
     }
-    
+
     return {
       size: this.cache.size,
       keys: validKeys,
       expired,
+      maxSize: this.maxSize,
     };
   }
 
@@ -114,5 +180,5 @@ class Cache {
   }
 }
 
-export const apiCache = new Cache(30);
+export const apiCache = new Cache({ defaultTTL: 30, maxSize: 100 });
 export default Cache;
