@@ -220,6 +220,7 @@ export function SortableTaskList({
 }: SortableTaskListProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const [announcement, setAnnouncement] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
 
   // Grouping logic
@@ -239,19 +240,37 @@ export function SortableTaskList({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setFocusedIndex(prev => Math.min(prev + 1, tasks.length - 1));
+        setFocusedIndex(prev => {
+          const next = Math.min(prev + 1, tasks.length - 1);
+          if (next < tasks.length && tasks[next]) {
+            setAnnouncement(`Task ${next + 1} of ${tasks.length}: ${tasks[next].name}`);
+          }
+          return next;
+        });
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setFocusedIndex(prev => Math.max(prev - 1, 0));
+        setFocusedIndex(prev => {
+          const next = Math.max(prev - 1, 0);
+          if (next >= 0 && tasks[next]) {
+            setAnnouncement(`Task ${next + 1} of ${tasks.length}: ${tasks[next].name}`);
+          }
+          return next;
+        });
         break;
       case 'Home':
         e.preventDefault();
         setFocusedIndex(0);
+        if (tasks[0]) {
+          setAnnouncement(`Task 1 of ${tasks.length}: ${tasks[0].name}`);
+        }
         break;
       case 'End':
         e.preventDefault();
         setFocusedIndex(tasks.length - 1);
+        if (tasks[tasks.length - 1]) {
+          setAnnouncement(`Task ${tasks.length} of ${tasks.length}: ${tasks[tasks.length - 1].name}`);
+        }
         break;
       case 'Enter':
       case ' ':
@@ -260,6 +279,7 @@ export function SortableTaskList({
           const task = tasks[focusedIndex];
           if (task) {
             onSelectTask(task.id);
+            setAnnouncement(`Selected: ${task.name}`);
           }
         }
         break;
@@ -269,11 +289,13 @@ export function SortableTaskList({
           const task = tasks[focusedIndex];
           if (task) {
             onToggleComplete(task.id, !task.completed);
+            setAnnouncement(`Marked ${task.name} as ${task.completed ? 'incomplete' : 'complete'}`);
           }
         }
         break;
       case 'Escape':
         setFocusedIndex(-1);
+        setAnnouncement('Selection cleared');
         break;
     }
   }, [tasks, onSelectTask, focusedIndex, onToggleComplete]);
@@ -337,6 +359,9 @@ export function SortableTaskList({
       onDragEnd={handleDragEnd}
     >
       <div className="space-y-8" ref={listRef} onKeyDown={handleKeyDown} tabIndex={0}>
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {announcement}
+        </div>
         {groupOrder.map(priority => {
           const groupTasks = priorityGroups[priority];
           if (!groupTasks || groupTasks.length === 0) return null;
