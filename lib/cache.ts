@@ -67,13 +67,7 @@ class Cache {
     }
 
     item.lastAccessed = now;
-    try {
-      return item.data as T;
-    } catch (error) {
-      console.warn(`Cache get error for key "${key}":`, error);
-      this.cache.delete(key);
-      return null;
-    }
+    return item.data as T;
   }
 
   set(key: string, data: any, ttlSeconds?: number): void {
@@ -109,6 +103,24 @@ class Cache {
       }
     }
     return count;
+  }
+
+  evictLeastRecentlyUsed(): void {
+    if (this.cache.size < this.maxSize) return;
+
+    let lruKey = '';
+    let lruTime = Infinity;
+
+    for (const [key, item] of this.cache.entries()) {
+      if (item.lastAccessed < lruTime) {
+        lruTime = item.lastAccessed;
+        lruKey = key;
+      }
+    }
+
+    if (lruKey) {
+      this.cache.delete(lruKey);
+    }
   }
 
   delete(key: string): boolean {
@@ -176,6 +188,17 @@ class Cache {
       expired,
       maxSize: this.maxSize,
     };
+  }
+
+  getOrFetch<T>(key: string, fetchFn: () => Promise<T>, ttlSeconds?: number): Promise<T> {
+    const cached = this.get<T>(key);
+    if (cached !== null) {
+      return Promise.resolve(cached);
+    }
+    return fetchFn().then(data => {
+      this.set(key, data, ttlSeconds);
+      return data;
+    });
   }
 
   createCachedFetch<T>(
