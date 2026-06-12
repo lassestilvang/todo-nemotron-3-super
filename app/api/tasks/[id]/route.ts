@@ -94,13 +94,55 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    if (body.priority && !['high', 'medium', 'low', 'none'].includes(body.priority)) {
+    // Validate priority
+    if (body.priority !== undefined && body.priority !== null && !['high', 'medium', 'low', 'none'].includes(body.priority)) {
       return NextResponse.json({ error: 'Invalid priority value' }, { status: 400 });
+    }
+
+    // Validate recurrence
+    if (body.recurrence !== undefined && body.recurrence !== null && !['none', 'daily', 'weekly', 'weekday', 'monthly', 'yearly', 'custom'].includes(body.recurrence)) {
+      return NextResponse.json({ error: 'Invalid recurrence value' }, { status: 400 });
+    }
+
+    // Validate numeric fields
+    if (body.estimate !== undefined && body.estimate !== null && (typeof body.estimate !== 'number' || body.estimate < 0)) {
+      return NextResponse.json({ error: 'Estimate must be a positive number' }, { status: 400 });
+    }
+    if (body.actualTime !== undefined && body.actualTime !== null && (typeof body.actualTime !== 'number' || body.actualTime < 0)) {
+      return NextResponse.json({ error: 'Actual time must be a positive number' }, { status: 400 });
+    }
+
+    // Validate listId if provided
+    if (body.listId !== undefined && (typeof body.listId !== 'string' || body.listId.trim() === '')) {
+      return NextResponse.json({ error: 'List ID must be a non-empty string' }, { status: 400 });
+    }
+
+    // Validate completed is boolean
+    if (body.completed !== undefined && typeof body.completed !== 'boolean') {
+      return NextResponse.json({ error: 'Completed must be a boolean' }, { status: 400 });
+    }
+
+    const updateData: any = { ...body, updatedAt: Date.now() };
+
+    // Convert date strings to timestamps
+    if (body.date !== undefined && typeof body.date === 'string') {
+      const parsed = new Date(body.date);
+      if (isNaN(parsed.getTime())) {
+        return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
+      }
+      updateData.date = parsed.getTime();
+    }
+    if (body.deadline !== undefined && typeof body.deadline === 'string') {
+      const parsed = new Date(body.deadline);
+      if (isNaN(parsed.getTime())) {
+        return NextResponse.json({ error: 'Invalid deadline format' }, { status: 400 });
+      }
+      updateData.deadline = parsed.getTime();
     }
 
     const [updatedTask] = await db
       .update(tasks)
-      .set({ ...body, updatedAt: Date.now() })
+      .set(updateData)
       .where(eq(tasks.id, id))
       .returning();
 
