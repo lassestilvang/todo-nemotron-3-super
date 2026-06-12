@@ -32,10 +32,18 @@ export async function POST(
     const body = await request.json();
     const { name } = body;
 
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return NextResponse.json({ error: 'Subtask name is required' }, { status: 400 });
+    }
+
+    if (name.length > 500) {
+      return NextResponse.json({ error: 'Subtask name must be 500 characters or less' }, { status: 400 });
+    }
+
     const newSubtask = await db.insert(subtasks).values({
       id: createId(),
       taskId: id,
-      name,
+      name: name.trim(),
       completed: false,
     }).returning();
 

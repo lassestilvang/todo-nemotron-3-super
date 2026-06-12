@@ -11,12 +11,36 @@ export async function PATCH(
     const { subtaskId } = await params;
     const body = await request.json();
 
-    await db
-      .update(subtasks)
-      .set({ ...body })
-      .where(eq(subtasks.id, subtaskId));
+    const updateData: any = {};
 
-    return NextResponse.json({ success: true });
+    if (body.name !== undefined) {
+      if (typeof body.name !== 'string' || body.name.trim() === '') {
+        return NextResponse.json({ error: 'Name must be a non-empty string' }, { status: 400 });
+      }
+      if (body.name.length > 500) {
+        return NextResponse.json({ error: 'Name must be 500 characters or less' }, { status: 400 });
+      }
+      updateData.name = body.name.trim();
+    }
+
+    if (body.completed !== undefined) {
+      if (typeof body.completed !== 'boolean') {
+        return NextResponse.json({ error: 'Completed must be a boolean' }, { status: 400 });
+      }
+      updateData.completed = body.completed;
+    }
+
+    const [updatedSubtask] = await db
+      .update(subtasks)
+      .set(updateData)
+      .where(eq(subtasks.id, subtaskId))
+      .returning();
+
+    if (!updatedSubtask) {
+      return NextResponse.json({ error: 'Subtask not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedSubtask);
   } catch (error) {
     console.error('Failed to update subtask:', error);
     return NextResponse.json({ error: 'Failed to update subtask' }, { status: 500 });
