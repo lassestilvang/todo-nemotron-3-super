@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Keyboard, X, Search, Copy } from 'lucide-react';
+import { Keyboard, X, Search, Copy, Command } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -28,7 +28,6 @@ const shortcuts: Shortcut[] = [
   { keys: 'Ctrl + Shift + C', description: 'Copy markdown export', category: 'forms' },
   { keys: 'Ctrl + Shift + E', description: 'Export backup', category: 'forms' },
   { keys: 'Ctrl + Shift + I', description: 'Import backup', category: 'forms' },
-  { keys: 'Ctrl + Shift + R', description: 'Reset to default lists/labels', category: 'tasks' },
   { keys: 'T', description: 'Start/stop timer (in task details)', category: 'tasks' },
   { keys: 'Tab', description: 'Navigate between elements', category: 'navigation' },
   { keys: 'Shift + Tab', description: 'Navigate backwards', category: 'navigation' },
@@ -44,12 +43,37 @@ const categoryLabels: Record<string, string> = {
   system: 'System',
 };
 
+function KeyBadge({ keys }: { keys: string }) {
+  const keyParts = keys.split(' + ');
+  return (
+    <div className="flex items-center gap-1">
+      {keyParts.map((key, i) => (
+        <kbd
+          key={i}
+          className="px-2 py-1 text-xs font-mono bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded border border-gray-300 dark:border-gray-600 shadow-sm min-w-[24px] text-center"
+        >
+          {key === 'Ctrl' && <Command className="h-3 w-3" />}
+          {key === '?' && '?'}
+          {key === 'Escape' && 'Esc'}
+          {key === 'Tab' && 'Tab'}
+          {key === 'Shift' && 'Shift'}
+          {key === 'Enter' && '⏎'}
+          {key === 'Space' && 'Sp'}
+          {key === '↑' && '↑'}
+          {key === '↓' && '↓'}
+          {!['Ctrl', '?', 'Escape', 'Tab', 'Shift', 'Enter', 'Space', '↑', '↓'].includes(key) && key}
+        </kbd>
+      ))}
+    </div>
+  );
+}
+
 export default function KeyboardShortcutsHelp() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredShortcuts = searchQuery
-    ? shortcuts.filter(s => 
+    ? shortcuts.filter(s =>
         s.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.keys.toLowerCase().includes(searchQuery.toLowerCase())
       )
@@ -82,7 +106,7 @@ export default function KeyboardShortcutsHelp() {
         size="icon"
         onClick={() => setIsOpen(true)}
         aria-label="Keyboard shortcuts"
-        className="opacity-50 hover:opacity-100"
+        className="opacity-50 hover:opacity-100 transition-opacity"
       >
         <Keyboard className="h-4 w-4" />
       </Button>
@@ -100,7 +124,7 @@ export default function KeyboardShortcutsHelp() {
               </Button>
             </div>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -129,26 +153,24 @@ export default function KeyboardShortcutsHelp() {
                 </h3>
                 <div className="space-y-1">
                   {items.map((shortcut, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-center justify-between py-2 px-2 border-b border-muted/50 last:border-0 rounded hover:bg-muted/30"
+                    <div
+                      key={index}
+                      className="flex items-center justify-between py-2 px-2 border-b border-muted/50 last:border-0 rounded hover:bg-muted/30 transition-colors"
                     >
-                      <kbd className="px-2 py-1 text-xs font-mono bg-muted rounded border border-border mr-3">
-                        {shortcut.keys}
-                      </kbd>
-                      <span className="text-sm text-muted-foreground flex-1 text-left">{shortcut.description}</span>
+                      <KeyBadge keys={shortcut.keys} />
+                      <span className="text-sm text-muted-foreground flex-1 text-left ml-3">{shortcut.description}</span>
                     </div>
                   ))}
                 </div>
               </div>
             ))}
-            
+
             {filteredShortcuts.length === 0 && (
               <div className="text-center py-8">
                 <p className="text-sm text-muted-foreground">No shortcuts found</p>
-                <Button 
-                  variant="link" 
-                  size="sm" 
+                <Button
+                  variant="link"
+                  size="sm"
                   onClick={() => setSearchQuery('')}
                   className="mt-2 p-0"
                 >
