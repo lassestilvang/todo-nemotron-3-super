@@ -17,6 +17,16 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { id, name, color, emoji } = body;
 
+    if (!name || typeof name !== 'string') {
+      return NextResponse.json({ error: 'Name is required and must be a string' }, { status: 400 });
+    }
+    if (!color || typeof color !== 'string') {
+      return NextResponse.json({ error: 'Color is required and must be a string' }, { status: 400 });
+    }
+    if (!emoji || typeof emoji !== 'string') {
+      return NextResponse.json({ error: 'Emoji is required and must be a string' }, { status: 400 });
+    }
+
     await db.insert(lists).values({ id, name, color, emoji });
     return NextResponse.json({ success: true, id });
   } catch (error) {
