@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { Priority } from '@/types/task';
+import type { Priority, Task } from '@/types/task';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -215,4 +215,44 @@ export function isValidEmail(email: string): boolean {
 export function capitalizeFirst(str: string): string {
   if (!str) return str;
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+export function formatDurationFromMinutes(minutes: number | null | undefined): string {
+  if (!minutes && minutes !== 0) return '0h 0m';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours}h ${mins}m`;
+}
+
+export function getPriorityValue(priority: Priority): number {
+  switch (priority) {
+    case 'high': return 1;
+    case 'medium': return 2;
+    case 'low': return 3;
+    default: return 4;
+  }
+}
+
+export function isTaskCompleted(task: Task): boolean {
+  return task.completed === true;
+}
+
+export function isTaskOverdue(task: Task): boolean {
+  if (!task.deadline || task.completed) return false;
+  return new Date(task.deadline) < new Date();
+}
+
+export function isTaskDueToday(task: Task): boolean {
+  if (!task.deadline) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const deadline = new Date(task.deadline);
+  return deadline >= today && deadline < tomorrow;
 }
