@@ -91,34 +91,39 @@ export default function DashboardPage() {
   }, []);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Only handle shortcuts when not in an input field
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+
     if (e.ctrlKey && e.shiftKey && e.key === 'A') {
       e.preventDefault();
       setIsAddingTask(true);
     }
-    
+
     if (e.ctrlKey && e.shiftKey && e.key === 'L') {
       e.preventDefault();
       setIsAddingList(true);
     }
-    
+
     if (e.ctrlKey && e.shiftKey && e.key === 'K') {
       e.preventDefault();
       setIsAddingLabel(true);
     }
-    
+
     if (e.key === 'Escape') {
       closeAllModals();
     }
-    
+
     if (e.ctrlKey && e.key === 'Enter') {
       e.preventDefault();
     }
-    
+
     if (e.ctrlKey && e.shiftKey && e.key === 'E') {
       e.preventDefault();
       exportHandlers.handleExport();
     }
-    
+
     if (e.ctrlKey && e.shiftKey && e.key === 'I') {
       e.preventDefault();
       const input = document.createElement('input');
