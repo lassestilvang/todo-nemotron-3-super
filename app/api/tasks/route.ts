@@ -4,6 +4,11 @@ import { tasks, lists, labels, taskLabels, subtasks } from '@/app/lib/db/schema'
 import { eq, desc, asc, and, isNotNull, sql, inArray } from 'drizzle-orm';
 import type { SortOption } from '@/types/task';
 
+function parseHHMMtoMinutes(timeStr: string): number {
+  const parts = timeStr.split(':');
+  return (parseInt(parts[0] || '0', 10) * 60) + parseInt(parts[1] || '0', 10);
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const activeTab = (searchParams.get('activeTab') as 'today' | 'next7' | 'upcoming' | 'all') || 'today';
@@ -210,14 +215,66 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, description, listId, priority, date, deadline, recurrence, labelIds, estimate, actualTime } = body;
 
+    // Validate name
     if (!name || typeof name !== 'string' || name.trim() === '') {
       return NextResponse.json({ error: 'Task name is required' }, { status: 400 });
     }
-    if (!listId || typeof listId !== 'string') {
+    if (name.length > 500) {
+      return NextResponse.json({ error: 'Task name must be 500 characters or less' }, { status: 400 });
+    }
+
+    // Validate listId
+    if (!listId || typeof listId !== 'string' || listId.trim() === '') {
       return NextResponse.json({ error: 'List ID is required' }, { status: 400 });
     }
+
+    // Validate priority
     if (priority && !['high', 'medium', 'low', 'none'].includes(priority)) {
       return NextResponse.json({ error: 'Invalid priority value' }, { status: 400 });
+    }
+
+    // Validate recurrence
+    if (recurrence && !['none', 'daily', 'weekly', 'weekday', 'monthly', 'yearly', 'custom'].includes(recurrence)) {
+      return NextResponse.json({ error: 'Invalid recurrence value' }, { status: 400 });
+    }
+
+    // Validate description length
+    if (description && description.length > 2000) {
+      return NextResponse.json({ error: 'Description must be 2000 characters or less' }, { status: 400 });
+    }
+
+    // Validate numeric fields
+    let estimateMinutes: number | null = null;
+    let actualMinutes: number | null = null;
+
+    if (estimate !== undefined && estimate !== null) {
+      estimateMinutes = parseHHMMtoMinutes(estimate);
+      if (isNaN(estimateMinutes) || estimateMinutes < 0) {
+        return NextResponse.json({ error: 'Invalid estimate time format' }, { status: 400 });
+      }
+    }
+    if (actualTime !== undefined && actualTime !== null) {
+      actualMinutes = parseHHMMtoMinutes(actualTime);
+      if (isNaN(actualMinutes) || actualMinutes < 0) {
+        return NextResponse.json({ error: 'Invalid actual time format' }, { status: 400 });
+      }
+    }
+
+    // Validate date formats
+    let parsedDate: Date | null = null;
+    let parsedDeadline: Date | null = null;
+
+    if (date !== undefined && date !== null) {
+      parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
+      }
+    }
+    if (deadline !== undefined && deadline !== null) {
+      parsedDeadline = new Date(deadline);
+      if (isNaN(parsedDeadline.getTime())) {
+        return NextResponse.json({ error: 'Invalid deadline format' }, { status: 400 });
+      }
     }
 
     const task = await db.insert(tasks).values({
@@ -225,11 +282,11 @@ export async function POST(request: Request) {
       description: description || null,
       listId,
       priority: priority || 'none',
-      date: date ? new Date(date) : null,
-      deadline: deadline ? new Date(deadline) : null,
+      date: parsedDate,
+      deadline: parsedDeadline,
       recurrence: recurrence || 'none',
-      estimate: estimate || null,
-      actualTime: actualTime || null,
+      estimate: estimateMinutes,
+      actualTime: actualMinutes,
     }).returning();
 
     if (labelIds && Array.isArray(labelIds) && labelIds.length > 0) {
