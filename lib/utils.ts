@@ -254,3 +254,7 @@ export function isTaskDueToday(deadline: Date | null | undefined): boolean {
   const d = new Date(deadline);
   return d >= today && d < tomorrow;
 }
+
+export function formatDurationFromMinutes(minutes: number | null | undefined): string {
+  return formatTimeHHMM(minutes);
+}

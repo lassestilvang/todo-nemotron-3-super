@@ -10,14 +10,10 @@ import {
   validateDate,
   sendError,
 } from '@/lib/validation';
+import { parseHHMMtoMinutes } from '@/lib/utils';
 
 const PRIORITY_VALUES = ['high', 'medium', 'low', 'none'] as const;
 const RECURRENCE_VALUES = ['none', 'daily', 'weekly', 'weekday', 'monthly', 'yearly', 'custom'] as const;
-
-function parseHHMMtoMinutes(timeStr: string): number {
-  const parts = timeStr.split(':');
-  return (parseInt(parts[0] || '0', 10) * 60) + parseInt(parts[1] || '0', 10);
-}
 
 function formatDateForDb(date: string | Date | null): string | null {
   if (!date) return null;
