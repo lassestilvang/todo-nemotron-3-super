@@ -120,12 +120,17 @@ export default function TaskForm({
       toast.error('Task name is required');
       return;
     }
+    if (!formData.listId) {
+      toast.error('Please select a list');
+      return;
+    }
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to submit form:', error);
+      toast.error('Failed to save task');
     } finally {
       setIsSubmitting(false);
     }
@@ -319,7 +324,19 @@ export default function TaskForm({
                 type="text"
                 placeholder="00:00"
                 value={formData.estimate}
-                onChange={(e) => setFormData({ ...formData, estimate: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow only valid HH:MM format
+                  if (!value || /^\d{0,4}:\d{0,2}$/.test(value)) {
+                    setFormData({ ...formData, estimate: value });
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value;
+                  if (value && !/^\d{1,4}:\d{2}$/.test(value)) {
+                    setFormData({ ...formData, estimate: '' });
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
@@ -330,7 +347,18 @@ export default function TaskForm({
                 type="text"
                 placeholder="00:00"
                 value={formData.actualTime}
-                onChange={(e) => setFormData({ ...formData, actualTime: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (!value || /^\d{0,4}:\d{0,2}$/.test(value)) {
+                    setFormData({ ...formData, actualTime: value });
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value;
+                  if (value && !/^\d{1,4}:\d{2}$/.test(value)) {
+                    setFormData({ ...formData, actualTime: '' });
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
