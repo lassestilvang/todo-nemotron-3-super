@@ -26,10 +26,21 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
+    // Log to external service in production
+    if (process.env.NODE_ENV === 'production') {
+      // Could integrate with Sentry, LogRocket, etc.
+    }
   }
 
   private handleReset = () => {
     this.setState({ hasError: false, error: null });
+    // Clear any error in localStorage/sessionStorage
+    try {
+      localStorage.removeItem('app_error');
+      sessionStorage.removeItem('app_error');
+    } catch {
+      // Storage not available
+    }
   };
 
   private handleCopyError = () => {
