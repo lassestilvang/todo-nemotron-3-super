@@ -48,14 +48,13 @@ describe('Task API Routes', () => {
 describe('Task Validation', () => {
   it('should validate priority values', () => {
     const validPriorities = ['high', 'medium', 'low', 'none'];
-    const invalidPriority = 'urgent';
     expect(validPriorities).toContain('high');
-    expect(validPriorities).toContain('urgent'); // This will fail, showing validation works
+    expect(validPriorities).not.toContain('urgent');
   });
 
   it('should validate recurrence values', () => {
     const validRecurrence = ['none', 'daily', 'weekly', 'weekday', 'monthly', 'yearly', 'custom'];
     expect(validRecurrence).toContain('daily');
-    expect(validRecurrence).toContain('invalid'); // This will fail
+    expect(validRecurrence).not.toContain('invalid');
   });
 });

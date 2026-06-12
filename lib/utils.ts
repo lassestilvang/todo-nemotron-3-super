@@ -256,5 +256,8 @@ export function isTaskDueToday(deadline: Date | null | undefined): boolean {
 }
 
 export function formatDurationFromMinutes(minutes: number | null | undefined): string {
-  return formatTimeHHMM(minutes);
+  if (!minutes && minutes !== 0) return '0h 0m';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours}h ${mins}m`;
 }
