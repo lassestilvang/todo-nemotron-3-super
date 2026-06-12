@@ -95,4 +95,37 @@ describe('Cache', () => {
     expect(result2).toBe('data');
     expect(callCount).toBe(1);
   });
+
+  it('tracks cache hits and misses', async () => {
+    const testCache = new Cache(10);
+    testCache.set('key1', 'value1');
+
+    // First get is a hit
+    const val1 = testCache.get('key1');
+    expect(val1).toBe('value1');
+
+    // Second get is also a hit
+    const val2 = testCache.get('key1');
+    expect(val2).toBe('value1');
+
+    // Get non-existent key is a miss
+    const val3 = testCache.get('nonexistent');
+    expect(val3).toBeNull();
+
+    const stats = testCache.getStatsDetailed();
+    // 2 hits, 1 miss = 67% hit rate
+    expect(stats.hitRate).toBe(67);
+  });
+
+  it('resetStats clears hit and miss counters', async () => {
+    cache.set('resetTest', 'value');
+    cache.get('resetTest');
+    cache.get('resetTest');
+    cache.get('nonexistent');
+
+    cache.resetStats();
+
+    const stats = cache.getStatsDetailed();
+    expect(stats.hitRate).toBe(0);
+  });
 });

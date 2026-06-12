@@ -274,18 +274,18 @@ export default function TaskForm({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="task-recurrence">Recurrence</Label>
-               <select
-                 id="task-recurrence"
-                 value={formData.recurrence}
-                 onChange={(e) => setFormData({ ...formData, recurrence: e.target.value })}
-                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-               >
+              <select
+                id="task-recurrence"
+                value={formData.recurrence}
+                onChange={(e) => setFormData({ ...formData, recurrence: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
                 {RECURRENCE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
-               </select>
+              </select>
             </div>
             <div>
               <Label htmlFor="task-label">Label</Label>
@@ -298,22 +298,22 @@ export default function TaskForm({
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
-<option value="">Select labels</option>
-                 {labelsList.length === 0 ? (
-                   <option value="" disabled>No labels available</option>
-                 ) : (
-                   labelsList.map((label) => (
-                     <option key={label.id} value={label.id}>
-                       <span className="flex items-center gap-2">
-                         <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
-                           {label.emoji}
-                         </span>
-                         <span>{label.name}</span>
-                       </span>
-                     </option>
-                   ))
-                 )}
-</select>
+                <option value="">Select labels</option>
+                {labelsList.length === 0 ? (
+                  <option value="" disabled>No labels available</option>
+                ) : (
+                  labelsList.map((label) => (
+                    <option key={label.id} value={label.id}>
+                      <span className="flex items-center gap-2">
+                        <span className={`${label.color} h-4 w-4 flex items-center justify-center rounded`}>
+                          {label.emoji}
+                        </span>
+                        <span>{label.name}</span>
+                      </span>
+                    </option>
+                  ))
+                )}
+              </select>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
