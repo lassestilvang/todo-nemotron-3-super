@@ -128,4 +128,68 @@ describe('Cache', () => {
     const stats = cache.getStatsDetailed();
     expect(stats.hitRate).toBe(0);
   });
+
+  it('createCachedFetchWithRetry retries on failure', async () => {
+    let callCount = 0;
+    const fetchFn = async () => {
+      callCount++;
+      if (callCount < 3) {
+        throw new Error('Temporary failure');
+      }
+      return 'success';
+    };
+
+    const result = await cache.createCachedFetchWithRetry(fetchFn, 'retry-test', 60, 3);
+    expect(result).toBe('success');
+    expect(callCount).toBe(3);
+  });
+
+  it('invalidateTasks removes task-related cache entries', () => {
+    cache.set('tasks_all', []);
+    cache.set('tasks_today', []);
+    cache.set('tasks_next7', []);
+    cache.set('app_lists', []);
+
+    cache.invalidateTasks();
+
+    expect(cache.has('tasks_all')).toBe(false);
+    expect(cache.has('tasks_today')).toBe(false);
+    expect(cache.has('tasks_next7')).toBe(false);
+    expect(cache.has('app_lists')).toBe(true);
+  });
+
+  it('invalidateLists clears lists cache', () => {
+    cache.set('app_lists', []);
+    cache.set('tasks_all', []);
+
+    cache.invalidateLists();
+
+    expect(cache.has('app_lists')).toBe(false);
+    expect(cache.has('tasks_all')).toBe(true);
+  });
+
+  it('invalidateLabels clears labels cache', () => {
+    cache.set('app_labels', []);
+    cache.set('tasks_all', []);
+
+    cache.invalidateLabels();
+
+    expect(cache.has('app_labels')).toBe(false);
+    expect(cache.has('tasks_all')).toBe(true);
+  });
+
+  it('invalidateAllAppData clears all app-related caches', () => {
+    cache.set('tasks_all', []);
+    cache.set('tasks_today', []);
+    cache.set('app_lists', []);
+    cache.set('app_labels', []);
+    cache.set('other_data', 'keep');
+
+    cache.invalidateAllAppData();
+
+    expect(cache.has('tasks_all')).toBe(false);
+    expect(cache.has('app_lists')).toBe(false);
+    expect(cache.has('app_labels')).toBe(false);
+    expect(cache.has('other_data')).toBe(true);
+  });
 });

@@ -8,6 +8,13 @@ import {
   DEFAULT_COLORS,
   DEFAULT_EMOJIS,
 } from '@/lib/constants';
+import {
+  isValidUUID,
+  formatDurationFromMinutes,
+  getPriorityValue,
+  isTaskDueToday,
+} from '@/lib/utils';
+import type { Task } from '@/types/task';
 
 describe('RECURRENCE_OPTIONS', () => {
   it('contains all recurrence types', () => {
@@ -80,5 +87,53 @@ describe('DEFAULT_COLORS', () => {
 describe('DEFAULT_EMOJIS', () => {
   it('contains at least 5 emojis', () => {
     expect(DEFAULT_EMOJIS.length).toBeGreaterThanOrEqual(5);
+  });
+});
+
+describe('isValidUUID', () => {
+  it('returns true for valid UUIDs', () => {
+    expect(isValidUUID('123e4567-e89b-12d3-a456-426614174000')).toBe(true);
+    expect(isValidUUID('00000000-0000-0000-0000-000000000000')).toBe(true);
+  });
+
+  it('returns false for invalid UUIDs', () => {
+    expect(isValidUUID('not-a-uuid')).toBe(false);
+    expect(isValidUUID('123e4567')).toBe(false);
+    expect(isValidUUID('')).toBe(false);
+  });
+});
+
+describe('formatDurationFromMinutes', () => {
+  it('formats minutes correctly', () => {
+    expect(formatDurationFromMinutes(30)).toBe('0h 30m');
+    expect(formatDurationFromMinutes(90)).toBe('1h 30m');
+    expect(formatDurationFromMinutes(150)).toBe('2h 30m');
+  });
+
+  it('handles null and undefined', () => {
+    expect(formatDurationFromMinutes(null)).toBe('0h 0m');
+    expect(formatDurationFromMinutes(undefined)).toBe('0h 0m');
+  });
+});
+
+describe('getPriorityValue', () => {
+  it('returns correct numeric values for priorities', () => {
+    expect(getPriorityValue('high')).toBe(1);
+    expect(getPriorityValue('medium')).toBe(2);
+    expect(getPriorityValue('low')).toBe(3);
+    expect(getPriorityValue('none')).toBe(4);
+  });
+});
+
+describe('isTaskDueToday', () => {
+  it('returns true for tasks due today', () => {
+    const today = new Date();
+    const task: Partial<Task> = { deadline: today };
+    expect(isTaskDueToday(task as Task)).toBe(true);
+  });
+
+  it('returns false for tasks without deadline', () => {
+    const task: Partial<Task> = {};
+    expect(isTaskDueToday(task as Task)).toBe(false);
   });
 });
