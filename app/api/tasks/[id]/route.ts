@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/app/lib/db/index';
-import { tasks, lists, labels, taskLabels, subtasks } from '@/app/lib/db/schema';
+import { tasks, lists, labels, taskLabels, subtasks, taskChanges } from '@/app/lib/db/schema';
 import { eq, inArray } from 'drizzle-orm';
+import { createId } from '@paralleldrive/cuid2';
 
 export async function GET(
   request: Request,
@@ -138,6 +139,23 @@ export async function PATCH(
         return NextResponse.json({ error: 'Invalid deadline format' }, { status: 400 });
       }
       updateData.deadline = parsed.toISOString();
+    }
+
+    // Log changes before updating
+    const oldTask = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
+    if (oldTask.length > 0) {
+      const fieldsToLog: (keyof typeof tasks.$inferSelect)[] = ['name', 'description', 'priority', 'completed', 'date', 'deadline', 'listId', 'recurrence', 'estimate', 'actualTime'];
+      for (const field of fieldsToLog) {
+        if (body[field] !== undefined && body[field] !== oldTask[0][field]) {
+          await db.insert(taskChanges).values({
+            id: createId(),
+            taskId: id,
+            fieldChanged: field,
+            oldValue: String(oldTask[0][field as keyof typeof oldTask[0]] ?? ''),
+            newValue: String(body[field]),
+          });
+        }
+      }
     }
 
     const [updatedTask] = await db
