@@ -1,8 +1,21 @@
 import { NextResponse } from 'next/server';
 
+export interface ValidationError {
+  field: string;
+  message: string;
+}
+
 export function validateRequired(value: unknown, fieldName: string): string | null {
   if (value === undefined || value === null || (typeof value === 'string' && value.trim() === '')) {
     return `${fieldName} is required`;
+  }
+  return null;
+}
+
+export function validateField(value: unknown, fieldName: string, validator: (v: unknown) => string | null): ValidationError | null {
+  const error = validator(value);
+  if (error) {
+    return { field: fieldName, message: error };
   }
   return null;
 }
@@ -59,4 +72,8 @@ export function sendError(message: string, status: number = 400): NextResponse {
 
 export function sendSuccess(data: unknown, status: number = 200): NextResponse {
   return NextResponse.json(data, { status });
+}
+
+export function sendValidationError(errors: ValidationError[], status: number = 400): NextResponse {
+  return NextResponse.json({ errors }, { status });
 }
