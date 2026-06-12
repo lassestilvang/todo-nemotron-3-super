@@ -159,11 +159,14 @@ export default function Sidebar() {
                 <Button
                   variant="ghost"
                   className={`w-full justify-start px-2 py-1.5 h-9 rounded-md ${
-                    filterListId === 'inbox' 
-                      ? 'bg-white dark:bg-slate-900 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 font-medium' 
+                    filterListId === null && activeView === 'today'
+                      ? 'bg-white dark:bg-slate-900 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 font-medium'
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
                   }`}
-                  onClick={() => setFilterListId(filterListId === 'inbox' ? null : 'inbox')}
+                  onClick={() => {
+                    setFilterListId(null);
+                    setActiveView('today');
+                  }}
                 >
                   <Inbox className="h-4 w-4 mr-3" />
                   <span className="flex-1 text-sm text-left">Inbox</span>
