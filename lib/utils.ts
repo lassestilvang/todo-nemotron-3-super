@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { Priority, Task } from '@/types/task';
+import type { Priority } from '@/types/task';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -70,7 +70,7 @@ export function getPriorityColor(priority: string): string {
   }
 }
 
-export function getPriorityIcon(priority: string) {
+export function getPriorityIcon(priority: string): string {
   switch (priority) {
     case 'high': return '🔴';
     case 'medium': return '🟡';
@@ -86,7 +86,7 @@ export function formatRelativeTime(date: Date | null | undefined): string {
   const days = Math.floor(diff / 86400000);
   const hours = Math.floor(diff / 3600000);
   const minutes = Math.floor(diff / 60000);
-  
+
   if (days > 0) return `${days}d ago`;
   if (hours > 0) return `${hours}h ago`;
   if (minutes > 0) return `${minutes}m ago`;
@@ -100,7 +100,7 @@ export function getDueDateText(deadline: Date | null | undefined): string {
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  
+
   if (d.toDateString() === today.toDateString()) return 'Due Today';
   if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
   if (d < new Date()) return 'Overdue';
@@ -185,6 +185,7 @@ export function generateColorFromId(id: string): string {
   const index = id.charCodeAt(0) % colors.length;
   return colors[index]!;
 }
+
 export function generateEmojiFromId(id: string): string {
   const emojis = ['📥', '📋', '📝', '✅', '📌', '🏷️', '💼', '🏠', '🎯', '📚', '🛒', '💡', '⚡', '🎨', '🎮', '🎵', '🔔', '⭐', '🔒', '🔑'];
   const index = id.charCodeAt(0) % emojis.length;
@@ -242,10 +243,7 @@ export function isTaskCompleted(completed: boolean | null | undefined): boolean 
   return completed === true;
 }
 
-export function isTaskOverdue(deadline: Date | null | undefined, completed: boolean): boolean {
-  if (!deadline || completed) return false;
-  return new Date(deadline) < new Date();
-}
+export const isTaskOverdue = isOverdue;
 
 export function isTaskDueToday(deadline: Date | null | undefined): boolean {
   if (!deadline) return false;
