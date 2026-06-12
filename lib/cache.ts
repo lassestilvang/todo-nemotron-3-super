@@ -67,7 +67,13 @@ class Cache {
     }
 
     item.lastAccessed = now;
-    return item.data as T;
+    try {
+      return item.data as T;
+    } catch (error) {
+      console.warn(`Cache get error for key "${key}":`, error);
+      this.cache.delete(key);
+      return null;
+    }
   }
 
   set(key: string, data: any, ttlSeconds?: number): void {
@@ -91,6 +97,18 @@ class Cache {
         // Storage disabled or full
       }
     }
+  }
+
+  clearExpired(): number {
+    let count = 0;
+    const now = Date.now();
+    for (const [key, item] of this.cache.entries()) {
+      if (now > item.expiresAt) {
+        this.cache.delete(key);
+        count++;
+      }
+    }
+    return count;
   }
 
   delete(key: string): boolean {
