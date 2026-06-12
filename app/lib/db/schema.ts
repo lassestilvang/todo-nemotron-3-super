@@ -37,6 +37,9 @@ export const tasks = sqliteTable('tasks', {
    completed: integer('completed', { mode: 'boolean' }).default(false),
    recurrence: text('recurrence'), // e.g., 'daily', 'weekly', 'monthly', 'yearly', 'custom'
    sortOrder: integer('sort_order').default(0),
+   pinned: integer('pinned', { mode: 'boolean' }).default(false), // Pinned/starred tasks
+   archived: integer('archived', { mode: 'boolean' }).default(false), // Archived completed tasks
+   snoozedUntil: integer('snoozed_until', { mode: 'timestamp' }), // Snooze until timestamp
    createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
