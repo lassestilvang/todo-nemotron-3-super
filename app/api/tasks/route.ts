@@ -84,9 +84,21 @@ export async function GET(request: Request) {
     }
 
     if (searchQuery.trim()) {
-      query = query.where(
-        sql`${tasks.name} LIKE '%' || ${searchQuery} || '%' OR ${tasks.description} LIKE '%' || ${searchQuery} || '%'`
-      );
+      // First find labels matching the search query
+      const matchingLabels = await db
+        .select({ id: labels.id })
+        .from(labels)
+        .where(sql`${labels.name} LIKE '%' || ${searchQuery} || '%'`)
+        .execute();
+
+      const matchingLabelIds = matchingLabels.map(l => l.id);
+
+      // Build the search condition
+      const searchCondition = matchingLabelIds.length > 0
+        ? sql`(${tasks.name} LIKE '%' || ${searchQuery} || '%' OR ${tasks.description} LIKE '%' || ${searchQuery} || '%' OR EXISTS (SELECT 1 FROM task_labels WHERE task_labels.task_id = ${tasks.id} AND task_labels.label_id IN (${matchingLabelIds})))`
+        : sql`${tasks.name} LIKE '%' || ${searchQuery} || '%' OR ${tasks.description} LIKE '%' || ${searchQuery} || '%'`;
+
+      query = query.where(searchCondition);
     }
 
     if (filterListId) {
@@ -197,20 +209,30 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, description, listId, priority, date, deadline, recurrence, labelIds, estimate, actualTime } = body;
-    
+
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return NextResponse.json({ error: 'Task name is required' }, { status: 400 });
+    }
+    if (!listId || typeof listId !== 'string') {
+      return NextResponse.json({ error: 'List ID is required' }, { status: 400 });
+    }
+    if (priority && !['high', 'medium', 'low', 'none'].includes(priority)) {
+      return NextResponse.json({ error: 'Invalid priority value' }, { status: 400 });
+    }
+
     const task = await db.insert(tasks).values({
-      name,
-      description,
+      name: name.trim(),
+      description: description || null,
       listId,
-      priority,
+      priority: priority || 'none',
       date: date ? new Date(date) : null,
       deadline: deadline ? new Date(deadline) : null,
       recurrence: recurrence || 'none',
-      estimate,
-      actualTime,
+      estimate: estimate || null,
+      actualTime: actualTime || null,
     }).returning();
-    
-    if (labelIds && labelIds.length > 0) {
+
+    if (labelIds && Array.isArray(labelIds) && labelIds.length > 0) {
       await db.insert(taskLabels).values(
         labelIds.map((labelId: string) => ({
           id: crypto.randomUUID(),
@@ -219,7 +241,7 @@ export async function POST(request: Request) {
         }))
       );
     }
-    
+
     return NextResponse.json(task[0]);
   } catch (error) {
     console.error('Failed to create task:', error);
