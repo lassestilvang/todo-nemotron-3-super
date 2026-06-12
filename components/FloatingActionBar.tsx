@@ -2,16 +2,18 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  CheckCircle2, 
-  Trash2, 
-  X, 
+import {
+  CheckCircle2,
+  Trash2,
+  X,
   MoreHorizontal,
   Circle,
   GripHorizontal
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+
+type KeyboardEvent = globalThis.KeyboardEvent;
 
 interface FloatingActionBarProps {
   selectedCount: number;
@@ -30,6 +32,30 @@ export function FloatingActionBar({
   isAllSelected,
   onToggleSelectAll,
 }: FloatingActionBarProps) {
+  const [isVisible, setIsVisible] = React.useState(true);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedCount === 0) return;
+
+      if (e.key === 'Delete') {
+        e.preventDefault();
+        onDelete();
+      } else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        onMarkComplete(true);
+      } else if (e.key === 'd' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        onMarkComplete(false);
+      } else if (e.key === 'Escape') {
+        onClear();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedCount, onDelete, onMarkComplete, onClear]);
+
   if (selectedCount === 0) return null;
 
   return (
@@ -41,7 +67,7 @@ export function FloatingActionBar({
         className="fixed bottom-12 left-1/2 z-50 flex items-center gap-4 px-6 py-3 bg-slate-900 dark:bg-slate-50 text-white dark:text-slate-900 rounded-full shadow-2xl ring-1 ring-white/10 dark:ring-black/10"
       >
         <div className="flex items-center gap-3 pr-4 border-r border-white/20 dark:border-black/20">
-          <Checkbox 
+          <Checkbox
             checked={isAllSelected}
             onCheckedChange={onToggleSelectAll}
             className="border-white/50 dark:border-black/50 data-[state=checked]:bg-white dark:data-[state=checked]:bg-black data-[state=checked]:text-black dark:data-[state=checked]:text-white"
@@ -57,9 +83,10 @@ export function FloatingActionBar({
           <ActionButton onClick={onDelete} icon={<Trash2 className="h-4 w-4 text-red-400 dark:text-red-600" />} label="Delete" variant="destructive" />
         </div>
 
-        <button 
+        <button
           onClick={onClear}
           className="ml-2 p-1 rounded-full hover:bg-white/10 dark:hover:bg-black/10 transition-colors"
+          aria-label="Clear selection"
         >
           <X className="h-4 w-4" />
         </button>
