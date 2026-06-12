@@ -33,6 +33,8 @@ const shortcuts: Shortcut[] = [
   { keys: '↑ / ↓', description: 'Navigate task list', category: 'navigation' },
   { keys: 'Enter', description: 'Open task details / submit forms', category: 'forms' },
   { keys: 'Space', description: 'Toggle checkbox / activate buttons', category: 'navigation' },
+  { keys: 'Ctrl + Shift + F', description: 'Focus search', category: 'navigation' },
+  { keys: 'F', description: 'Toggle focus mode', category: 'system' },
 ];
 
 const categoryLabels: Record<string, string> = {
@@ -46,23 +48,26 @@ function KeyBadge({ keys }: { keys: string }) {
   const keyParts = keys.split(' + ');
   return (
     <div className="flex items-center gap-1">
-      {keyParts.map((key, i) => (
-        <kbd
-          key={i}
-          className="px-2 py-1 text-xs font-mono bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded border border-gray-300 dark:border-gray-600 shadow-sm min-w-[24px] text-center"
-        >
-          {key === 'Ctrl' && <Command className="h-3 w-3" />}
-          {key === '?' && '?'}
-          {key === 'Escape' && 'Esc'}
-          {key === 'Tab' && 'Tab'}
-          {key === 'Shift' && 'Shift'}
-          {key === 'Enter' && '⏎'}
-          {key === 'Space' && 'Sp'}
-          {key === '↑' && '↑'}
-          {key === '↓' && '↓'}
-          {!['Ctrl', '?', 'Escape', 'Tab', 'Shift', 'Enter', 'Space', '↑', '↓'].includes(key) && key}
-        </kbd>
-      ))}
+      {keyParts.map((key, i) => {
+        const isSpecialKey = ['Ctrl', '?', 'Escape', 'Tab', 'Shift', 'Enter', 'Space', '↑', '↓'].includes(key);
+        return (
+          <kbd
+            key={i}
+            className="px-2 py-1 text-xs font-mono bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded border border-gray-300 dark:border-gray-600 shadow-sm min-w-[24px] text-center"
+          >
+            {key === 'Ctrl' && <Command className="h-3 w-3" />}
+            {key === '?' && '?'}
+            {key === 'Escape' && 'Esc'}
+            {key === 'Tab' && 'Tab'}
+            {key === 'Shift' && 'Shift'}
+            {key === 'Enter' && '⏎'}
+            {key === 'Space' && 'Sp'}
+            {key === '↑' && '↑'}
+            {key === '↓' && '↓'}
+            {!isSpecialKey && key}
+          </kbd>
+        );
+      })}
     </div>
   );
 }
@@ -117,6 +122,7 @@ export default function KeyboardShortcutsHelp() {
               <DialogTitle className="flex items-center gap-2">
                 <Keyboard className="h-5 w-5" />
                 Keyboard Shortcuts
+                <span className="text-xs text-muted-foreground ml-auto">Shift + ?</span>
               </DialogTitle>
               <Button variant="ghost" size="icon" aria-label="Close" onClick={() => setIsOpen(false)}>
                 <X className="h-4 w-4" />
