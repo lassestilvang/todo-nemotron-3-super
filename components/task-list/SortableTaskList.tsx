@@ -47,7 +47,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { formatTimeHHMM } from '@/lib/utils';
+import { formatTimeHHMM, isTaskOverdue, isTaskDueToday } from '@/lib/utils';
 import type { Task } from '@/types/task';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -542,7 +542,7 @@ function SortableTaskItem({
             </div>
 
             {task.deadline && (
-              <div className={`flex items-center gap-1 ${new Date(task.deadline) < new Date() && !task.completed ? 'text-red-500 font-medium' : ''}`}>
+              <div className={`flex items-center gap-1 ${isTaskOverdue(task.deadline, task.completed) ? 'text-red-500 font-medium' : ''}`}>
                 <Calendar className="h-3 w-3" />
                 <span>{new Date(task.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
               </div>

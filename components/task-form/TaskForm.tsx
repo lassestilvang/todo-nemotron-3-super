@@ -114,14 +114,27 @@ export default function TaskForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateForm = (): string | null => {
     if (!formData.name.trim()) {
-      toast.error('Task name is required');
-      return;
+      return 'Task name is required';
     }
     if (!formData.listId) {
-      toast.error('Please select a list');
+      return 'Please select a list';
+    }
+    if (formData.name.length > 500) {
+      return 'Task name must be 500 characters or less';
+    }
+    if (formData.description.length > 2000) {
+      return 'Description must be 2000 characters or less';
+    }
+    return null;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const error = validateForm();
+    if (error) {
+      toast.error(error);
       return;
     }
     setIsSubmitting(true);
