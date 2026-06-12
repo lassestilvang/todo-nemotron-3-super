@@ -268,8 +268,9 @@ export function SortableTaskList({
       case 'End':
         e.preventDefault();
         setFocusedIndex(tasks.length - 1);
-        if (tasks[tasks.length - 1]) {
-          setAnnouncement(`Task ${tasks.length} of ${tasks.length}: ${tasks[tasks.length - 1].name}`);
+        const lastTask = tasks[tasks.length - 1];
+        if (lastTask) {
+          setAnnouncement(`Task ${tasks.length} of ${tasks.length}: ${lastTask.name}`);
         }
         break;
       case 'Enter':

@@ -34,7 +34,7 @@ export function validateString(value: unknown, fieldName: string, maxLength?: nu
 }
 
 export function validateEnum(value: unknown, fieldName: string, allowedValues: string[]): string | null {
-  if (value !== undefined && value !== null && !allowedValues.includes(value)) {
+  if (value !== undefined && value !== null && typeof value === 'string' && !allowedValues.includes(value)) {
     return `Invalid ${fieldName} value`;
   }
   return null;
@@ -58,7 +58,7 @@ export function validateBoolean(value: unknown, fieldName: string): string | nul
 
 export function validateDate(value: unknown, fieldName: string): string | null {
   if (value !== undefined && value !== null) {
-    const d = new Date(value);
+    const d = new Date(value as string | number | Date);
     if (isNaN(d.getTime())) {
       return `Invalid ${fieldName} format`;
     }

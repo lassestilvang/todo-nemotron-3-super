@@ -36,7 +36,7 @@ interface TaskDetailsProps {
   onTaskUpdate?: (updatedTask: Task) => void;
 }
 
-export default function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetailsProps) {
+export function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetailsProps) {
   const [task, setTask] = useState<Task | null>(null);
   const [editData, setEditData] = useState({
     name: '',
