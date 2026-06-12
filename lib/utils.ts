@@ -30,6 +30,28 @@ export function parseHHMMtoMinutes(timeStr: string): number {
   return (parseInt(parts[0] || '0', 10) * 60) + parseInt(parts[1] || '0', 10);
 }
 
+export function isValidHHMM(timeStr: string): boolean {
+  if (!/^\d{1,4}:\d{2}$/.test(timeStr)) return false;
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours >= 0 && minutes >= 0 && minutes < 60;
+}
+
+export function formatDateForInput(date: Date | string | null | undefined): string {
+  if (!date) return '';
+  const d = new Date(date);
+  return d.toISOString().split('T')[0];
+}
+
+export function formatDateTimeForInput(date: Date | string | null | undefined): string {
+  if (!date) return '';
+  const d = new Date(date);
+  return d.toISOString().slice(0, 16);
+}
+
+export function sanitizeString(str: string, maxLength: number): string {
+  return str.slice(0, maxLength);
+}
+
 export function isOverdue(deadline: Date | null | undefined, completed: boolean): boolean {
   if (!deadline || completed) return false;
   return new Date(deadline) < new Date();
