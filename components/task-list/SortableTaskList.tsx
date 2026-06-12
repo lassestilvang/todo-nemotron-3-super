@@ -50,6 +50,7 @@ import { Button } from '@/components/ui/button';
 import { formatTimeHHMM } from '@/lib/utils';
 import type { Task } from '@/types/task';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 function getLabelColorClass(color: string): string {
   const colorMap: Record<string, string> = {
@@ -364,12 +365,13 @@ export function SortableTaskList({
                         <motion.div
                           key={task.id}
                           layoutId={task.id}
-                          initial={{ opacity: 0, y: 10 }}
+                          initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -20 }}
                           transition={{
-                            duration: 0.2,
-                            layout: { type: 'spring', stiffness: 300, damping: 30 }
+                            duration: 0.3,
+                            ease: "easeOut",
+                            layout: { type: 'spring', stiffness: 400, damping: 30 }
                           }}
                         >
                           <SortableTaskItem
@@ -378,7 +380,10 @@ export function SortableTaskList({
                             tasksLength={tasks.length}
                             onToggleComplete={onToggleComplete}
                             onSelectTask={onSelectTask}
-                            onDuplicateTask={() => {}}
+                            onDuplicateTask={(t) => {
+                              navigator.clipboard.writeText(`${window.location.origin}/task/${t.id}`);
+                              toast.success('Task link copied');
+                            }}
                             onShareTask={(t) => {
                               navigator.share?.({
                                 title: t.name,
@@ -563,6 +568,7 @@ function SortableTaskItem({
                 size="icon"
                 className="h-7 w-7 text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
                 onClick={(e) => { e.stopPropagation(); onDuplicateTask(task); }}
+                aria-label="Duplicate task"
               >
                 <Copy className="h-3.5 w-3.5" />
               </Button>
@@ -571,6 +577,7 @@ function SortableTaskItem({
                 size="icon"
                 className="h-7 w-7 text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
                 onClick={(e) => { e.stopPropagation(); onShareTask(task); }}
+                aria-label="Share task"
               >
                 <Share2 className="h-3.5 w-3.5" />
               </Button>
