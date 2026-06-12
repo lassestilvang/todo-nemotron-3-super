@@ -363,13 +363,13 @@ export function SortableTaskList({
                       return (
                         <motion.div
                           key={task.id}
-                          layout
+                          layoutId={task.id}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ 
-                            duration: 0.2, 
-                            layout: { type: 'spring', stiffness: 300, damping: 30 } 
+                          transition={{
+                            duration: 0.2,
+                            layout: { type: 'spring', stiffness: 300, damping: 30 }
                           }}
                         >
                           <SortableTaskItem
