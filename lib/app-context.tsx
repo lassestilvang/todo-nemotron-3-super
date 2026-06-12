@@ -96,6 +96,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [focusMode, setFocusMode] = useState<boolean>(() =>
     loadFromStorage<boolean>(STORAGE_KEYS.FOCUS_MODE, false)
   );
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const fetchLists = async () => {
     setListsLoading(true);
