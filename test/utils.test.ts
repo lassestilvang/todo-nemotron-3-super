@@ -18,6 +18,10 @@ import {
   formatRelativeDate,
   truncateText,
   generateColorFromId,
+  isValidHHMM,
+  formatDateForInput,
+  formatDateTimeForInput,
+  sanitizeString,
 } from '@/lib/utils';
 
 describe('cn', () => {
@@ -298,5 +302,61 @@ describe('generateColorFromId', () => {
 
   it('is consistent for same ID', () => {
     expect(generateColorFromId('test-id')).toBe(generateColorFromId('test-id'));
+  });
+});
+
+describe('isValidHHMM', () => {
+  it('returns true for valid time strings', () => {
+    expect(isValidHHMM('00:00')).toBe(true);
+    expect(isValidHHMM('23:59')).toBe(true);
+    expect(isValidHHMM('1:30')).toBe(true);
+    expect(isValidHHMM('09:05')).toBe(true);
+  });
+
+  it('returns false for invalid time strings', () => {
+    expect(isValidHHMM('')).toBe(false);
+    expect(isValidHHMM('abc')).toBe(false);
+    expect(isValidHHMM('25:00')).toBe(false);
+    expect(isValidHHMM('12:60')).toBe(false);
+    expect(isValidHHMM('12')).toBe(false);
+    expect(isValidHHMM('100:00')).toBe(false);
+  });
+});
+
+describe('formatDateForInput', () => {
+  it('returns empty string for null/undefined', () => {
+    expect(formatDateForInput(null)).toBe('');
+    expect(formatDateForInput(undefined)).toBe('');
+  });
+
+  it('returns YYYY-MM-DD format for valid dates', () => {
+    const date = new Date('2025-01-15');
+    expect(formatDateForInput(date)).toBe('2025-01-15');
+  });
+});
+
+describe('formatDateTimeForInput', () => {
+  it('returns empty string for null/undefined', () => {
+    expect(formatDateTimeForInput(null)).toBe('');
+    expect(formatDateTimeForInput(undefined)).toBe('');
+  });
+
+  it('returns YYYY-MM-DDTHH:MM format for valid dates', () => {
+    const date = new Date('2025-01-15T14:30:00');
+    expect(formatDateTimeForInput(date)).toBe('2025-01-15T14:30');
+  });
+});
+
+describe('sanitizeString', () => {
+  it('returns original string if within limit', () => {
+    expect(sanitizeString('hello', 10)).toBe('hello');
+  });
+
+  it('truncates string if over limit', () => {
+    expect(sanitizeString('hello world', 5)).toBe('hello');
+  });
+
+  it('handles empty string', () => {
+    expect(sanitizeString('', 5)).toBe('');
   });
 });
