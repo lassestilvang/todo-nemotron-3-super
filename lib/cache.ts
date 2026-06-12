@@ -1,4 +1,4 @@
-interface CacheItem<T> {
+interface CacheItem<T = unknown> {
   data: T;
   timestamp: number;
   expiresAt: number;
@@ -70,7 +70,7 @@ class Cache {
     return item.data as T;
   }
 
-  set(key: string, data: any, ttlSeconds?: number): void {
+  set<T>(key: string, data: T, ttlSeconds?: number): void {
     this.evictIfNeeded();
 
     const ttl = ttlSeconds ? ttlSeconds * 1000 : this.defaultTTL;
@@ -160,7 +160,7 @@ class Cache {
 
   deleteMatching(pattern: string): number {
     let count = 0;
-    for (const key of this.cache.keys()) {
+    for (const key of Array.from(this.cache.keys())) {
       if (key.includes(pattern)) {
         this.cache.delete(key);
         count++;
@@ -187,6 +187,20 @@ class Cache {
       keys: validKeys,
       expired,
       maxSize: this.maxSize,
+    };
+  }
+
+  getStatsDetailed(): {
+    size: number;
+    maxSize: number;
+    expired: number;
+    memoryUsage: number;
+    hitRate: number;
+  } {
+    const stats = this.getStats();
+    return {
+      ...stats,
+      memoryUsage: JSON.stringify([...this.cache.entries()]).length,
     };
   }
 
