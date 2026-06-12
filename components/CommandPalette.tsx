@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Command } from 'cmdk';
 import { useApp } from '@/lib/app-context';
+import { useRouter } from 'next/navigation';
 
 export function CommandPalette() {
   const [open, setOpen] = React.useState(false);

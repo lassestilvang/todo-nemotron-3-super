@@ -32,14 +32,17 @@ export function parseHHMMtoMinutes(timeStr: string): number {
 
 export function isValidHHMM(timeStr: string): boolean {
   if (!/^\d{1,2}:\d{2}$/.test(timeStr)) return false;
-  const [hours, minutes] = timeStr.split(':').map(Number);
+  const parts = timeStr.split(':');
+  const hours = parseInt(parts[0] || '0', 10);
+  const minutes = parseInt(parts[1] || '0', 10);
   return hours >= 0 && hours <= 23 && minutes >= 0 && minutes < 60;
 }
 
 export function formatDateForInput(date: Date | string | null | undefined): string {
   if (!date) return '';
   const d = new Date(date);
-  return d.toISOString().split('T')[0];
+  const iso = d.toISOString();
+  return iso.split('T')[0] ?? '';
 }
 
 export function formatDateTimeForInput(date: Date | string | null | undefined): string {
@@ -49,6 +52,7 @@ export function formatDateTimeForInput(date: Date | string | null | undefined): 
 }
 
 export function sanitizeString(str: string, maxLength: number): string {
+  if (!str) return '';
   return str.slice(0, maxLength);
 }
 
@@ -177,7 +181,7 @@ export function generateColorFromId(id: string): string {
     'bg-lime-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
     'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-indigo-500',
     'bg-violet-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-pink-500',
-  ];
+  ] as const;
   const index = id.charCodeAt(0) % colors.length;
-  return colors[index];
+  return colors[index]!;
 }

@@ -26,7 +26,8 @@ export async function PUT(request: Request) {
     }
 
     // Remove duplicates and validate order
-    const uniqueTaskIds = [...new Set(taskIds.filter(id => id && typeof id === 'string'))];
+    const validTaskIds = taskIds.filter((id): id is string => !!id && typeof id === 'string');
+    const uniqueTaskIds = [...new Set(validTaskIds)];
     if (uniqueTaskIds.length !== taskIds.length) {
       return NextResponse.json({ error: 'Duplicate task IDs are not allowed' }, { status: 400 });
     }
@@ -35,6 +36,7 @@ export async function PUT(request: Request) {
     const updatedTaskIds: string[] = [];
     for (let i = 0; i < uniqueTaskIds.length; i++) {
       const taskId = uniqueTaskIds[i];
+      if (!taskId) continue;
       try {
         const [updatedTask] = await db
           .update(tasks)

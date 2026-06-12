@@ -155,7 +155,7 @@ export default function TaskForm({
             <HelpCircle className="h-4 w-4 text-muted-foreground" />
           </DialogTitle>
         </DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit} onKeyDown={handleKeyDown>
+        <form className="space-y-4" onSubmit={handleSubmit} onKeyDown={handleKeyDown}>
           <div>
             <Label htmlFor="task-name">Task Name</Label>
             <Input
