@@ -3,10 +3,25 @@ import { db } from '@/app/lib/db/index';
 import { tasks, lists, labels, taskLabels, subtasks } from '@/app/lib/db/schema';
 import { eq, desc, asc, and, isNotNull, sql, inArray } from 'drizzle-orm';
 import type { SortOption } from '@/types/task';
+import {
+  validateRequired,
+  validateString,
+  validateEnum,
+  validateDate,
+  sendError,
+} from '@/lib/validation';
+
+const PRIORITY_VALUES = ['high', 'medium', 'low', 'none'] as const;
+const RECURRENCE_VALUES = ['none', 'daily', 'weekly', 'weekday', 'monthly', 'yearly', 'custom'] as const;
 
 function parseHHMMtoMinutes(timeStr: string): number {
   const parts = timeStr.split(':');
   return (parseInt(parts[0] || '0', 10) * 60) + parseInt(parts[1] || '0', 10);
+}
+
+function formatDateForDb(date: string | Date | null): string | null {
+  if (!date) return null;
+  return new Date(date).toISOString();
 }
 
 export async function GET(request: Request) {
@@ -89,7 +104,6 @@ export async function GET(request: Request) {
     }
 
     if (searchQuery.trim()) {
-      // First find labels matching the search query
       const matchingLabels = await db
         .select({ id: labels.id })
         .from(labels)
@@ -98,7 +112,6 @@ export async function GET(request: Request) {
 
       const matchingLabelIds = matchingLabels.map((l: { id: string }) => l.id);
 
-      // Build the search condition
       const searchCondition = matchingLabelIds.length > 0
         ? sql`(${tasks.name} LIKE '%' || ${searchQuery} || '%' OR ${tasks.description} LIKE '%' || ${searchQuery} || '%' OR EXISTS (SELECT 1 FROM task_labels WHERE task_labels.task_id = ${tasks.id} AND task_labels.label_id IN (${matchingLabelIds})))`
         : sql`${tasks.name} LIKE '%' || ${searchQuery} || '%' OR ${tasks.description} LIKE '%' || ${searchQuery} || '%'`;
@@ -128,10 +141,10 @@ export async function GET(request: Request) {
         break;
       case 'priority':
         query = query.orderBy(
-          sql`CASE ${tasks.priority} 
-            WHEN 'high' THEN 1 
-            WHEN 'medium' THEN 2 
-            WHEN 'low' THEN 3 
+          sql`CASE ${tasks.priority}
+            WHEN 'high' THEN 1
+            WHEN 'medium' THEN 2
+            WHEN 'low' THEN 3
             ELSE 4 END`
         );
         break;
@@ -148,8 +161,8 @@ export async function GET(request: Request) {
     }>;
 
     const taskIds = results.map(task => task.id);
-    
-    const allTaskLabels = taskIds.length > 0 
+
+    const allTaskLabels = taskIds.length > 0
       ? await db
           .select({
             taskId: taskLabels.taskId,
@@ -206,7 +219,7 @@ export async function GET(request: Request) {
     return NextResponse.json(tasksWithLabels);
   } catch (error) {
     console.error('Failed to fetch tasks:', error);
-    return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 });
+    return sendError('Failed to fetch tasks', 500);
   }
 }
 
@@ -215,76 +228,52 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, description, listId, priority, date, deadline, recurrence, labelIds, estimate, actualTime } = body;
 
-    // Validate name
-    if (!name || typeof name !== 'string' || name.trim() === '') {
-      return NextResponse.json({ error: 'Task name is required' }, { status: 400 });
-    }
-    if (name.length > 500) {
-      return NextResponse.json({ error: 'Task name must be 500 characters or less' }, { status: 400 });
-    }
-    if (description && description.length > 2000) {
-      return NextResponse.json({ error: 'Description must be 2000 characters or less' }, { status: 400 });
-    }
+    const nameError = validateRequired(name, 'Task name') || validateString(name, 'Task name', 500);
+    if (nameError) return sendError(nameError, 400);
 
-    // Validate listId
-    if (!listId || typeof listId !== 'string' || listId.trim() === '') {
-      return NextResponse.json({ error: 'List ID is required' }, { status: 400 });
-    }
+    const descError = description ? validateString(description, 'Description', 2000) : null;
+    if (descError) return sendError(descError, 400);
 
-    // Validate priority
-    if (priority && !['high', 'medium', 'low', 'none'].includes(priority)) {
-      return NextResponse.json({ error: 'Invalid priority value' }, { status: 400 });
-    }
+    const listIdError = validateRequired(listId, 'List ID');
+    if (listIdError) return sendError(listIdError, 400);
 
-    // Validate recurrence
-    if (recurrence && !['none', 'daily', 'weekly', 'weekday', 'monthly', 'yearly', 'custom'].includes(recurrence)) {
-      return NextResponse.json({ error: 'Invalid recurrence value' }, { status: 400 });
-    }
+    const priorityError = validateEnum(priority, 'priority', [...PRIORITY_VALUES]);
+    if (priorityError) return sendError(priorityError, 400);
 
-    // Validate description length
-    if (description && description.length > 2000) {
-      return NextResponse.json({ error: 'Description must be 2000 characters or less' }, { status: 400 });
-    }
+    const recurrenceError = validateEnum(recurrence, 'recurrence', [...RECURRENCE_VALUES]);
+    if (recurrenceError) return sendError(recurrenceError, 400);
 
-    // Validate numeric fields
     let estimateMinutes: number | null = null;
     let actualMinutes: number | null = null;
 
     if (estimate !== undefined && estimate !== null && estimate !== '') {
       if (typeof estimate !== 'string' || !/^\d{1,4}:\d{2}$/.test(estimate)) {
-        return NextResponse.json({ error: 'Estimate time must be in HH:MM format' }, { status: 400 });
+        return sendError('Estimate time must be in HH:MM format', 400);
       }
       estimateMinutes = parseHHMMtoMinutes(estimate);
       if (isNaN(estimateMinutes) || estimateMinutes < 0 || estimateMinutes > 1439) {
-        return NextResponse.json({ error: 'Estimate time must be between 00:00 and 23:59' }, { status: 400 });
+        return sendError('Estimate time must be between 00:00 and 23:59', 400);
       }
     }
+
     if (actualTime !== undefined && actualTime !== null && actualTime !== '') {
       if (typeof actualTime !== 'string' || !/^\d{1,4}:\d{2}$/.test(actualTime)) {
-        return NextResponse.json({ error: 'Actual time must be in HH:MM format' }, { status: 400 });
+        return sendError('Actual time must be in HH:MM format', 400);
       }
       actualMinutes = parseHHMMtoMinutes(actualTime);
       if (isNaN(actualMinutes) || actualMinutes < 0 || actualMinutes > 1439) {
-        return NextResponse.json({ error: 'Actual time must be between 00:00 and 23:59' }, { status: 400 });
+        return sendError('Actual time must be between 00:00 and 23:59', 400);
       }
     }
 
-    // Validate date formats
-    let parsedDate: Date | null = null;
-    let parsedDeadline: Date | null = null;
+    const parsedDate = formatDateForDb(date);
+    const parsedDeadline = formatDateForDb(deadline);
 
-    if (date !== undefined && date !== null) {
-      parsedDate = new Date(date);
-      if (isNaN(parsedDate.getTime())) {
-        return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
-      }
-    }
-    if (deadline !== undefined && deadline !== null) {
-      parsedDeadline = new Date(deadline);
-      if (isNaN(parsedDeadline.getTime())) {
-        return NextResponse.json({ error: 'Invalid deadline format' }, { status: 400 });
-      }
-    }
+    const dateError = validateDate(date, 'date');
+    if (dateError) return sendError(dateError, 400);
+
+    const deadlineError = validateDate(deadline, 'deadline');
+    if (deadlineError) return sendError(deadlineError, 400);
 
     const task = await db.insert(tasks).values({
       name: name.trim(),
@@ -299,7 +288,6 @@ export async function POST(request: Request) {
     }).returning();
 
     if (labelIds && Array.isArray(labelIds) && labelIds.length > 0) {
-      // Verify labels exist before associating
       const existingLabels = await db
         .select({ id: labels.id })
         .from(labels)
@@ -307,7 +295,7 @@ export async function POST(request: Request) {
         .execute();
 
       if (existingLabels.length !== labelIds.length) {
-        return NextResponse.json({ error: 'One or more labels not found' }, { status: 400 });
+        return sendError('One or more labels not found', 400);
       }
 
       await db.insert(taskLabels).values(
@@ -322,7 +310,7 @@ export async function POST(request: Request) {
     return NextResponse.json(task[0]);
   } catch (error) {
     console.error('Failed to create task:', error);
-    return NextResponse.json({ error: 'Failed to create task' }, { status: 500 });
+    return sendError('Failed to create task', 500);
   }
 }
 
@@ -332,7 +320,7 @@ export async function DELETE(request: Request) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
+      return sendError('Task ID is required', 400);
     }
 
     await db.delete(taskLabels).where(eq(taskLabels.taskId, id));
@@ -341,6 +329,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to delete task:', error);
-    return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 });
+    return sendError('Failed to delete task', 500);
   }
 }
