@@ -222,6 +222,9 @@ export async function POST(request: Request) {
     if (name.length > 500) {
       return NextResponse.json({ error: 'Task name must be 500 characters or less' }, { status: 400 });
     }
+    if (description && description.length > 2000) {
+      return NextResponse.json({ error: 'Description must be 2000 characters or less' }, { status: 400 });
+    }
 
     // Validate listId
     if (!listId || typeof listId !== 'string' || listId.trim() === '') {
@@ -320,5 +323,24 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Failed to create task:', error);
     return NextResponse.json({ error: 'Failed to create task' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
+    }
+
+    await db.delete(taskLabels).where(eq(taskLabels.taskId, id));
+    await db.delete(tasks).where(eq(tasks.id, id));
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Failed to delete task:', error);
+    return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 });
   }
 }
