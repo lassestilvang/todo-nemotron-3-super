@@ -119,11 +119,12 @@ export default function Sidebar() {
                     key={view.value}
                     variant="ghost"
                     className={`w-full justify-start px-2 py-1.5 h-9 rounded-md transition-all ${
-                      activeView === view.value 
-                        ? 'bg-white dark:bg-slate-900 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 font-medium' 
+                      activeView === view.value
+                        ? 'bg-white dark:bg-slate-900 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 font-medium'
                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
                     }`}
                     onClick={() => setActiveView(view.value as any)}
+                    aria-current={activeView === view.value ? 'page' : undefined}
                   >
                     <view.icon className={`h-4 w-4 mr-3 ${activeView === view.value ? 'text-primary' : ''}`} />
                     <span className="flex-1 text-sm">{view.name}</span>
@@ -167,6 +168,7 @@ export default function Sidebar() {
                     setFilterListId(null);
                     setActiveView('today');
                   }}
+                  aria-current={filterListId === null && activeView === 'today' ? 'page' : undefined}
                 >
                   <Inbox className="h-4 w-4 mr-3" />
                   <span className="flex-1 text-sm text-left">Inbox</span>
@@ -182,11 +184,12 @@ export default function Sidebar() {
                       key={list.id}
                       variant="ghost"
                       className={`w-full justify-start px-2 py-1.5 h-9 rounded-md ${
-                        filterListId === list.id 
-                          ? 'bg-white dark:bg-slate-900 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 font-medium' 
+                        filterListId === list.id
+                          ? 'bg-white dark:bg-slate-900 text-primary shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 font-medium'
                           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
                       }`}
                       onClick={() => setFilterListId(filterListId === list.id ? null : list.id)}
+                      aria-current={filterListId === list.id ? 'page' : undefined}
                     >
                       <span className={`h-2.5 w-2.5 rounded-full ${list.color} mr-4`} />
                       <span className="flex-1 text-sm text-left truncate">{list.name}</span>
