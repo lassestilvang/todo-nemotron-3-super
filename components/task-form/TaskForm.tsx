@@ -361,30 +361,32 @@ export default function TaskForm({
                    ))
                  )}
 </select>
-             </div>
-             <div>
-               <Label htmlFor="task-estimate">Estimate (HH:MM)</Label>
-               <input
-                 id="task-estimate"
-                 type="text"
-                 placeholder="00:00"
-                 value={formData.estimate || ''}
-                 onChange={(e) => setFormData({ ...formData, estimate: e.target.value })}
-                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-               />
-             </div>
-             <div>
-               <Label htmlFor="task-actualTime">Actual Time (HH:MM)</Label>
-               <input
-                 id="task-actualTime"
-                 type="text"
-                 placeholder="00:00"
-                 value={formData.actualTime || ''}
-                 onChange={(e) => setFormData({ ...formData, actualTime: e.target.value })}
-                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-               />
-             </div>
-           </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="task-estimate">Estimate (HH:MM)</Label>
+              <input
+                id="task-estimate"
+                type="text"
+                placeholder="00:00"
+                value={formData.estimate}
+                onChange={(e) => setFormData({ ...formData, estimate: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </div>
+            <div>
+              <Label htmlFor="task-actualTime">Actual Time (HH:MM)</Label>
+              <input
+                id="task-actualTime"
+                type="text"
+                placeholder="00:00"
+                value={formData.actualTime}
+                onChange={(e) => setFormData({ ...formData, actualTime: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </div>
+          </div>
           <DialogFooter>
             <Button
               variant="ghost"
