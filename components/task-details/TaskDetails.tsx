@@ -357,11 +357,11 @@ export default function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetai
       <Dialog open={!!taskId} onOpenChange={(open) => { if (!open) onClose(); }}>
         <DialogContent className="w-[500px]">
           <DialogHeader>
-            <DialogTitle>Loading...</DialogTitle>
+            <DialogTitle>Loading task...</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-8">
-            <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="mt-4 text-sm">Loading task details...</p>
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader className="h-10 w-10 animate-spin text-primary" />
+            <p className="mt-4 text-sm text-muted-foreground">Loading task details...</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -373,10 +373,10 @@ export default function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetai
       <Dialog open={!!taskId} onOpenChange={(open) => { if (!open) onClose(); }}>
         <DialogContent className="w-[500px]">
           <DialogHeader>
-            <DialogTitle>Error</DialogTitle>
+            <DialogTitle>Task not found</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-8">
-            <p className="text-center py-8">Task not found</p>
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-center py-4 text-muted-foreground">The task you're looking for doesn't exist or has been deleted.</p>
             <DialogFooter>
               <Button variant="outline" onClick={onClose}>
                 Close
