@@ -25,10 +25,21 @@ export async function POST(request: Request) {
           .set({ completed: false, updatedAt: Date.now() })
           .where(inArray(tasks.id, taskIds));
         break;
-      case 'delete':
+      case 'delete': {
+        // Get task names before deletion for potential undo
+        const tasksToDelete = await db
+          .select({ id: tasks.id, name: tasks.name })
+          .from(tasks)
+          .where(inArray(tasks.id, taskIds));
         await db.delete(taskLabels).where(inArray(taskLabels.taskId, taskIds));
         await db.delete(tasks).where(inArray(tasks.id, taskIds));
-        break;
+        return NextResponse.json({
+          success: true,
+          action,
+          count: taskIds.length,
+          deletedTasks: tasksToDelete,
+        });
+      }
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }

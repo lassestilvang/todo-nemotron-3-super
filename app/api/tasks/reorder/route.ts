@@ -34,6 +34,8 @@ export async function PUT(request: Request) {
 
     // Update tasks in a transaction-like manner
     const updatedTaskIds: string[] = [];
+    const failedTaskIds: string[] = [];
+
     for (let i = 0; i < uniqueTaskIds.length; i++) {
       const taskId = uniqueTaskIds[i];
       if (!taskId) continue;
@@ -46,14 +48,21 @@ export async function PUT(request: Request) {
 
         if (updatedTask) {
           updatedTaskIds.push(taskId);
+        } else {
+          failedTaskIds.push(taskId);
         }
       } catch (error) {
         console.error(`Failed to update task ${taskId}:`, error);
-        // Continue with other tasks, but track failures
+        failedTaskIds.push(taskId);
       }
     }
 
-    return NextResponse.json({ success: true, updatedCount: updatedTaskIds.length });
+    return NextResponse.json({
+      success: true,
+      updatedCount: updatedTaskIds.length,
+      failedCount: failedTaskIds.length,
+      failedTaskIds,
+    });
   } catch (error) {
     console.error('Failed to reorder tasks:', error);
     return NextResponse.json({ error: 'Failed to reorder tasks' }, { status: 500 });
