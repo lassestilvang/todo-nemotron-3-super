@@ -124,20 +124,20 @@ export async function PATCH(
 
     const updateData: any = { ...body, updatedAt: Date.now() };
 
-    // Convert date strings to timestamps
-    if (body.date !== undefined && typeof body.date === 'string') {
+    // Convert date strings to ISO format for consistency
+    if (body.date !== undefined && body.date !== null) {
       const parsed = new Date(body.date);
       if (isNaN(parsed.getTime())) {
         return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
       }
-      updateData.date = parsed.getTime();
+      updateData.date = parsed.toISOString();
     }
-    if (body.deadline !== undefined && typeof body.deadline === 'string') {
+    if (body.deadline !== undefined && body.deadline !== null) {
       const parsed = new Date(body.deadline);
       if (isNaN(parsed.getTime())) {
         return NextResponse.json({ error: 'Invalid deadline format' }, { status: 400 });
       }
-      updateData.deadline = parsed.getTime();
+      updateData.deadline = parsed.toISOString();
     }
 
     const [updatedTask] = await db
