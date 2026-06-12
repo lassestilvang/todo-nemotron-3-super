@@ -18,11 +18,12 @@ interface Shortcut {
 }
 
 const shortcuts: Shortcut[] = [
-  { keys: '?', description: 'Show this help dialog', category: 'system' },
+  { keys: 'Shift + ?', description: 'Show this help dialog', category: 'system' },
   { keys: 'Escape', description: 'Close modals / dialogs', category: 'system' },
   { keys: 'Ctrl + Shift + A', description: 'Add new task (quick add)', category: 'tasks' },
   { keys: 'Ctrl + Shift + L', description: 'Add new list', category: 'tasks' },
   { keys: 'Ctrl + Shift + K', description: 'Add new label', category: 'tasks' },
+  { keys: 'Ctrl + K', description: 'Toggle search bar', category: 'navigation' },
   { keys: 'Ctrl + C', description: 'Toggle task completion', category: 'tasks' },
   { keys: 'Ctrl + Enter', description: 'Save task (in forms)', category: 'forms' },
   { keys: 'Ctrl + Shift + E', description: 'Export backup', category: 'forms' },
@@ -33,16 +34,8 @@ const shortcuts: Shortcut[] = [
   { keys: '↑ / ↓', description: 'Navigate task list', category: 'navigation' },
   { keys: 'Enter', description: 'Open task details / submit forms', category: 'forms' },
   { keys: 'Space', description: 'Toggle checkbox / activate buttons', category: 'navigation' },
-  { keys: 'Ctrl + Shift + F', description: 'Focus search', category: 'navigation' },
-  { keys: 'F', description: 'Toggle focus mode', category: 'system' },
+  { keys: 'Ctrl + Shift + F', description: 'Toggle focus mode', category: 'system' },
 ];
-
-const categoryLabels: Record<string, string> = {
-  navigation: 'Navigation',
-  tasks: 'Tasks',
-  forms: 'Forms',
-  system: 'System',
-};
 
 function KeyBadge({ keys }: { keys: string }) {
   const keyParts = keys.split(' + ');
@@ -70,6 +63,17 @@ function KeyBadge({ keys }: { keys: string }) {
       })}
     </div>
   );
+}
+
+// Add helper function to get category label
+function getCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    navigation: 'Navigation',
+    tasks: 'Tasks',
+    forms: 'Forms',
+    system: 'System',
+  };
+  return labels[category] || category;
 }
 
 export default function KeyboardShortcutsHelp() {
@@ -154,7 +158,7 @@ export default function KeyboardShortcutsHelp() {
             {Object.entries(groupedShortcuts).map(([category, items]) => (
               <div key={category} className="space-y-2">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {categoryLabels[category as keyof typeof categoryLabels] || category}
+                  {getCategoryLabel(category)}
                 </h3>
                 <div className="space-y-1">
                   {items.map((shortcut, index) => (
