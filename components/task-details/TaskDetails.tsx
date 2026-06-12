@@ -108,12 +108,12 @@ export default function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetai
         description: editData.description,
         priority: editData.priority,
         recurrence: editData.recurrence,
+        estimate: parseHHMMtoMinutes(editData.estimate),
+        actualTime: parseHHMMtoMinutes(editData.actualTime),
       };
 
       data.date = editData.date ? editData.date.getTime() : null;
       data.deadline = editData.deadline ? editData.deadline.getTime() : null;
-      data.estimate = parseHHMMtoMinutes(editData.estimate);
-      data.actualTime = parseHHMMtoMinutes(editData.actualTime);
 
       const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
