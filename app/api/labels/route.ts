@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/app/lib/db/index';
 import { labels } from '@/app/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
@@ -17,17 +18,31 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { id, name, color, emoji } = body;
 
-    if (!name || typeof name !== 'string') {
-      return NextResponse.json({ error: 'Name is required and must be a string' }, { status: 400 });
+    // Validate name
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return NextResponse.json({ error: 'Name is required and must be a non-empty string' }, { status: 400 });
     }
-    if (!color || typeof color !== 'string') {
-      return NextResponse.json({ error: 'Color is required and must be a string' }, { status: 400 });
-    }
-    if (!emoji || typeof emoji !== 'string') {
-      return NextResponse.json({ error: 'Emoji is required and must be a string' }, { status: 400 });
+    if (name.length > 100) {
+      return NextResponse.json({ error: 'Name must be 100 characters or less' }, { status: 400 });
     }
 
-    await db.insert(labels).values({ id, name, color, emoji });
+    // Validate color
+    if (!color || typeof color !== 'string' || color.trim() === '') {
+      return NextResponse.json({ error: 'Color is required' }, { status: 400 });
+    }
+
+    // Validate emoji
+    if (!emoji || typeof emoji !== 'string' || emoji.trim() === '') {
+      return NextResponse.json({ error: 'Emoji is required' }, { status: 400 });
+    }
+
+    // Check for duplicate name
+    const existing = await db.select().from(labels).where(eq(labels.name, name.trim())).limit(1);
+    if (existing.length > 0) {
+      return NextResponse.json({ error: 'A label with this name already exists' }, { status: 409 });
+    }
+
+    await db.insert(labels).values({ id, name: name.trim(), color, emoji });
     return NextResponse.json({ success: true, id });
   } catch (error) {
     console.error('Failed to create label:', error);
