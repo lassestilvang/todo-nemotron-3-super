@@ -91,7 +91,7 @@ export async function GET(request: Request) {
         .where(sql`${labels.name} LIKE '%' || ${searchQuery} || '%'`)
         .execute();
 
-      const matchingLabelIds = matchingLabels.map(l => l.id);
+      const matchingLabelIds = matchingLabels.map((l: { id: string }) => l.id);
 
       // Build the search condition
       const searchCondition = matchingLabelIds.length > 0
