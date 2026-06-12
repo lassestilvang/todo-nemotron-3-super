@@ -158,13 +158,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const res = await fetch('/api/tasks?activeTab=all&showCompleted=true');
       if (res.ok) {
         const tasks = await res.json();
+        const completedCount = tasks.filter((t: any) => t.completed).length;
         setTaskCounts({
           total: tasks.length,
-          completed: tasks.filter((t: any) => t.completed).length,
+          completed: completedCount,
         });
-        
-        // Simple streak calculation (placeholder)
-        setStreak(7);
+
+        // Calculate streak based on consecutive days with completed tasks
+        const today = new Date();
+        let streakCount = 0;
+
+        for (let i = 0; i < 30; i++) {
+          const checkDate = new Date(today);
+          checkDate.setHours(0, 0, 0, 0);
+          checkDate.setDate(today.getDate() - i);
+          const dateStr = checkDate.toISOString().split('T')[0];
+
+          const hasCompletedOnDay = tasks.some((t: any) => {
+            if (!t.completed || !t.updatedAt) return false;
+            const taskDate = new Date(t.updatedAt);
+            return taskDate.toISOString().split('T')[0] === dateStr;
+          });
+
+          if (hasCompletedOnDay) {
+            streakCount++;
+          } else {
+            break;
+          }
+        }
+
+        setStreak(streakCount);
       }
     } catch {
       // Silently fail - counts are non-critical

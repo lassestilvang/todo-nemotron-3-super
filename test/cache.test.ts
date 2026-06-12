@@ -10,7 +10,7 @@ describe('Cache', () => {
 
   it('stores and retrieves values', () => {
     cache.set('key1', 'value1');
-    expect(cache.get('key1')).toBe('value1');
+    expect(cache.get<string>('key1')).toBe('value1');
   });
 
   it('returns null for missing keys', () => {
