@@ -112,8 +112,8 @@ export default function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetai
         actualTime: parseHHMMtoMinutes(editData.actualTime),
       };
 
-      data.date = editData.date ? editData.date.getTime() : null;
-      data.deadline = editData.deadline ? editData.deadline.getTime() : null;
+      data.date = editData.date ? editData.date.toISOString() : null;
+      data.deadline = editData.deadline ? editData.deadline.toISOString() : null;
 
       const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
