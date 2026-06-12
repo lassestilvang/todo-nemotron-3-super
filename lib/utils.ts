@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { Priority } from '@/types/task';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -117,4 +118,44 @@ export function getTaskProgress(subtasks: Array<{ completed: boolean }> | undefi
   const completedCount = subtasks.filter(s => s.completed).length;
   const total = subtasks.length;
   return { completed: completedCount, total, percentage: Math.round((completedCount / total) * 100) };
+}
+
+export function getPriorityLabel(priority: Priority): string {
+  switch (priority) {
+    case 'high': return 'High';
+    case 'medium': return 'Medium';
+    case 'low': return 'Low';
+    default: return 'None';
+  }
+}
+
+export function formatRelativeDate(date: Date | string | null | undefined): string {
+  if (!date) return 'No date';
+  const d = new Date(date);
+  const now = new Date();
+  const diffTime = d.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays === -1) return 'Yesterday';
+  if (diffDays > 0 && diffDays <= 7) return `In ${diffDays} day${diffDays > 1 ? 's' : ''}`;
+  if (diffDays < 0 && diffDays >= -7) return `${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? 's' : ''} ago`;
+  return d.toLocaleDateString();
+}
+
+export function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + '...';
+}
+
+export function generateColorFromId(id: string): string {
+  const colors = [
+    'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
+    'bg-lime-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
+    'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-indigo-500',
+    'bg-violet-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-pink-500',
+  ];
+  const index = id.charCodeAt(0) % colors.length;
+  return colors[index];
 }
