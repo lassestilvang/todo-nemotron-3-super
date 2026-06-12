@@ -14,6 +14,10 @@ import {
   isThisWeek,
   formatDuration,
   getTaskProgress,
+  getPriorityLabel,
+  formatRelativeDate,
+  truncateText,
+  generateColorFromId,
 } from '@/lib/utils';
 
 describe('cn', () => {
@@ -241,5 +245,58 @@ describe('getTaskProgress', () => {
 
   it('handles empty subtasks array', () => {
     expect(getTaskProgress([], true)).toEqual({ completed: 1, total: 1, percentage: 100 });
+  });
+});
+
+describe('getPriorityLabel', () => {
+  it('returns correct labels for each priority', () => {
+    expect(getPriorityLabel('high')).toBe('High');
+    expect(getPriorityLabel('medium')).toBe('Medium');
+    expect(getPriorityLabel('low')).toBe('Low');
+    expect(getPriorityLabel('none')).toBe('None');
+  });
+});
+
+describe('formatRelativeDate', () => {
+  it('returns "No date" for null/undefined', () => {
+    expect(formatRelativeDate(null)).toBe('No date');
+    expect(formatRelativeDate(undefined)).toBe('No date');
+  });
+
+  it('returns "Today" for today', () => {
+    expect(formatRelativeDate(new Date())).toBe('Today');
+  });
+
+  it('returns "Tomorrow" for tomorrow', () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    expect(formatRelativeDate(tomorrow)).toBe('Tomorrow');
+  });
+
+  it('returns "Yesterday" for yesterday', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    expect(formatRelativeDate(yesterday)).toBe('Yesterday');
+  });
+});
+
+describe('truncateText', () => {
+  it('returns original text if within limit', () => {
+    expect(truncateText('hello', 10)).toBe('hello');
+  });
+
+  it('truncates text with ellipsis if over limit', () => {
+    expect(truncateText('hello world', 5)).toBe('hello...');
+  });
+});
+
+describe('generateColorFromId', () => {
+  it('returns a valid Tailwind color class', () => {
+    const color = generateColorFromId('test-id');
+    expect(color).toMatch(/^bg-.*-500$/);
+  });
+
+  it('is consistent for same ID', () => {
+    expect(generateColorFromId('test-id')).toBe(generateColorFromId('test-id'));
   });
 });
