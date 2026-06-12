@@ -17,6 +17,8 @@ class Cache {
   private maxSize: number;
   private persist: boolean;
   private isClient: boolean;
+  private hits: number = 0;
+  private misses: number = 0;
 
   constructor(options: CacheOptions | number = {}) {
     if (typeof options === 'number') {
@@ -57,15 +59,18 @@ class Cache {
   get<T>(key: string): T | null {
     const item = this.cache.get(key);
     if (!item) {
+      this.misses++;
       return null;
     }
 
     const now = Date.now();
     if (now > item.expiresAt) {
       this.cache.delete(key);
+      this.misses++;
       return null;
     }
 
+    this.hits++;
     item.lastAccessed = now;
     return item.data as T;
   }
@@ -198,11 +203,18 @@ class Cache {
     hitRate: number;
   } {
     const stats = this.getStats();
+    const totalRequests = this.hits + this.misses;
+    const hitRate = totalRequests > 0 ? Math.round((this.hits / totalRequests) * 100) : 0;
     return {
       ...stats,
       memoryUsage: JSON.stringify([...this.cache.entries()]).length,
-      hitRate: 0,
+      hitRate,
     };
+  }
+
+  resetStats(): void {
+    this.hits = 0;
+    this.misses = 0;
   }
 
   getOrFetch<T>(key: string, fetchFn: () => Promise<T>, ttlSeconds?: number): Promise<T> {
