@@ -123,6 +123,29 @@ export default function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetai
 
       if (!res.ok) throw new Error('Failed to save task');
 
+      const updatedTask = await res.json();
+
+      // Update local task state
+      setTask(prev => prev ? {
+        ...prev,
+        ...updatedTask,
+        date: updatedTask.date ? new Date(updatedTask.date) : null,
+        deadline: updatedTask.deadline ? new Date(updatedTask.deadline) : null,
+        createdAt: new Date(updatedTask.createdAt),
+        updatedAt: new Date(updatedTask.updatedAt),
+      } : null);
+
+      // Notify parent component
+      if (onTaskUpdate) {
+        onTaskUpdate({
+          ...updatedTask,
+          date: updatedTask.date ? new Date(updatedTask.date) : null,
+          deadline: updatedTask.deadline ? new Date(updatedTask.deadline) : null,
+          createdAt: new Date(updatedTask.createdAt),
+          updatedAt: new Date(updatedTask.updatedAt),
+        });
+      }
+
       toast.success('Task saved successfully');
       onClose();
     } catch (error) {
@@ -295,6 +318,29 @@ export default function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetai
       });
 
       if (!res.ok) throw new Error('Failed to toggle task completion');
+
+      const updatedTask = await res.json();
+
+      // Update local state
+      setTask(prev => prev ? {
+        ...prev,
+        ...updatedTask,
+        date: updatedTask.date ? new Date(updatedTask.date) : null,
+        deadline: updatedTask.deadline ? new Date(updatedTask.deadline) : null,
+        createdAt: new Date(updatedTask.createdAt),
+        updatedAt: new Date(updatedTask.updatedAt),
+      } : null);
+
+      // Notify parent
+      if (onTaskUpdate) {
+        onTaskUpdate({
+          ...updatedTask,
+          date: updatedTask.date ? new Date(updatedTask.date) : null,
+          deadline: updatedTask.deadline ? new Date(updatedTask.deadline) : null,
+          createdAt: new Date(updatedTask.createdAt),
+          updatedAt: new Date(updatedTask.updatedAt),
+        });
+      }
 
       toast.success(`Task marked as ${task.completed ? 'incomplete' : 'complete'}`);
       onClose();
