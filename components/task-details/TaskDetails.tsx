@@ -355,13 +355,37 @@ export default function TaskDetails({ taskId, onClose, onTaskUpdate }: TaskDetai
   if (isLoading) {
     return (
       <Dialog open={!!taskId} onOpenChange={(open) => { if (!open) onClose(); }}>
-        <DialogContent className="w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Loading task...</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader className="h-10 w-10 animate-spin text-primary" />
-            <p className="mt-4 text-sm text-muted-foreground">Loading task details...</p>
+        <DialogContent className="max-w-3xl p-0 overflow-hidden border-none bg-white dark:bg-slate-950 shadow-2xl rounded-2xl">
+          <div className="flex flex-col h-[85vh]">
+            <div className="px-8 pt-8 pb-6 border-b border-slate-100 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-900/50">
+              <DialogHeader>
+                <DialogTitle>Loading task...</DialogTitle>
+              </DialogHeader>
+            </div>
+            <div className="flex-1 overflow-y-auto px-8 py-6">
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Task Name</div>
+                    <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-md animate-pulse" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Priority</div>
+                    <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-md animate-pulse" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Schedule Date</div>
+                    <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-md animate-pulse" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Deadline</div>
+                    <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-md animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
