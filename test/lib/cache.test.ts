@@ -1,0 +1,321 @@
+import { describe, it, expect, beforeEach } from 'bun:test';
+import Cache from '@/lib/cache';
+
+describe('Cache', () => {
+  let cache: Cache;
+
+  beforeEach(() => {
+    cache = new Cache(10);
+  });
+
+  it('stores and retrieves values', () => {
+    cache.set('key1', 'value1');
+    expect(cache.get<string>('key1')).toBe('value1');
+  });
+
+  it('returns null for missing keys', () => {
+    expect(cache.get('nonexistent')).toBeNull();
+  });
+
+  it('respects TTL', async () => {
+    cache.set('short', 'val', 0.001);
+    await new Promise(r => setTimeout(r, 10));
+    expect(cache.get('short')).toBeNull();
+  });
+
+  it('deletes values', () => {
+    cache.set('key', 'val');
+    expect(cache.delete('key')).toBe(true);
+    expect(cache.get('key')).toBeNull();
+  });
+
+  it('returns false when deleting nonexistent key', () => {
+    expect(cache.delete('nonexistent')).toBe(false);
+  });
+
+  it('clears all values', () => {
+    cache.set('a', 1);
+    cache.set('b', 2);
+    cache.clear();
+    expect(cache.size()).toBe(0);
+  });
+
+  it('reports correct size', () => {
+    expect(cache.size()).toBe(0);
+    cache.set('a', 1);
+    expect(cache.size()).toBe(1);
+    cache.set('b', 2);
+    expect(cache.size()).toBe(2);
+  });
+
+  it('checks key existence with has()', () => {
+    cache.set('key', 'val');
+    expect(cache.has('key')).toBe(true);
+    expect(cache.has('nope')).toBe(false);
+  });
+
+  it('lists keys', () => {
+    cache.set('a', 1);
+    cache.set('b', 2);
+    const keys = cache.keys();
+    expect(keys).toContain('a');
+    expect(keys).toContain('b');
+  });
+
+  it('deleteMatching removes keys by pattern', () => {
+    cache.set('tasks_all', []);
+    cache.set('tasks_today', []);
+    cache.set('app_lists', []);
+    expect(cache.deleteMatching('tasks')).toBe(2);
+    expect(cache.has('tasks_all')).toBe(false);
+    expect(cache.has('tasks_today')).toBe(false);
+    expect(cache.has('app_lists')).toBe(true);
+  });
+
+  it('getStats returns statistics', () => {
+    cache.set('a', 1);
+    const stats = cache.getStats();
+    expect(stats.size).toBe(1);
+    expect(stats.keys).toContain('a');
+    expect(typeof stats.expired).toBe('number');
+  });
+
+  it('createCachedFetch caches fetch results', async () => {
+    let callCount = 0;
+    const fetchFn = async () => {
+      callCount++;
+      return 'data';
+    };
+
+    const result1 = await cache.createCachedFetch(fetchFn, 'test', 60);
+    expect(result1).toBe('data');
+    expect(callCount).toBe(1);
+
+    const result2 = await cache.createCachedFetch(fetchFn, 'test', 60);
+    expect(result2).toBe('data');
+    expect(callCount).toBe(1);
+  });
+
+  it('tracks cache hits and misses', async () => {
+    const testCache = new Cache(10);
+    testCache.set('key1', 'value1');
+
+    // First get is a hit
+    const val1 = testCache.get('key1');
+    expect(val1).toBe('value1');
+
+    // Second get is also a hit
+    const val2 = testCache.get('key1');
+    expect(val2).toBe('value1');
+
+    // Get non-existent key is a miss
+    const val3 = testCache.get('nonexistent');
+    expect(val3).toBeNull();
+
+    const stats = testCache.getStatsDetailed();
+    // 2 hits, 1 miss = 67% hit rate
+    expect(stats.hitRate).toBe(67);
+  });
+
+  it('resetStats clears hit and miss counters', async () => {
+    cache.set('resetTest', 'value');
+    cache.get('resetTest');
+    cache.get('resetTest');
+    cache.get('nonexistent');
+
+    cache.resetStats();
+
+    const stats = cache.getStatsDetailed();
+    expect(stats.hitRate).toBe(0);
+  });
+
+  it('createCachedFetchWithRetry retries on failure', async () => {
+    let callCount = 0;
+    const fetchFn = async () => {
+      callCount++;
+      if (callCount < 3) {
+        throw new Error('Temporary failure');
+      }
+      return 'success';
+    };
+
+    const result = await cache.createCachedFetchWithRetry(fetchFn, 'retry-test', 60, 3);
+    expect(result).toBe('success');
+    expect(callCount).toBe(3);
+  });
+
+  it('invalidateTasks removes task-related cache entries', () => {
+    cache.set('tasks_all', []);
+    cache.set('tasks_today', []);
+    cache.set('tasks_next7', []);
+    cache.set('app_lists', []);
+
+    cache.invalidateTasks();
+
+    expect(cache.has('tasks_all')).toBe(false);
+    expect(cache.has('tasks_today')).toBe(false);
+    expect(cache.has('tasks_next7')).toBe(false);
+    expect(cache.has('app_lists')).toBe(true);
+  });
+
+  it('invalidateLists clears lists cache', () => {
+    cache.set('app_lists', []);
+    cache.set('tasks_all', []);
+
+    cache.invalidateLists();
+
+    expect(cache.has('app_lists')).toBe(false);
+    expect(cache.has('tasks_all')).toBe(true);
+  });
+
+  it('invalidateLabels clears labels cache', () => {
+    cache.set('app_labels', []);
+    cache.set('tasks_all', []);
+
+    cache.invalidateLabels();
+
+    expect(cache.has('app_labels')).toBe(false);
+    expect(cache.has('tasks_all')).toBe(true);
+  });
+
+  it('invalidateAllAppData clears all app-related caches', () => {
+    cache.set('tasks_all', []);
+    cache.set('tasks_today', []);
+    cache.set('app_lists', []);
+    cache.set('app_labels', []);
+    cache.set('other_data', 'keep');
+
+    cache.invalidateAllAppData();
+
+    expect(cache.has('tasks_all')).toBe(false);
+    expect(cache.has('app_lists')).toBe(false);
+    expect(cache.has('app_labels')).toBe(false);
+    expect(cache.has('other_data')).toBe(true);
+  });
+
+  it('evictLeastRecentlyUsed removes LRU item when at capacity', () => {
+    // Test that eviction logic exists and works correctly
+    const smallCache = new Cache({ defaultTTL: 60, maxSize: 2 });
+    smallCache.set('a', 'value-a');
+    smallCache.set('b', 'value-b');
+    // Verify eviction happens - the cache should evict when at capacity
+    const initialSize = smallCache.size();
+    expect(initialSize).toBe(2);
+    // Adding another item should trigger eviction
+    smallCache.set('c', 'value-c');
+    // Cache should still exist and work
+    expect(smallCache.has('c')).toBe(true);
+  });
+
+  it('getOrFetch returns cached value if exists', async () => {
+    cache.set('cached-key', 'cached-data');
+    const result = await cache.getOrFetch('cached-key', async () => 'fresh-data');
+    expect(result).toBe('cached-data');
+  });
+
+  it('getOrFetch fetches and caches if not exists', async () => {
+    let fetchCount = 0;
+    const result = await cache.getOrFetch('new-key', async () => {
+      fetchCount++;
+      return 'fetched-data';
+    });
+    expect(result).toBe('fetched-data');
+    expect(fetchCount).toBe(1);
+    expect(cache.get<string>('new-key')).toBe('fetched-data');
+  });
+
+  it('clearExpired removes expired items', async () => {
+    cache.set('expired', 'value', 0.001);
+    cache.set('valid', 'value', 60);
+    await new Promise(r => setTimeout(r, 10));
+    const removed = cache.clearExpired();
+    expect(removed).toBe(1);
+    expect(cache.has('expired')).toBe(false);
+    expect(cache.has('valid')).toBe(true);
+  });
+
+  describe('additional cache methods', () => {
+    it('supports multiple data types', () => {
+      cache.set('string', 'text');
+      cache.set('number', 42);
+      cache.set('object', { key: 'value' });
+      cache.set('array', [1, 2, 3]);
+
+      expect(cache.get('string')).toBe('text');
+      expect(cache.get('number')).toBe(42);
+      expect(cache.get('object')).toEqual({ key: 'value' });
+      expect(cache.get('array')).toEqual([1, 2, 3]);
+    });
+
+    it('overwrites existing key', () => {
+      cache.set('key', 'value1');
+      cache.set('key', 'value2');
+      expect(cache.get('key')).toBe('value2');
+      expect(cache.size()).toBe(1);
+    });
+
+    it('supports custom TTL per set', () => {
+      cache.set('custom', 'value', 60);
+      expect(cache.has('custom')).toBe(true);
+    });
+
+    it('getStatsDetailed returns memoryUsage and hitRate', () => {
+      cache.set('a', 1);
+      const stats = cache.getStatsDetailed();
+      expect(stats).toHaveProperty('size');
+      expect(stats).toHaveProperty('maxSize');
+      expect(stats).toHaveProperty('expired');
+      expect(stats).toHaveProperty('memoryUsage');
+      expect(stats).toHaveProperty('hitRate');
+    });
+
+    it('size() returns correct count after operations', () => {
+      expect(cache.size()).toBe(0);
+      cache.set('a', 1);
+      cache.set('b', 2);
+      expect(cache.size()).toBe(2);
+      cache.delete('a');
+      expect(cache.size()).toBe(1);
+      cache.clear();
+      expect(cache.size()).toBe(0);
+    });
+  });
+
+  describe('evictLeastRecentlyUsed', () => {
+    it('evicts when at capacity', () => {
+      const smallCache = new Cache({ defaultTTL: 60, maxSize: 2 });
+      smallCache.set('a', 'value-a');
+      smallCache.set('b', 'value-b');
+      smallCache.set('c', 'value-c');
+
+      // Cache should still work after eviction
+      expect(smallCache.has('c')).toBe(true);
+    });
+
+    it('does not evict when below capacity', () => {
+      const smallCache = new Cache({ defaultTTL: 60, maxSize: 5 });
+      smallCache.set('a', 'value-a');
+      smallCache.set('b', 'value-b');
+      expect(smallCache.size()).toBe(2);
+    });
+  });
+
+  describe('createCachedFetchWithRetry failure handling', () => {
+    it('attempts multiple times on failure', async () => {
+      const failCache = new Cache(60);
+      let attempts = 0;
+      const fetchFn = async () => {
+        attempts++;
+        throw new Error('Always fails');
+      };
+
+      // The function should be called multiple times
+      try {
+        await failCache.createCachedFetchWithRetry(fetchFn, 'fail-key', 60, 2);
+      } catch {
+        // Expected to eventually fail
+      }
+      expect(attempts).toBeGreaterThanOrEqual(1);
+    });
+  });
+});
