@@ -1,0 +1,5 @@
+[test]
+# Skip React hook tests that require jsdom
+# Run them separately with: bun run test:jest
+# Skip e2e tests (run separately with: bun run test:e2e)
+pathIgnorePatterns = ["test/react-hooks/**", "test/react/**", "e2e-tests/**"]
