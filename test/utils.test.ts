@@ -22,6 +22,17 @@ import {
   formatDateForInput,
   formatDateTimeForInput,
   sanitizeString,
+  generateEmojiFromId,
+  generateUUID,
+  isValidEmail,
+  capitalizeFirst,
+  formatDurationFromMinutes,
+  getPriorityValue,
+  isTaskCompleted,
+  isTaskOverdue,
+  isTaskDueToday,
+  isValidUUID,
+  debounce,
 } from '@/lib/utils';
 
 describe('cn', () => {
@@ -284,6 +295,27 @@ describe('formatRelativeDate', () => {
   });
 });
 
+describe('formatRelativeDate', () => {
+  it('returns date string for dates more than 7 days away', () => {
+    const farFuture = new Date();
+    farFuture.setDate(farFuture.getDate() + 10);
+    const result = formatRelativeDate(farFuture);
+    expect(result).not.toBe('Today');
+    expect(result).not.toBe('Tomorrow');
+    expect(result).not.toBe('Yesterday');
+    expect(result).not.toBe('No date');
+  });
+
+  it('returns date string for dates more than 7 days in past', () => {
+    const farPast = new Date();
+    farPast.setDate(farPast.getDate() - 10);
+    const result = formatRelativeDate(farPast);
+    expect(result).not.toBe('Yesterday');
+    expect(result).not.toBe('Today');
+    expect(result).not.toBe('No date');
+  });
+});
+
 describe('truncateText', () => {
   it('returns original text if within limit', () => {
     expect(truncateText('hello', 10)).toBe('hello');
@@ -358,5 +390,201 @@ describe('sanitizeString', () => {
 
   it('handles empty string', () => {
     expect(sanitizeString('', 5)).toBe('');
+  });
+});
+
+describe('generateEmojiFromId', () => {
+  it('returns a valid emoji from the emoji list', () => {
+    const emoji = generateEmojiFromId('test-id');
+    expect(emoji).toBeTruthy();
+    expect(typeof emoji).toBe('string');
+    expect(emoji.length).toBeGreaterThan(0);
+  });
+
+  it('is consistent for same ID', () => {
+    expect(generateEmojiFromId('test-id')).toBe(generateEmojiFromId('test-id'));
+  });
+});
+
+describe('generateUUID', () => {
+  it('generates a valid UUID', () => {
+    const uuid = generateUUID();
+    expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+  });
+
+  it('generates unique UUIDs', () => {
+    const uuids = new Set<string>();
+    for (let i = 0; i < 100; i++) {
+      uuids.add(generateUUID());
+    }
+    expect(uuids.size).toBe(100);
+  });
+});
+
+describe('isValidEmail', () => {
+  it('returns true for valid emails', () => {
+    expect(isValidEmail('test@example.com')).toBe(true);
+    expect(isValidEmail('user.name@domain.co')).toBe(true);
+    expect(isValidEmail('user+tag@example.org')).toBe(true);
+  });
+
+  it('returns false for invalid emails', () => {
+    expect(isValidEmail('')).toBe(false);
+    expect(isValidEmail('notanemail')).toBe(false);
+    expect(isValidEmail('@example.com')).toBe(false);
+    expect(isValidEmail('user@')).toBe(false);
+  });
+});
+
+describe('capitalizeFirst', () => {
+  it('capitalizes the first letter', () => {
+    expect(capitalizeFirst('hello')).toBe('Hello');
+    expect(capitalizeFirst('world')).toBe('World');
+  });
+
+  it('handles empty string', () => {
+    expect(capitalizeFirst('')).toBe('');
+  });
+
+  it('handles single character', () => {
+    expect(capitalizeFirst('a')).toBe('A');
+  });
+});
+
+describe('formatDurationFromMinutes', () => {
+  it('formats minutes correctly', () => {
+    expect(formatDurationFromMinutes(30)).toBe('0h 30m');
+    expect(formatDurationFromMinutes(0)).toBe('0h 0m');
+  });
+
+  it('formats hours and minutes', () => {
+    expect(formatDurationFromMinutes(90)).toBe('1h 30m');
+    expect(formatDurationFromMinutes(60)).toBe('1h 0m');
+  });
+
+  it('handles null and undefined', () => {
+    expect(formatDurationFromMinutes(null)).toBe('0h 0m');
+    expect(formatDurationFromMinutes(undefined)).toBe('0h 0m');
+  });
+});
+
+describe('getPriorityValue', () => {
+  it('returns correct numeric values for priorities', () => {
+    expect(getPriorityValue('high')).toBe(1);
+    expect(getPriorityValue('medium')).toBe(2);
+    expect(getPriorityValue('low')).toBe(3);
+    expect(getPriorityValue('none')).toBe(4);
+  });
+});
+
+describe('isTaskCompleted', () => {
+  it('returns true when completed is true', () => {
+    expect(isTaskCompleted(true)).toBe(true);
+  });
+
+  it('returns false when completed is false', () => {
+    expect(isTaskCompleted(false)).toBe(false);
+  });
+
+  it('returns false for null or undefined', () => {
+    expect(isTaskCompleted(null)).toBe(false);
+    expect(isTaskCompleted(undefined)).toBe(false);
+  });
+});
+
+describe('isTaskOverdue', () => {
+  it('returns false when no deadline', () => {
+    expect(isTaskOverdue(null, false)).toBe(false);
+  });
+
+  it('returns false for completed tasks', () => {
+    const past = new Date('2020-01-01');
+    expect(isTaskOverdue(past, true)).toBe(false);
+  });
+
+  it('returns true for past deadlines on incomplete tasks', () => {
+    const past = new Date('2020-01-01');
+    expect(isTaskOverdue(past, false)).toBe(true);
+  });
+});
+
+describe('isTaskDueToday', () => {
+  it('returns true for tasks due today', () => {
+    const today = new Date();
+    expect(isTaskDueToday(today)).toBe(true);
+  });
+
+  it('returns false for tasks without deadline', () => {
+    expect(isTaskDueToday(null)).toBe(false);
+  });
+
+  it('returns false for tasks due in the future', () => {
+    const future = new Date();
+    future.setDate(future.getDate() + 1);
+    expect(isTaskDueToday(future)).toBe(false);
+  });
+});
+
+describe('isValidUUID', () => {
+  it('returns true for valid UUID', () => {
+    expect(isValidUUID('123e4567-e89b-12d3-a456-426614174000')).toBe(true);
+    expect(isValidUUID('00000000-0000-4000-8000-000000000000')).toBe(true);
+  });
+
+  it('returns false for invalid UUID', () => {
+    expect(isValidUUID('invalid-uuid')).toBe(false);
+    expect(isValidUUID('123e4567-e89b-12d3-a456')).toBe(false);
+    expect(isValidUUID('')).toBe(false);
+    expect(isValidUUID('not-a-uuid-at-all')).toBe(false);
+  });
+});
+
+describe('debounce', () => {
+  it('delays function execution', async () => {
+    let callCount = 0;
+    const debouncedFn = debounce(() => callCount++, 50);
+
+    debouncedFn();
+    expect(callCount).toBe(0);
+
+    await new Promise(r => setTimeout(r, 100));
+    expect(callCount).toBe(1);
+  });
+
+  it('only calls once when called multiple times', async () => {
+    let callCount = 0;
+    const debouncedFn = debounce(() => callCount++, 50);
+
+    debouncedFn();
+    debouncedFn();
+    debouncedFn();
+
+    await new Promise(r => setTimeout(r, 100));
+    expect(callCount).toBe(1);
+  });
+
+  it('passes arguments to debounced function', async () => {
+    let received: string | undefined;
+    const debouncedFn = debounce((arg: string) => { received = arg; }, 50);
+
+    debouncedFn('hello');
+
+    await new Promise(r => setTimeout(r, 100));
+    expect(received).toBe('hello');
+  });
+
+  it('handles multiple debounced functions independently', async () => {
+    let countA = 0;
+    let countB = 0;
+    const debouncedA = debounce(() => countA++, 50);
+    const debouncedB = debounce(() => countB++, 50);
+
+    debouncedA();
+    debouncedA();
+    debouncedB();
+
+    await new Promise(r => setTimeout(r, 100));
+    expect(countA).toBe(1);
+    expect(countB).toBe(1);
   });
 });
