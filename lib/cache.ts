@@ -34,10 +34,6 @@ class Cache {
     this.isClient = typeof window !== 'undefined';
   }
 
-  private generateKey(key: string): string {
-    return `cache_${key}`;
-  }
-
   private evictIfNeeded(): void {
     if (this.cache.size < this.maxSize) return;
 
@@ -110,24 +106,6 @@ class Cache {
     return count;
   }
 
-  evictLeastRecentlyUsed(): void {
-    if (this.cache.size < this.maxSize) return;
-
-    let lruKey = '';
-    let lruTime = Infinity;
-
-    for (const [key, item] of this.cache.entries()) {
-      if (item.lastAccessed < lruTime) {
-        lruTime = item.lastAccessed;
-        lruKey = key;
-      }
-    }
-
-    if (lruKey) {
-      this.cache.delete(lruKey);
-    }
-  }
-
   delete(key: string): boolean {
     const deleted = this.cache.delete(key);
     if (this.persist && this.isClient) {
@@ -142,11 +120,14 @@ class Cache {
     this.cache.clear();
     if (this.persist && this.isClient) {
       try {
-        Object.keys(sessionStorage).forEach(k => {
-          if (k.startsWith('cache_persist_')) {
-            sessionStorage.removeItem(k);
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key?.startsWith('cache_persist_')) {
+            keysToRemove.push(key);
           }
-        });
+        }
+        keysToRemove.forEach(key => sessionStorage.removeItem(key));
       } catch {}
     }
   }
@@ -243,7 +224,10 @@ class Cache {
       return data;
     }).catch(error => {
       console.warn(`Cache fetch failed for key "${key}":`, error);
-      return fetchFn();
+      return fetchFn().then(data => {
+        this.set(key, data, ttlSeconds);
+        return data;
+      });
     });
   }
 
